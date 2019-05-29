@@ -21,4 +21,8 @@
     <ProjectReference Include="..\src\fostering-service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controller\" />
+  </ItemGroup>
+
 </Project>
