@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\fostering_service.csproj" />
+    <ProjectReference Include="..\src\fostering-service.csproj" />
   </ItemGroup>
 
 </Project>
