@@ -9,6 +9,9 @@ using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
+using StockportGovUK.AspNetCore.Gateways;
+using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
+using StockportGovUK.AspNetCore.Polly;
 
 namespace fostering_service
 {
@@ -25,6 +28,10 @@ namespace fostering_service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddHttpClients<IGateway, Gateway>(Configuration);
+
+            services.AddSingleton<IVerintServiceGateway, VerintServiceGateway>();
 
             services.AddSwaggerGen(c =>
             {
