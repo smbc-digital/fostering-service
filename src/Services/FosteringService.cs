@@ -38,6 +38,7 @@ namespace fostering_service.Services
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname").Value,
                     LastName = integrationFormFields.First(_ => _.Name == "surname").Value,
                     EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname") != null,
+                    AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname")?.Value ?? string.Empty,
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity")?.Value ?? string.Empty,
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender")?.Value ?? string.Empty,
@@ -52,7 +53,8 @@ namespace fostering_service.Services
                 {
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname_2").Value,
                     LastName = integrationFormFields.First(_ => _.Name == "surname_2").Value,
-                    EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname2") != null,
+                    EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname_2") != null,
+                    AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname_2")?.Value ?? string.Empty,
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality2")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity2")?.Value ?? string.Empty,
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender2")?.Value ?? string.Empty,
