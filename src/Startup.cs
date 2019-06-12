@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using fostering_service.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,8 @@ namespace fostering_service
             services.AddHttpClients<IGateway, Gateway>(Configuration);
 
             services.AddSingleton<IVerintServiceGateway, VerintServiceGateway>();
+
+            services.AddTransient<IFosteringService, FosteringService>();
 
             services.AddSwaggerGen(c =>
             {

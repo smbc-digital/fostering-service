@@ -1,6 +1,7 @@
+using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
+using fostering_service.Services;
 
 namespace fostering_service.Controllers
 {
@@ -9,20 +10,27 @@ namespace fostering_service.Controllers
     [ApiController]
     public class FosteringController : ControllerBase
     {
-        private readonly IVerintServiceGateway _verintServiceGateway;
+        private readonly IFosteringService _fosteringService;
 
-        public FosteringController(IVerintServiceGateway verintServiceGateway)
+        public FosteringController(IFosteringService fosteringService)
         {
-            _verintServiceGateway = verintServiceGateway;
+            _fosteringService = fosteringService;
         }
 
         [Route("case")]
         [HttpGet]
-        public async Task<IActionResult> GetCase()
+        public async Task<IActionResult> GetCase([FromQuery]string caseId)
         {
-            var result = await _verintServiceGateway.GetCase("101004219219");
+            try
+            {
+                var result = await _fosteringService.GetCase(caseId);
 
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
     }
 }
