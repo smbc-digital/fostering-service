@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 
 namespace fostering_service.Services
@@ -80,6 +81,82 @@ namespace fostering_service.Services
             }
 
             return fosteringCase;
+        }
+
+        // TODO: add country of birth to models
+        public async Task UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
+        {
+            var formFields = new List<CustomField>
+            {
+                new CustomField
+                {
+                    Value = model.FirstApplicant.AnotherName,
+                    Name = "previousname"
+                },
+                new CustomField
+                {
+                    Value = model.FirstApplicant.Ethnicity,
+                    Name = "ethnicity"
+                },new CustomField
+                {
+                    Value = model.FirstApplicant.Gender,
+                    Name = "gender"
+                },
+                new CustomField
+                {
+                    Value = model.FirstApplicant.Nationality,
+                    Name = "nationality"
+                },
+                new CustomField
+                {
+                    Value = model.FirstApplicant.Religion,
+                    Name = "religionorfaithgroup"
+                },
+                new CustomField
+                {
+                    Value = model.FirstApplicant.SexualOrientation,
+                    Name = "sexualorientation"
+                }
+            };
+
+            if (model.SecondApplicant != null)
+            {
+                formFields.AddRange(new List<CustomField>{
+                    new CustomField
+                    {
+                        Value = model.FirstApplicant.AnotherName,
+                        Name = "previousname"
+                    },
+                    new CustomField
+                    {
+                        Value = model.FirstApplicant.Ethnicity,
+                        Name = "ethnicity"
+                    },new CustomField
+                    {
+                        Value = model.FirstApplicant.Gender,
+                        Name = "gender"
+                    },
+                    new CustomField
+                    {
+                        Value = model.FirstApplicant.Nationality,
+                        Name = "nationality"
+                    },
+                    new CustomField
+                    {
+                        Value = model.FirstApplicant.Religion,
+                        Name = "religionorfaithgroup"
+                    },
+                    new CustomField
+                    {
+                        Value = model.FirstApplicant.SexualOrientation,
+                        Name = "sexualorientation"
+                    }
+                });
+            }
+
+            // Call update integration form fields in verint service
+
+            // Log error or warning if http status not 200
         }
 
         // TODO: Call update integration form fields method

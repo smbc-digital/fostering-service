@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Services;
+using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 
 namespace fostering_service.Controllers
 {
@@ -26,6 +27,22 @@ namespace fostering_service.Controllers
                 var result = await _fosteringService.GetCase(caseId);
 
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [Route("about-yourself")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
+        {
+            try
+            {
+                await _fosteringService.UpdateAboutYourself(model);
+
+                return Ok();
             }
             catch (Exception ex)
             {
