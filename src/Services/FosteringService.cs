@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Models.Verint;
 
 namespace fostering_service.Services
 {
@@ -32,7 +35,18 @@ namespace fostering_service.Services
 
             var fosteringCase = new FosteringCase
             {
-                Statuses = new FosteringCaseStatuses(),
+                Statuses = new FosteringCaseStatuses
+                {
+                    TellUsAboutYourselfStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourselfstatus")?.Value),
+                    ChildrenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenlivingawayfromyourhomestatus")?.Value),
+                    LanguageSpokenInYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "languagespokeninyourhomestatus")?.Value),
+                    TellUsAboutYourInterestInFosteringStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourinterestinfosteringstatus")?.Value),
+                    YourEmploymentDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "youremploymentdetailsstatus")?.Value),
+                    YourFosteringHistoryStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourfosteringhistorystatus")?.Value),
+                    YourHealthStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhealthstatus")?.Value),
+                    YourHouseholdStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhouseholdstatus")?.Value),
+                    YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value)
+                },
                 FirstApplicant = new FosteringApplicant
                 {
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname").Value,
@@ -66,6 +80,88 @@ namespace fostering_service.Services
             }
 
             return fosteringCase;
+        }
+
+        // TODO: Call update integration form fields method
+        public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
+        {
+            var formStatusFieldName = GetFormStatusFieldName(form);
+
+            if (formStatusFieldName == null)
+            {
+                throw new NullReferenceException("Status field not found");
+            }
+
+            var formFields = new List<CustomField>
+            {
+                new CustomField
+                {
+                    Value = GetTaskStatus(status),
+                    Name = formStatusFieldName
+                }
+            };
+
+            // Call update integration form fields in verint service
+
+            // Log error or warning if http status not 200
+
+        }
+
+        private ETaskStatus GetTaskStatus(string status)
+        {
+            switch (status)
+            {
+                case "CantStart":
+                    return ETaskStatus.CantStart;
+                case "Completed":
+                    return ETaskStatus.Completed;
+                case "NotCompleted":
+                    return ETaskStatus.NotCompleted;
+                default:
+                    return ETaskStatus.None;
+            }
+        }
+
+        private string GetTaskStatus(ETaskStatus status)
+        {
+            switch (status)
+            {
+                case ETaskStatus.CantStart:
+                    return "CantStart";
+                case ETaskStatus.Completed:
+                    return "Completed";
+                case ETaskStatus.NotCompleted:
+                    return "NotCompleted";
+                default:
+                    return "None";
+            }
+        }
+
+        private string GetFormStatusFieldName(EFosteringCaseForm form)
+        {
+            switch (form)
+            {
+                case EFosteringCaseForm.ChildrenLivingAwayFromYourHome:
+                    return "childrenlivingawayfromyourhomestatus";
+                case EFosteringCaseForm.LanguageSpokenInYourHome:
+                    return "languagespokeninyourhomestatus";
+                case EFosteringCaseForm.TellUsAboutYourInterestInFostering:
+                    return "tellusaboutyourinterestinfosteringstatus";
+                case EFosteringCaseForm.TellUsAboutYourself:
+                    return "tellusaboutyourselfstatus";
+                case EFosteringCaseForm.YourEmploymentDetails:
+                    return "youremploymentdetailsstatus";
+                case EFosteringCaseForm.YourFosteringHistory:
+                    return "yourfosteringhistorystatus";
+                case EFosteringCaseForm.YourHealth:
+                    return "yourhealthstatus";
+                case EFosteringCaseForm.YourHousehold:
+                    return "yourhouseholdstatus";
+                case EFosteringCaseForm.YourPartnership:
+                    return "yourpartnershipstatus";
+                default:
+                    return null;
+            }
         }
     }
 }

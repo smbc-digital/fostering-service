@@ -7,6 +7,7 @@ using fostering_service_tests.Builders;
 using Moq;
 using StockportGovUK.AspNetCore.Gateways.Response;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using Xunit;
@@ -219,6 +220,45 @@ namespace fostering_service_tests.Service
             Assert.Equal("Gender", result.SecondApplicant.Gender);
             Assert.Equal("Sexual orientation", result.SecondApplicant.SexualOrientation);
             Assert.Equal("Religion", result.SecondApplicant.Religion);
+        }
+
+        [Theory]
+        [InlineData("None", ETaskStatus.None)]
+        [InlineData("CantStart", ETaskStatus.CantStart)]
+        [InlineData("Completed", ETaskStatus.Completed)]
+        [InlineData("NotCompleted", ETaskStatus.NotCompleted)]
+        public async Task GetCase_ShouldMapStatus(string status, ETaskStatus expectedStatus)
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("tellusaboutyourselfstatus", status)
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("");
+
+            // Assert
+            Assert.Equal(expectedStatus, result.Statuses.TellUsAboutYourselfStatus);
+        }
+
+        // TODO Write this test once call to verint gateway is done
+        public async Task UpdateStatus_ShouldCall_VerintService_WithCorrectStatusField()
+        {
+            // Arrange
+
+            // Act
+
+            // Assert
         }
 
     }
