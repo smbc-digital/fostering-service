@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using fostering_service.Builder;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
@@ -86,77 +87,47 @@ namespace fostering_service.Services
         // TODO: add country of birth to models
         public async Task UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
-            var formFields = new List<CustomField>
-            {
-                new CustomField
-                {
-                    Value = model.FirstApplicant.AnotherName,
-                    Name = "previousname"
-                },
-                new CustomField
-                {
-                    Value = model.FirstApplicant.Ethnicity,
-                    Name = "ethnicity"
-                },new CustomField
-                {
-                    Value = model.FirstApplicant.Gender,
-                    Name = "gender"
-                },
-                new CustomField
-                {
-                    Value = model.FirstApplicant.Nationality,
-                    Name = "nationality"
-                },
-                new CustomField
-                {
-                    Value = model.FirstApplicant.Religion,
-                    Name = "religionorfaithgroup"
-                },
-                new CustomField
-                {
-                    Value = model.FirstApplicant.SexualOrientation,
-                    Name = "sexualorientation"
-                }
-            };
+            var completed = UpdateAboutYourselfIsValid(model.FirstApplicant);
+
+            var formFields = new FormFieldBuilder()
+                .AddField("previousname", model.FirstApplicant.AnotherName)
+                .AddField("ethnicity", model.FirstApplicant.Ethnicity)
+                .AddField("gender", model.FirstApplicant.Gender)
+                .AddField("nationality", model.FirstApplicant.Nationality)
+                .AddField("religionorfaithgroup", model.FirstApplicant.Religion)
+                .AddField("sexualorientation", model.FirstApplicant.SexualOrientation);
+
+
 
             if (model.SecondApplicant != null)
             {
-                formFields.AddRange(new List<CustomField>{
-                    new CustomField
-                    {
-                        Value = model.FirstApplicant.AnotherName,
-                        Name = "previousname"
-                    },
-                    new CustomField
-                    {
-                        Value = model.FirstApplicant.Ethnicity,
-                        Name = "ethnicity"
-                    },new CustomField
-                    {
-                        Value = model.FirstApplicant.Gender,
-                        Name = "gender"
-                    },
-                    new CustomField
-                    {
-                        Value = model.FirstApplicant.Nationality,
-                        Name = "nationality"
-                    },
-                    new CustomField
-                    {
-                        Value = model.FirstApplicant.Religion,
-                        Name = "religionorfaithgroup"
-                    },
-                    new CustomField
-                    {
-                        Value = model.FirstApplicant.SexualOrientation,
-                        Name = "sexualorientation"
-                    }
-                });
+                completed = completed && UpdateAboutYourselfIsValid(model.SecondApplicant);
+
+                formFields
+                    .AddField("previousname_2", model.SecondApplicant.AnotherName)
+                    .AddField("ethnicity2", model.SecondApplicant.Ethnicity) 
+                    .AddField("gender2", model.SecondApplicant.Gender)
+                    .AddField("nationality2", model.SecondApplicant.Nationality)
+                    .AddField("religionorfaithgroup2", model.SecondApplicant.Religion)
+                    .AddField("sexualorientation2", model.SecondApplicant.SexualOrientation);
             }
 
-            // Call update integration form fields in verint service
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.TellUsAboutYourself),
+                GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+            // Call update integration form fields in verint service call with formFields.Build()
 
             // Log error or warning if http status not 200
+        }
+
+        private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
+        {
+            return !string.IsNullOrEmpty(model.Ethnicity) &&
+                !string.IsNullOrEmpty(model.Gender) &&
+                !string.IsNullOrEmpty(model.Nationality) &&
+                !string.IsNullOrEmpty(model.Religion) &&
+                !string.IsNullOrEmpty(model.SexualOrientation) &&
+                (!model.EverBeenKnownByAnotherName || !string.IsNullOrEmpty(model.AnotherName));
         }
 
         // TODO: Call update integration form fields method
