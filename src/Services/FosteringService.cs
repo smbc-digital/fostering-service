@@ -9,6 +9,7 @@ using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 
 namespace fostering_service.Services
 {
@@ -32,7 +33,7 @@ namespace fostering_service.Services
             }
 
             var integrationFormFields = response.ResponseContent.IntegrationFormFields;
-            var hasSecondApplicant = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value == "Yes" 
+            var hasSecondApplicant = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value == "Yes"
                                      && integrationFormFields.FirstOrDefault(_ => _.Name == "firstname_2")?.Value != null;
 
             var fosteringCase = new FosteringCase
@@ -60,9 +61,22 @@ namespace fostering_service.Services
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender")?.Value ?? string.Empty,
                     SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup")?.Value ?? string.Empty,
-                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty
+                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
+                    CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
+                    JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty
                 }
             };
+
+            if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "employed").Value))
+            {
+                fosteringCase.FirstApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed").Value.ToLower() == "yes";
+            }
+
+            if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value))
+            {
+                fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork) Enum.Parse(typeof(EHoursOfWork),
+                    integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork").Value, true);
+            }
 
             if (hasSecondApplicant)
             {
@@ -77,8 +91,21 @@ namespace fostering_service.Services
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender2")?.Value ?? string.Empty,
                     SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation2")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup2")?.Value ?? string.Empty,
-                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty
+                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth2")?.Value ?? string.Empty,
+                    CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
+                    JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
                 };
+
+                if (!string.IsNullOrWhiteSpace(integrationFormFields.FirstOrDefault(_ => _.Name == "employed2").Value))
+                {
+                    fosteringCase.SecondApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed2").Value.ToLower() == "yes";
+                }
+
+                if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value))
+                {
+                    fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
+                        integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2").Value, true);
+                }
             }
 
             return fosteringCase;
@@ -97,15 +124,13 @@ namespace fostering_service.Services
                 .AddField("religionorfaithgroup", model.FirstApplicant.Religion)
                 .AddField("sexualorientation", model.FirstApplicant.SexualOrientation);
 
-
-
             if (model.SecondApplicant != null)
             {
                 completed = completed && UpdateAboutYourselfIsValid(model.SecondApplicant);
 
                 formFields
                     .AddField("previousname_2", model.SecondApplicant.AnotherName)
-                    .AddField("ethnicity2", model.SecondApplicant.Ethnicity) 
+                    .AddField("ethnicity2", model.SecondApplicant.Ethnicity)
                     .AddField("gender2", model.SecondApplicant.Gender)
                     .AddField("nationality2", model.SecondApplicant.Nationality)
                     .AddField("religionorfaithgroup2", model.SecondApplicant.Religion)
@@ -211,5 +236,7 @@ namespace fostering_service.Services
                     return null;
             }
         }
+
+
     }
 }
