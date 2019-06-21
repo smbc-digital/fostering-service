@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
@@ -148,6 +149,55 @@ namespace fostering_service.Services
         public async Task UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
         {
 
+            var formFields = new FormFieldBuilder();
+            var completed = UpdateAboutEmploymentIsCompleted(model.FirstApplicant);
+
+            if (model.FirstApplicant.AreYouEmployed.Value)
+            {
+                formFields
+                    .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                    .AddField("jobtitle", model.FirstApplicant.JobTitle)
+                    .AddField("currenemployer", model.FirstApplicant.CurrentEmployer)
+                    .AddField("hoursofwork",
+                        Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
+            }
+            else
+            {
+                formFields
+               .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                    .AddField("jobtitle",string.Empty)
+                    .AddField("currenemployer", string.Empty)
+                    .AddField("hoursofwork", 
+                        Enum.GetName(typeof(EHoursOfWork), null));
+            }
+
+            if (model.SecondApplicant != null)
+            {
+
+                completed = UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
+                if (model.FirstApplicant.AreYouEmployed.Value)
+                {
+                    formFields
+                        .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                        .AddField("jobtitle2", model.FirstApplicant.JobTitle)
+                        .AddField("currenemployer2", model.FirstApplicant.CurrentEmployer)
+                        .AddField("hoursofwork2",
+                            Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
+                }
+                else
+                {
+                    formFields
+                        .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                        .AddField("jobtitle2", string.Empty)
+                        .AddField("currenemployer2", string.Empty)
+                        .AddField("hoursofwork2",
+                            Enum.GetName(typeof(EHoursOfWork), null));
+                }
+            }
+
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.YourEmploymentDetails),
+                GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
         }
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
@@ -158,6 +208,24 @@ namespace fostering_service.Services
                 !string.IsNullOrEmpty(model.Religion) &&
                 !string.IsNullOrEmpty(model.SexualOrientation) &&
                 (!model.EverBeenKnownByAnotherName || !string.IsNullOrEmpty(model.AnotherName));
+        }
+
+        private bool UpdateAboutEmploymentIsCompleted(FosteringCaseYourEmploymentDetailsApplicantUpdateModel model)
+        {
+            if (model.AreYouEmployed.Value == false)
+            {
+                return true;
+            }
+
+            if(model.AreYouEmployed.Value  && 
+              !string.IsNullOrEmpty(model.JobTitle) &&
+              !string.IsNullOrEmpty(model.CurrentEmployer) &&
+              Enum.IsDefined(typeof(EHoursOfWork),model.CurrentHoursOfWork))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         // TODO: Call update integration form fields method
