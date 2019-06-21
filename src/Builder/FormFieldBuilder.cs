@@ -5,16 +5,16 @@ namespace fostering_service.Builder
 {
     public class FormFieldBuilder
     {
-        private List<CustomField> _formFields = new List<CustomField>();
+        private List<IntegrationFormField> _formFields = new List<IntegrationFormField>();
 
-        public List<CustomField> Build()
+        public List<IntegrationFormField> Build()
         {
             return _formFields;
         }
 
         public FormFieldBuilder AddField(string name, string value)
         {
-            _formFields.Add(new CustomField{ Name = name, Value = value});
+            _formFields.Add(new IntegrationFormField { FormFieldName = name, FormFieldValue = value});
             return this;
         }
     }

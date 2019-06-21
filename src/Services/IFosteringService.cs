@@ -11,6 +11,6 @@ namespace fostering_service.Services
 
         Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form);
 
-        Task UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model);
+        Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model);
     }
 }

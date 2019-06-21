@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -8,19 +7,19 @@ using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
-using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 
 namespace fostering_service.Services
 {
     public class FosteringService : IFosteringService
     {
         private readonly IVerintServiceGateway _verintServiceGateway;
+        private readonly string _integrationFormName = "Fostering_Home_Visit";
 
         public FosteringService(IVerintServiceGateway verintServiceGateway)
         {
             _verintServiceGateway = verintServiceGateway;
         }
-
 
         public async Task<FosteringCase> GetCase(string caseId)
         {
@@ -32,7 +31,7 @@ namespace fostering_service.Services
             }
 
             var integrationFormFields = response.ResponseContent.IntegrationFormFields;
-            var hasSecondApplicant = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value == "Yes" 
+            var hasSecondApplicant = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value == "Yes"
                                      && integrationFormFields.FirstOrDefault(_ => _.Name == "firstname_2")?.Value != null;
 
             var fosteringCase = new FosteringCase
@@ -53,7 +52,7 @@ namespace fostering_service.Services
                 {
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname").Value,
                     LastName = integrationFormFields.First(_ => _.Name == "surname").Value,
-                    EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname") != null,
+                    EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername")?.Value.ToLower() == "true",
                     AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname")?.Value ?? string.Empty,
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity")?.Value ?? string.Empty,
@@ -64,36 +63,51 @@ namespace fostering_service.Services
                 }
             };
 
+            var hasAnotherNameApplicant1 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername")?.Value;
+            if (!string.IsNullOrEmpty(hasAnotherNameApplicant1))
+            {
+                fosteringCase.FirstApplicant.EverBeenKnownByAnotherName = hasAnotherNameApplicant1.ToLower() == "true";
+            }
+
             if (hasSecondApplicant)
             {
                 fosteringCase.SecondApplicant = new FosteringApplicant
                 {
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname_2").Value,
                     LastName = integrationFormFields.First(_ => _.Name == "surname_2").Value,
-                    EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname_2") != null,
                     AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname_2")?.Value ?? string.Empty,
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality2")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity2")?.Value ?? string.Empty,
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender2")?.Value ?? string.Empty,
                     SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation2")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup2")?.Value ?? string.Empty,
-                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty
+                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty
                 };
+
+                var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
+                if (!string.IsNullOrEmpty(hasAnotherNameApplicant2))
+                {
+                    fosteringCase.SecondApplicant.EverBeenKnownByAnotherName = hasAnotherNameApplicant2.ToLower() == "true";
+                }
             }
 
             return fosteringCase;
         }
 
-        // TODO: add country of birth to models
-        public async Task UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
+        public async Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
             var completed = UpdateAboutYourselfIsValid(model.FirstApplicant);
 
             var formFields = new FormFieldBuilder()
-                .AddField("previousname", model.FirstApplicant.AnotherName)
+                .AddField("previousname", model.FirstApplicant.EverBeenKnownByAnotherName.GetValueOrDefault() ? model.FirstApplicant.AnotherName : "")
+                .AddField("hasanothername",
+                    model.FirstApplicant.EverBeenKnownByAnotherName == null
+                        ? ""
+                        : model.FirstApplicant.EverBeenKnownByAnotherName.ToString().ToLower())
                 .AddField("ethnicity", model.FirstApplicant.Ethnicity)
                 .AddField("gender", model.FirstApplicant.Gender)
                 .AddField("nationality", model.FirstApplicant.Nationality)
+                .AddField("placeofbirth", model.FirstApplicant.PlaceOfBirth)
                 .AddField("religionorfaithgroup", model.FirstApplicant.Religion)
                 .AddField("sexualorientation", model.FirstApplicant.SexualOrientation);
 
@@ -104,9 +118,14 @@ namespace fostering_service.Services
                 completed = completed && UpdateAboutYourselfIsValid(model.SecondApplicant);
 
                 formFields
-                    .AddField("previousname_2", model.SecondApplicant.AnotherName)
-                    .AddField("ethnicity2", model.SecondApplicant.Ethnicity) 
+                    .AddField("previousname_2", model.SecondApplicant.EverBeenKnownByAnotherName.GetValueOrDefault() ? model.SecondApplicant.AnotherName : "")
+                    .AddField("hasanothername2",
+                        model.SecondApplicant.EverBeenKnownByAnotherName == null
+                            ? ""
+                            : model.SecondApplicant.EverBeenKnownByAnotherName.ToString().ToLower())
+                    .AddField("ethnicity2", model.SecondApplicant.Ethnicity)
                     .AddField("gender2", model.SecondApplicant.Gender)
+                    .AddField("placeofbirth_2", model.SecondApplicant.PlaceOfBirth)
                     .AddField("nationality2", model.SecondApplicant.Nationality)
                     .AddField("religionorfaithgroup2", model.SecondApplicant.Religion)
                     .AddField("sexualorientation2", model.SecondApplicant.SexualOrientation);
@@ -115,9 +134,22 @@ namespace fostering_service.Services
             formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.TellUsAboutYourself),
                 GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
 
-            // Call update integration form fields in verint service call with formFields.Build()
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                IntegrationFormName = _integrationFormName,
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build()
+            };
 
-            // Log error or warning if http status not 200
+            var response = await _verintServiceGateway
+                .UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update about-yourself failure");
+            }
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
@@ -127,10 +159,9 @@ namespace fostering_service.Services
                 !string.IsNullOrEmpty(model.Nationality) &&
                 !string.IsNullOrEmpty(model.Religion) &&
                 !string.IsNullOrEmpty(model.SexualOrientation) &&
-                (!model.EverBeenKnownByAnotherName || !string.IsNullOrEmpty(model.AnotherName));
+                (!model.EverBeenKnownByAnotherName.GetValueOrDefault() || !string.IsNullOrEmpty(model.AnotherName));
         }
 
-        // TODO: Call update integration form fields method
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);
@@ -140,19 +171,23 @@ namespace fostering_service.Services
                 throw new NullReferenceException("Status field not found");
             }
 
-            var formFields = new List<CustomField>
+            var formFields = new FormFieldBuilder()
+                .AddField(formStatusFieldName, GetTaskStatus(status));
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
             {
-                new CustomField
-                {
-                    Value = GetTaskStatus(status),
-                    Name = formStatusFieldName
-                }
+                IntegrationFormName = _integrationFormName,
+                CaseReference = caseId,
+                IntegrationFormFields = formFields.Build()
             };
 
-            // Call update integration form fields in verint service
+            var response = await _verintServiceGateway
+                .UpdateCaseIntegrationFormField(updateModel);
 
-            // Log error or warning if http status not 200
-
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Passive update-status failure");
+            }
         }
 
         private ETaskStatus GetTaskStatus(string status)
