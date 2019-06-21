@@ -145,6 +145,11 @@ namespace fostering_service.Services
             // Log error or warning if http status not 200
         }
 
+        public async Task UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
+        {
+
+        }
+
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
@@ -236,7 +241,6 @@ namespace fostering_service.Services
                     return null;
             }
         }
-
 
     }
 }
