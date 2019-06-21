@@ -59,7 +59,9 @@ namespace fostering_service.Services
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender")?.Value ?? string.Empty,
                     SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup")?.Value ?? string.Empty,
-                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty
+                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
+                    CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
+                    JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty
                 }
             };
 
@@ -67,6 +69,17 @@ namespace fostering_service.Services
             if (!string.IsNullOrEmpty(hasAnotherNameApplicant1))
             {
                 fosteringCase.FirstApplicant.EverBeenKnownByAnotherName = hasAnotherNameApplicant1.ToLower() == "true";
+            }
+
+            if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "employed").Value))
+            {
+                fosteringCase.FirstApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed").Value.ToLower() == "yes";
+            }
+
+            if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value))
+            {
+                fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork) Enum.Parse(typeof(EHoursOfWork),
+                    integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork").Value, true);
             }
 
             if (hasSecondApplicant)
@@ -81,13 +94,27 @@ namespace fostering_service.Services
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender2")?.Value ?? string.Empty,
                     SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation2")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup2")?.Value ?? string.Empty,
-                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty
+                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty,
+                    CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
+                    JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
                 if (!string.IsNullOrEmpty(hasAnotherNameApplicant2))
                 {
-                    fosteringCase.SecondApplicant.EverBeenKnownByAnotherName = hasAnotherNameApplicant2.ToLower() == "true";
+                    fosteringCase.SecondApplicant.EverBeenKnownByAnotherName =
+                        hasAnotherNameApplicant2.ToLower() == "true";
+                }
+
+                if (!string.IsNullOrWhiteSpace(integrationFormFields.FirstOrDefault(_ => _.Name == "employed2").Value))
+                {
+                    fosteringCase.SecondApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed2").Value.ToLower() == "yes";
+                }
+
+                if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value))
+                {
+                    fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
+                        integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2").Value, true);
                 }
             }
 
@@ -110,8 +137,6 @@ namespace fostering_service.Services
                 .AddField("placeofbirth", model.FirstApplicant.PlaceOfBirth)
                 .AddField("religionorfaithgroup", model.FirstApplicant.Religion)
                 .AddField("sexualorientation", model.FirstApplicant.SexualOrientation);
-
-
 
             if (model.SecondApplicant != null)
             {
@@ -152,6 +177,60 @@ namespace fostering_service.Services
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
+        public async Task UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
+        {
+
+            var formFields = new FormFieldBuilder();
+            var completed = UpdateAboutEmploymentIsCompleted(model.FirstApplicant);
+
+            if (model.FirstApplicant.AreYouEmployed.Value)
+            {
+                formFields
+                    .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                    .AddField("jobtitle", model.FirstApplicant.JobTitle)
+                    .AddField("currenemployer", model.FirstApplicant.CurrentEmployer)
+                    .AddField("hoursofwork",
+                        Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
+            }
+            else
+            {
+                formFields
+               .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                    .AddField("jobtitle",string.Empty)
+                    .AddField("currenemployer", string.Empty)
+                    .AddField("hoursofwork", 
+                        Enum.GetName(typeof(EHoursOfWork), null));
+            }
+
+            if (model.SecondApplicant != null)
+            {
+
+                completed = UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
+                if (model.FirstApplicant.AreYouEmployed.Value)
+                {
+                    formFields
+                        .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                        .AddField("jobtitle2", model.FirstApplicant.JobTitle)
+                        .AddField("currenemployer2", model.FirstApplicant.CurrentEmployer)
+                        .AddField("hoursofwork2",
+                            Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
+                }
+                else
+                {
+                    formFields
+                        .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                        .AddField("jobtitle2", string.Empty)
+                        .AddField("currenemployer2", string.Empty)
+                        .AddField("hoursofwork2",
+                            Enum.GetName(typeof(EHoursOfWork), null));
+                }
+            }
+
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.YourEmploymentDetails),
+                GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+        }
+
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
@@ -162,6 +241,25 @@ namespace fostering_service.Services
                 (!model.EverBeenKnownByAnotherName.GetValueOrDefault() || !string.IsNullOrEmpty(model.AnotherName));
         }
 
+        private bool UpdateAboutEmploymentIsCompleted(FosteringCaseYourEmploymentDetailsApplicantUpdateModel model)
+        {
+            if (model.AreYouEmployed.Value == false)
+            {
+                return true;
+            }
+
+            if(model.AreYouEmployed.Value  && 
+              !string.IsNullOrEmpty(model.JobTitle) &&
+              !string.IsNullOrEmpty(model.CurrentEmployer) &&
+              Enum.IsDefined(typeof(EHoursOfWork),model.CurrentHoursOfWork))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        // TODO: Call update integration form fields method
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);
@@ -246,5 +344,6 @@ namespace fostering_service.Services
                     return null;
             }
         }
+
     }
 }

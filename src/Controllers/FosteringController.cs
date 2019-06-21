@@ -50,6 +50,22 @@ namespace fostering_service.Controllers
             }
         }
 
+        [Route("your-employment-details")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
+        {
+            try
+            {
+                await _fosteringService.UpdateYourEmploymentDetails(model);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
         [Route("update-form-status")]
         [HttpPatch]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)

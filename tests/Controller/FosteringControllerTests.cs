@@ -119,5 +119,30 @@ namespace fostering_service_tests.Controller
             Assert.Equal(500, resultType.StatusCode);
         }
 
+        [Fact]
+        public async Task UpdateYourEmploymentDetails_ShouldReturn200()
+        {
+            // Act
+            var result = await _controller.UpdateYourEmploymentDetails(new FosteringCaseYourEmploymentDetailsUpdateModel());
+
+            // Assert
+           Assert.IsType<OkResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateYourEmploymentDetails_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateAboutYourself(It.IsAny<FosteringCaseAboutYourselfUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.UpdateAboutYourself(new FosteringCaseAboutYourselfUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
     }
 }
