@@ -258,16 +258,10 @@ namespace fostering_service.Services
 
             return false;
         }
-
-        // TODO: Call update integration form fields method
+        
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);
-
-            if (formStatusFieldName == null)
-            {
-                throw new NullReferenceException("Status field not found");
-            }
 
             var formFields = new FormFieldBuilder()
                 .AddField(formStatusFieldName, GetTaskStatus(status));
