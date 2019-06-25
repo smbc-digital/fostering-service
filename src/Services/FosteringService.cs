@@ -52,7 +52,6 @@ namespace fostering_service.Services
                 {
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname").Value,
                     LastName = integrationFormFields.First(_ => _.Name == "surname").Value,
-                    EverBeenKnownByAnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername")?.Value.ToLower() == "true",
                     AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname")?.Value ?? string.Empty,
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity")?.Value ?? string.Empty,
@@ -71,15 +70,15 @@ namespace fostering_service.Services
                 fosteringCase.FirstApplicant.EverBeenKnownByAnotherName = hasAnotherNameApplicant1.ToLower() == "true";
             }
 
-            if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "employed").Value))
+            if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "employed")?.Value))
             {
-                fosteringCase.FirstApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed").Value.ToLower() == "yes";
+                fosteringCase.FirstApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed")?.Value.ToLower() == "yes";
             }
 
             if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value))
             {
                 fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork) Enum.Parse(typeof(EHoursOfWork),
-                    integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork").Value, true);
+                    integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value, true);
             }
 
             if (hasSecondApplicant)
@@ -106,15 +105,15 @@ namespace fostering_service.Services
                         hasAnotherNameApplicant2.ToLower() == "true";
                 }
 
-                if (!string.IsNullOrWhiteSpace(integrationFormFields.FirstOrDefault(_ => _.Name == "employed2").Value))
+                if (!string.IsNullOrWhiteSpace(integrationFormFields.FirstOrDefault(_ => _.Name == "employed2")?.Value))
                 {
-                    fosteringCase.SecondApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed2").Value.ToLower() == "yes";
+                    fosteringCase.SecondApplicant.AreYouEmployed = integrationFormFields.FirstOrDefault(_ => _.Name == "employed2")?.Value.ToLower() == "yes";
                 }
 
                 if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value))
                 {
                     fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
-                        integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2").Value, true);
+                        integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value, true);
                 }
             }
 

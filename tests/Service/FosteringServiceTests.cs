@@ -150,6 +150,7 @@ namespace fostering_service_tests.Service
                 .WithIntegrationFormField("previousname", "Previous name")
                 .WithIntegrationFormField("surname", "Last Name")
                 .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("hasanothername", "True")
                 .Build();
 
             _verintServiceGatewayMock
@@ -199,6 +200,7 @@ namespace fostering_service_tests.Service
                             .WithIntegrationFormField("gender2", "Gender")
                             .WithIntegrationFormField("sexualorientation2", "Sexual orientation")
                             .WithIntegrationFormField("religionorfaithgroup2", "Religion")
+                            .WithIntegrationFormField("hasanothername2", "True")
                             .Build();
 
             _verintServiceGatewayMock

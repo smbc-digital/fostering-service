@@ -100,7 +100,7 @@ namespace fostering_service_tests.Controller
             var result = await _controller.UpdateAboutYourself(new FosteringCaseAboutYourselfUpdateModel());
 
             // Assert
-            Assert.IsType<OkResult>(result);
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
