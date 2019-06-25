@@ -88,5 +88,26 @@ namespace fostering_service.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [Route("partnership-status")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdatePartnershipStatus(FosteringCasePartnershipStatusUpdateModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return StatusCode(400, ModelState);
+            }
+
+            try
+            {
+                var response = await _fosteringService.UpdatePartnershipStatus(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 }

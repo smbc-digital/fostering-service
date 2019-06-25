@@ -258,6 +258,37 @@ namespace fostering_service_tests.Service
         }
 
         [Fact]
+        public async Task GetCase_ShouldMapMarriageStatus()
+        {
+            // Arrange
+
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithIntegrationFormField("marriedorinacivilpartnership", "Yes")
+                .WithIntegrationFormField("dateofreg", "26/06/2019")
+                .WithIntegrationFormField("datesetuphousehold", "26/06/2019")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.True(result.MarriedOrInACivilPartnership);
+            Assert.Equal(DateTime.Parse("26/06/2019"), result.DateOfMarriage);
+            Assert.Equal(DateTime.Parse("26/06/2019"), result.DateMovedInTogether);
+
+        }
+
+        [Fact]
         public async Task UpdateStatus_ShouldCallVerintServiceGateway()
         {
             // Arrange
@@ -554,6 +585,164 @@ namespace fostering_service_tests.Service
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "hasanothername2" && match.FormFieldValue == expectedAnotherName)
             )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldCallVerintService()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test"
+            };
+
+            // Act
+            await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldCreateIntegratedFormFields()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test",
+                DateMovedInTogether = DateTime.Parse("01/09/1996"),
+                DateOfMarriage = DateTime.Parse("01/09/1997"),
+                MarriedOrInACivilPartnership = true
+            };
+
+            // Act
+            await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.CaseReference == "test"
+            )), Times.Once);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "datesetuphousehold" && field.FormFieldValue == "01/09/1996")
+                )), Times.Once);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "dateofreg" && field.FormFieldValue == "01/09/1997")
+            )), Times.Once);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "marriedorinacivilpartnership" && field.FormFieldValue == "Yes")
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldCreateEmptyIntegratedFormFields()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test",
+                DateMovedInTogether = null,
+                DateOfMarriage = null,
+                MarriedOrInACivilPartnership = null
+            };
+
+            // Act
+            await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.CaseReference == "test"
+            )), Times.Once);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "datesetuphousehold" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "dateofreg" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "marriedorinacivilpartnership" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldReturnNotCompleted_WhenMarried()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test",
+                DateMovedInTogether = null,
+                DateOfMarriage = null,
+                MarriedOrInACivilPartnership = true
+            };
+
+            // Act
+            var result = await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldReturnCompleted_WhenMarried()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test",
+                DateMovedInTogether = null,
+                DateOfMarriage = DateTime.Parse("26/06/2019"),
+                MarriedOrInACivilPartnership = true
+            };
+
+            // Act
+            var result = await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.Completed, result);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldReturnCompleted_WhenNotMarried()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test",
+                DateMovedInTogether = DateTime.Parse("26/06/2019"),
+                DateOfMarriage = null,
+                MarriedOrInACivilPartnership = false
+            };
+
+            // Act
+            var result = await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.Completed, result);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldReturnNotCompleted_WhenNotMarried()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test",
+                DateMovedInTogether = null,
+                DateOfMarriage = null,
+                MarriedOrInACivilPartnership = false
+            };
+
+            // Act
+            var result = await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.NotCompleted, result);
         }
     }
 }
