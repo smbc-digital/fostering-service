@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using fostering_service.Builder;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
@@ -318,6 +319,50 @@ namespace fostering_service.Services
                             (model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateMovedInTogether != null);
 
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
+        public async Task<ETaskStatus> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder();
+            var previouslyApplied = string.Empty;
+            var isCompleted = false;
+
+            if (model.FirstApplicant.PreviouslyApplied != null)
+            {
+                previouslyApplied = model.FirstApplicant.PreviouslyApplied.GetValueOrDefault() ? "Yes" : "No";
+                isCompleted = true;
+            }
+
+            formFields.AddField("previouslyappliedapplicant1", previouslyApplied);
+
+            if (model.SecondApplicant != null)
+            {
+                if (model.SecondApplicant.PreviouslyApplied != null)
+                {
+                    previouslyApplied = model.SecondApplicant.PreviouslyApplied.GetValueOrDefault() ? "Yes" : "No";
+                }
+                else
+                {
+                    isCompleted = false;
+                }
+
+                formFields.AddField("previouslyappliedapplicant2", previouslyApplied);
+            }
+
+            var currentStatus = isCompleted
+                                ? ETaskStatus.Completed
+                                : ETaskStatus.NotCompleted;
+
+            var builtfields = formFields.AddField("yourfosteringhistorystatus", Enum.GetName(typeof(ETaskStatus),currentStatus)).Build();
+
+            await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = builtfields,
+                IntegrationFormName = _integrationFormName
+            });
+
+            return currentStatus;
         }
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)

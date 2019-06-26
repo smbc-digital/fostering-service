@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Services;
+using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 
 namespace fostering_service.Controllers
@@ -105,6 +106,22 @@ namespace fostering_service.Controllers
             try
             {
                 var response = await _fosteringService.UpdatePartnershipStatus(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [Route("your-fostering-history")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateYourFosteringHistory(model);
 
                 return Ok(response);
             }

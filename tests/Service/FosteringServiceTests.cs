@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using Moq;
 using StockportGovUK.AspNetCore.Gateways.Response;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
@@ -213,7 +213,7 @@ namespace fostering_service_tests.Service
 
             // Act 
             var result = await _service.GetCase("1234");
-        
+
             // Assert
             Assert.NotNull(result.FirstApplicant);
             Assert.NotNull(result.SecondApplicant);
@@ -515,19 +515,19 @@ namespace fostering_service_tests.Service
             // Assert
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "tellusaboutyourselfstatus" && match.FormFieldValue == "Completed") 
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "tellusaboutyourselfstatus" && match.FormFieldValue == "Completed")
            )), Times.Once);
             _verintServiceGatewayMock
-                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel => 
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "previousname" && match.FormFieldValue == "") 
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "previousname" && match.FormFieldValue == "")
             )), Times.Once);
             _verintServiceGatewayMock
-                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel => 
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "ethnicity" && match.FormFieldValue == model.FirstApplicant.Ethnicity)
             )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "gender" && match.FormFieldValue == model.FirstApplicant.Gender) 
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "gender" && match.FormFieldValue == model.FirstApplicant.Gender)
             )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
@@ -555,7 +555,7 @@ namespace fostering_service_tests.Service
         [InlineData(false, "false")]
         [InlineData(null, "")]
         public async Task UpdateAboutYourself_ShouldMapSecondApplicant(bool? hasAnotherName, string expectedAnotherName)
-        { 
+        {
             // Arrange
             _verintServiceGatewayMock
                 .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
@@ -913,6 +913,97 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
+        [Theory]
+        [InlineData(true, "Yes")]
+        [InlineData(false, "No")]
+        public async Task UpdateYourFosteringHistory_ShouldAddFormFieldsForFirstApplicant(bool previouslyAppliedValue, string expectedFormValue)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseYourFosteringHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseYourFosteringHistoryApplicationUpdateModel
+                {
+                    PreviouslyApplied = previouslyAppliedValue
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            await _service.UpdateYourFosteringHistory(model);
+
+            // Assert
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "previouslyappliedapplicant1" && _.FormFieldValue == expectedFormValue);
+        }
+
+        [Theory]
+        [InlineData(true, "Yes")]
+        [InlineData(false, "No")]
+        public async Task UpdateYourFosteringHistory_ShouldAddFormFieldsForBothApplicants(bool previouslyAppliedValue, string expectedFormValue)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseYourFosteringHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseYourFosteringHistoryApplicationUpdateModel
+                {
+                    PreviouslyApplied = previouslyAppliedValue
+                },
+                SecondApplicant = new FosteringCaseYourFosteringHistoryApplicationUpdateModel
+                {
+                    PreviouslyApplied = previouslyAppliedValue
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            await _service.UpdateYourFosteringHistory(model);
+
+            // Assert
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "previouslyappliedapplicant1" && _.FormFieldValue == expectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "previouslyappliedapplicant2" && _.FormFieldValue == expectedFormValue);
+        }
+
+        [Theory]
+        [InlineData(ETaskStatus.NotCompleted, null)]
+        [InlineData(ETaskStatus.Completed, true)]
+        [InlineData(ETaskStatus.Completed, false)]
+        public async Task UpdateYourFosteringHistory_ShouldCorrectlyAddFormStatus(ETaskStatus expectedETaskStatus, bool? previouslyApplied)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseYourFosteringHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseYourFosteringHistoryApplicationUpdateModel
+                {
+                    PreviouslyApplied = previouslyApplied
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            var result = await _service.UpdateYourFosteringHistory(model);
+
+            // Assert
+            Assert.Equal(expectedETaskStatus, result);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "yourfosteringhistorystatus" && _.FormFieldValue == expectedETaskStatus.ToString());
         }
     }
 }

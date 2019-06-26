@@ -5,6 +5,7 @@ using fostering_service.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using Xunit;
@@ -192,6 +193,32 @@ namespace fostering_service_tests.Controller
 
             // Act
             var result = await _controller.UpdatePartnershipStatus(new FosteringCasePartnershipStatusUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateYourFosteringHistory_ShouldReturn200()
+        {
+            // Act
+            var result = await _controller.UpdateYourFosteringHistory(new FosteringCaseYourFosteringHistoryUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateYourFosteringHistory_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateYourFosteringHistory(It.IsAny<FosteringCaseYourFosteringHistoryUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.UpdateYourFosteringHistory(new FosteringCaseYourFosteringHistoryUpdateModel());
 
             // Assert
             var resultType = Assert.IsType<ObjectResult>(result);
