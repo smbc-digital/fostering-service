@@ -66,12 +66,21 @@ namespace fostering_service.Controllers
             }
         }
 
-        //[Route("languages-spoken-in-your-home")]
-        //[HttpPatch]
-        //public async Task<IActionResult> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
-        //{
+        [Route("languages-spoken-in-your-home")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateLanguagesSpokenInYourHome(model);
 
-        //}
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
 
         [Route("update-form-status")]
         [HttpPatch]

@@ -641,6 +641,31 @@ namespace fostering_service_tests.Service
         }
 
         [Fact]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldCallVerintServiceGateway()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseLanguagesSpokenInYourHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                PrimaryLanguage = "English",
+                OtherLanguagesSpoken = "Dutch"
+            };
+
+            // Act
+            await _service.UpdateLanguagesSpokenInYourHome(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
         public async Task UpdatePartnershipStatus_ShouldCallVerintService()
         {
             // Arrange
@@ -654,6 +679,98 @@ namespace fostering_service_tests.Service
 
             // Assert
             _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldThrowError()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadGateway
+                });
+
+            var model = new FosteringCaseLanguagesSpokenInYourHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                PrimaryLanguage = "English",
+                OtherLanguagesSpoken = "Dutch"
+            };
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateLanguagesSpokenInYourHome(model));
+        }
+
+        [Theory]
+        [InlineData(null, ETaskStatus.NotCompleted)]
+        [InlineData("English", ETaskStatus.Completed)]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldReturnETaskStatus(string primaryLanguage, ETaskStatus expectedStatus)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseLanguagesSpokenInYourHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                PrimaryLanguage = primaryLanguage,
+                OtherLanguagesSpoken = "Dutch"
+            };
+
+            // Act
+            var result = await _service.UpdateLanguagesSpokenInYourHome(model);
+
+            // Assert
+            Assert.Equal(expectedStatus, result);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "languagespokeninyourhomestatus" && match.FormFieldValue == expectedStatus.ToString())
+                )), Times.Once);
+        }
+
+        [Theory]
+        [InlineData("English", "Dutch")]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldMapToIntegratedFormFields(string primaryLanguage, string otherLanguages)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            var model = new FosteringCaseLanguagesSpokenInYourHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                PrimaryLanguage = primaryLanguage,
+                OtherLanguagesSpoken = otherLanguages
+            };
+
+            // Act
+            await _service.UpdateLanguagesSpokenInYourHome(model);
+
+            // Assert
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "languagespokeninyourhomestatus" && match.FormFieldValue == "Completed")
+           )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "primarylanguage" && match.FormFieldValue == "English")
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "otherlanguages" && match.FormFieldValue == "Dutch")
+            )), Times.Once);
         }
 
         [Fact]

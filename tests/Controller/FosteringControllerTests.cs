@@ -146,6 +146,16 @@ namespace fostering_service_tests.Controller
         }
 
         [Fact]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldReturn200()
+        {
+            // Act
+            var result = await _controller.UpdateLanguagesSpokenInYourHome(new FosteringCaseLanguagesSpokenInYourHomeUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
         public async Task UpdatePartnershipSatus_ShouldReturn200()
         {
             // Act
@@ -153,6 +163,23 @@ namespace fostering_service_tests.Controller
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateLanguagesSpokenInYourHome(It.IsAny<FosteringCaseLanguagesSpokenInYourHomeUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result =
+                await _controller.UpdateLanguagesSpokenInYourHome(new FosteringCaseLanguagesSpokenInYourHomeUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
         }
 
         [Fact]
