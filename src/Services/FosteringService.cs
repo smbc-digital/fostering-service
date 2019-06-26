@@ -230,6 +230,36 @@ namespace fostering_service.Services
 
         }
 
+        public async Task<ETaskStatus> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder();
+            var completed = UpdateLanguagesSpokenInYourHomeIsValid(model);
+
+            formFields
+                .AddField("primarylanguage", model.PrimaryLanguage)
+                .AddField("otherlanguages", model.OtherLanguagesSpoken);
+
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.LanguageSpokenInYourHome),
+                GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                IntegrationFormName = _integrationFormName,
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build()
+            };
+
+            var response = await _verintServiceGateway
+                .UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update language-spoken-in-your-home failure");
+            }
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
@@ -257,7 +287,12 @@ namespace fostering_service.Services
 
             return false;
         }
-        
+
+        private bool UpdateLanguagesSpokenInYourHomeIsValid(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
+        {
+            return !string.IsNullOrEmpty(model.PrimaryLanguage) && !string.IsNullOrEmpty(model.OtherLanguagesSpoken);
+        }
+
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);

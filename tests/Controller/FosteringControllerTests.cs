@@ -144,5 +144,33 @@ namespace fostering_service_tests.Controller
             var resultType = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, resultType.StatusCode);
         }
+
+        [Fact]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldReturn200()
+        {
+            // Act
+            var result =
+                await _controller.UpdateLanguagesSpokenInYourHome(new FosteringCaseLanguagesSpokenInYourHomeUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateLanguagesSpokenInYourHome_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateLanguagesSpokenInYourHome(It.IsAny<FosteringCaseLanguagesSpokenInYourHomeUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result =
+                await _controller.UpdateLanguagesSpokenInYourHome(new FosteringCaseLanguagesSpokenInYourHomeUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
     }
 }

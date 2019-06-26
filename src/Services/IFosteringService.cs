@@ -14,5 +14,7 @@ namespace fostering_service.Services
         Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model);
 
         Task UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model);
+
+        Task<ETaskStatus> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model);
     }
 }
