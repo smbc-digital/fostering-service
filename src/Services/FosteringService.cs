@@ -287,10 +287,21 @@ namespace fostering_service.Services
                 marriedOrInACivilPartnership = model.MarriedOrInACivilPartnership.GetValueOrDefault() ? "Yes" : "No";
             }
 
+            var completed = model.MarriedOrInACivilPartnership != null &&
+                            (!model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateOfMarriage != null) &&
+                            (model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateMovedInTogether != null);
+
             var formFields = new FormFieldBuilder()
-                .AddField("datesetuphousehold", model.DateMovedInTogether == null ? string.Empty : model.DateMovedInTogether.GetValueOrDefault().ToString("dd/MM/yyyy"))
-                .AddField("dateofreg", model.DateOfMarriage == null ? string.Empty : model.DateOfMarriage.GetValueOrDefault().ToString("dd/MM/yyyy"))
+                .AddField("datesetuphousehold",
+                    model.DateMovedInTogether == null
+                        ? string.Empty
+                        : model.DateMovedInTogether.GetValueOrDefault().ToString("dd/MM/yyyy"))
+                .AddField("dateofreg",
+                    model.DateOfMarriage == null
+                        ? string.Empty
+                        : model.DateOfMarriage.GetValueOrDefault().ToString("dd/MM/yyyy"))
                 .AddField("marriedorinacivilpartnership", marriedOrInACivilPartnership)
+                .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourPartnership), GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted))
                 .Build();
 
 
@@ -300,10 +311,6 @@ namespace fostering_service.Services
                 IntegrationFormFields = formFields,
                 IntegrationFormName = _integrationFormName
             });
-
-            var completed = model.MarriedOrInACivilPartnership != null &&
-                            (!model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateOfMarriage != null) &&
-                            (model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateMovedInTogether != null);
 
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
