@@ -144,5 +144,31 @@ namespace fostering_service_tests.Controller
             var resultType = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, resultType.StatusCode);
         }
+
+        [Fact]
+        public async Task UpdatePartnershipSatus_ShouldReturn200()
+        {
+            // Act
+            var result = await _controller.UpdatePartnershipStatus(new FosteringCasePartnershipStatusUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdatePartnershipStatus(It.IsAny<FosteringCasePartnershipStatusUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.UpdatePartnershipStatus(new FosteringCasePartnershipStatusUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
     }
 }

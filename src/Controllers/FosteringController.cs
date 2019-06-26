@@ -93,11 +93,6 @@ namespace fostering_service.Controllers
         [HttpPatch]
         public async Task<IActionResult> UpdatePartnershipStatus(FosteringCasePartnershipStatusUpdateModel model)
         {
-            if (ModelState.IsValid)
-            {
-                return StatusCode(400, ModelState);
-            }
-
             try
             {
                 var response = await _fosteringService.UpdatePartnershipStatus(model);
