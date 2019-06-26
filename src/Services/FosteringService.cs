@@ -64,6 +64,24 @@ namespace fostering_service.Services
                 }
             };
 
+            var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
+            if (!string.IsNullOrEmpty(marriedOrInACivilPartnership))
+            {
+                fosteringCase.MarriedOrInACivilPartnership = marriedOrInACivilPartnership.ToLower() == "yes";
+            }
+
+            var marriageDate = integrationFormFields.FirstOrDefault(_ => _.Name == "dateofreg")?.Value;
+            if (!string.IsNullOrEmpty(marriageDate))
+            {
+                fosteringCase.DateOfMarriage = DateTime.Parse(marriageDate);
+            }
+
+            var movedInTogetherDate = integrationFormFields.FirstOrDefault(_ => _.Name == "datesetuphousehold")?.Value;
+            if (!string.IsNullOrEmpty(movedInTogetherDate))
+            {
+                fosteringCase.DateMovedInTogether = DateTime.Parse(movedInTogetherDate);
+            }
+
             var hasAnotherNameApplicant1 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername")?.Value;
             if (!string.IsNullOrEmpty(hasAnotherNameApplicant1))
             {
@@ -77,7 +95,7 @@ namespace fostering_service.Services
 
             if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value))
             {
-                fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork) Enum.Parse(typeof(EHoursOfWork),
+                fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
                     integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value, true);
             }
 
@@ -195,9 +213,9 @@ namespace fostering_service.Services
             {
                 formFields
                .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
-                    .AddField("jobtitle",string.Empty)
+                    .AddField("jobtitle", string.Empty)
                     .AddField("currenemployer", string.Empty)
-                    .AddField("hoursofwork", 
+                    .AddField("hoursofwork",
                         Enum.GetName(typeof(EHoursOfWork), null));
             }
 
@@ -260,6 +278,36 @@ namespace fostering_service.Services
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
+        public async Task<ETaskStatus> UpdatePartnershipStatus(FosteringCasePartnershipStatusUpdateModel model)
+        {
+            var marriedOrInACivilPartnership = string.Empty;
+
+            if (model.MarriedOrInACivilPartnership != null)
+            {
+                marriedOrInACivilPartnership = model.MarriedOrInACivilPartnership.GetValueOrDefault() ? "Yes" : "No";
+            }
+
+            var formFields = new FormFieldBuilder()
+                .AddField("datesetuphousehold", model.DateMovedInTogether == null ? string.Empty : model.DateMovedInTogether.GetValueOrDefault().ToString("dd/MM/yyyy"))
+                .AddField("dateofreg", model.DateOfMarriage == null ? string.Empty : model.DateOfMarriage.GetValueOrDefault().ToString("dd/MM/yyyy"))
+                .AddField("marriedorinacivilpartnership", marriedOrInACivilPartnership)
+                .Build();
+
+
+            await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields,
+                IntegrationFormName = _integrationFormName
+            });
+
+            var completed = model.MarriedOrInACivilPartnership != null &&
+                            (!model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateOfMarriage != null) &&
+                            (model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateMovedInTogether != null);
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
@@ -277,10 +325,10 @@ namespace fostering_service.Services
                 return true;
             }
 
-            if(model.AreYouEmployed.Value  && 
+            if (model.AreYouEmployed.Value &&
               !string.IsNullOrEmpty(model.JobTitle) &&
               !string.IsNullOrEmpty(model.CurrentEmployer) &&
-              Enum.IsDefined(typeof(EHoursOfWork),model.CurrentHoursOfWork))
+              Enum.IsDefined(typeof(EHoursOfWork), model.CurrentHoursOfWork))
             {
                 return true;
             }
