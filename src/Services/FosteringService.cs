@@ -99,6 +99,12 @@ namespace fostering_service.Services
                     integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value, true);
             }
 
+            var hasPreviouslyApplied = integrationFormFields.FirstOrDefault(_ => _.Name == "previouslyappliedapplicant1")?.Value;
+            if (!string.IsNullOrWhiteSpace(hasPreviouslyApplied))
+            {
+                fosteringCase.FirstApplicant.PreviouslyApplied = hasPreviouslyApplied.ToLower() == "yes";
+            }
+
             if (hasSecondApplicant)
             {
                 fosteringCase.SecondApplicant = new FosteringApplicant
@@ -130,8 +136,14 @@ namespace fostering_service.Services
 
                 if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value))
                 {
-                    fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
+                    fosteringCase.SecondApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
                         integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value, true);
+                }
+
+                var hasPreviouslyAppliedApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "previouslyappliedapplicant2")?.Value;
+                if (!string.IsNullOrWhiteSpace(hasPreviouslyAppliedApplicant2))
+                {
+                    fosteringCase.SecondApplicant.PreviouslyApplied = hasPreviouslyAppliedApplicant2.ToLower() == "yes";
                 }
             }
 

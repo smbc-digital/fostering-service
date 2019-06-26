@@ -261,7 +261,6 @@ namespace fostering_service_tests.Service
         public async Task GetCase_ShouldMapMarriageStatus()
         {
             // Arrange
-
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("firstname", "First name")
                 .WithIntegrationFormField("surname", "Surname")
@@ -285,7 +284,61 @@ namespace fostering_service_tests.Service
             Assert.True(result.MarriedOrInACivilPartnership);
             Assert.Equal(DateTime.Parse("26/06/2019"), result.DateOfMarriage);
             Assert.Equal(DateTime.Parse("26/06/2019"), result.DateMovedInTogether);
+        }
 
+        [Fact]
+        public async Task GetCase_ShouldMapPreviouslyApplied()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithIntegrationFormField("previouslyappliedapplicant1", "yes")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.True(result.FirstApplicant.PreviouslyApplied);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldMapPreviouslyApplied_ForBothApplicants()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithIntegrationFormField("withpartner", "Yes")
+                .WithIntegrationFormField("firstname_2", "First name")
+                .WithIntegrationFormField("surname_2", "Surname")
+                .WithIntegrationFormField("previouslyappliedapplicant1", "yes")
+                .WithIntegrationFormField("previouslyappliedapplicant2", "no")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.True(result.FirstApplicant.PreviouslyApplied);
+            Assert.False(result.SecondApplicant.PreviouslyApplied);
         }
 
         [Fact]
