@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using fostering_service.Builder;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
@@ -64,6 +65,24 @@ namespace fostering_service.Services
                 }
             };
 
+            var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
+            if (!string.IsNullOrEmpty(marriedOrInACivilPartnership))
+            {
+                fosteringCase.MarriedOrInACivilPartnership = marriedOrInACivilPartnership.ToLower() == "yes";
+            }
+
+            var marriageDate = integrationFormFields.FirstOrDefault(_ => _.Name == "dateofreg")?.Value;
+            if (!string.IsNullOrEmpty(marriageDate))
+            {
+                fosteringCase.DateOfMarriage = DateTime.Parse(marriageDate);
+            }
+
+            var movedInTogetherDate = integrationFormFields.FirstOrDefault(_ => _.Name == "datesetuphousehold")?.Value;
+            if (!string.IsNullOrEmpty(movedInTogetherDate))
+            {
+                fosteringCase.DateMovedInTogether = DateTime.Parse(movedInTogetherDate);
+            }
+
             var hasAnotherNameApplicant1 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername")?.Value;
             if (!string.IsNullOrEmpty(hasAnotherNameApplicant1))
             {
@@ -77,8 +96,14 @@ namespace fostering_service.Services
 
             if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value))
             {
-                fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork) Enum.Parse(typeof(EHoursOfWork),
+                fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
                     integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork")?.Value, true);
+            }
+
+            var hasPreviouslyApplied = integrationFormFields.FirstOrDefault(_ => _.Name == "previouslyappliedapplicant1")?.Value;
+            if (!string.IsNullOrWhiteSpace(hasPreviouslyApplied))
+            {
+                fosteringCase.FirstApplicant.PreviouslyApplied = hasPreviouslyApplied.ToLower() == "yes";
             }
 
             if (hasSecondApplicant)
@@ -112,8 +137,14 @@ namespace fostering_service.Services
 
                 if (!string.IsNullOrEmpty(integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value))
                 {
-                    fosteringCase.FirstApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
+                    fosteringCase.SecondApplicant.CurrentHoursOfWork = (EHoursOfWork)Enum.Parse(typeof(EHoursOfWork),
                         integrationFormFields.FirstOrDefault(_ => _.Name == "hoursofwork2")?.Value, true);
+                }
+
+                var hasPreviouslyAppliedApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "previouslyappliedapplicant2")?.Value;
+                if (!string.IsNullOrWhiteSpace(hasPreviouslyAppliedApplicant2))
+                {
+                    fosteringCase.SecondApplicant.PreviouslyApplied = hasPreviouslyAppliedApplicant2.ToLower() == "yes";
                 }
             }
 
@@ -195,9 +226,9 @@ namespace fostering_service.Services
             {
                 formFields
                .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
-                    .AddField("jobtitle",string.Empty)
+                    .AddField("jobtitle", string.Empty)
                     .AddField("currenemployer", string.Empty)
-                    .AddField("hoursofwork", 
+                    .AddField("hoursofwork",
                         Enum.GetName(typeof(EHoursOfWork), null));
             }
 
@@ -230,6 +261,117 @@ namespace fostering_service.Services
 
         }
 
+        public async Task<ETaskStatus> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder();
+            var completed = UpdateLanguagesSpokenInYourHomeIsValid(model);
+
+            formFields
+                .AddField("primarylanguage", model.PrimaryLanguage)
+                .AddField("otherlanguages", model.OtherLanguagesSpoken);
+
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.LanguageSpokenInYourHome),
+                GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                IntegrationFormName = _integrationFormName,
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build()
+            };
+
+            var response = await _verintServiceGateway
+                .UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update language-spoken-in-your-home failure");
+            }
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
+        public async Task<ETaskStatus> UpdatePartnershipStatus(FosteringCasePartnershipStatusUpdateModel model)
+        {
+            var marriedOrInACivilPartnership = string.Empty;
+
+            if (model.MarriedOrInACivilPartnership != null)
+            {
+                marriedOrInACivilPartnership = model.MarriedOrInACivilPartnership.GetValueOrDefault() ? "Yes" : "No";
+            }
+
+            var completed = model.MarriedOrInACivilPartnership != null &&
+                            (!model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateOfMarriage != null) &&
+                            (model.MarriedOrInACivilPartnership.GetValueOrDefault() || model.DateMovedInTogether != null);
+
+            var formFields = new FormFieldBuilder()
+                .AddField("datesetuphousehold",
+                    model.DateMovedInTogether == null
+                        ? string.Empty
+                        : model.DateMovedInTogether.GetValueOrDefault().ToString("dd/MM/yyyy"))
+                .AddField("dateofreg",
+                    model.DateOfMarriage == null
+                        ? string.Empty
+                        : model.DateOfMarriage.GetValueOrDefault().ToString("dd/MM/yyyy"))
+                .AddField("marriedorinacivilpartnership", marriedOrInACivilPartnership)
+                .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourPartnership), GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted))
+                .Build();
+
+
+            await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields,
+                IntegrationFormName = _integrationFormName
+            });
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
+        public async Task<ETaskStatus> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder();
+            var previouslyApplied = string.Empty;
+            var isCompleted = false;
+
+            if (model.FirstApplicant.PreviouslyApplied != null)
+            {
+                previouslyApplied = model.FirstApplicant.PreviouslyApplied.GetValueOrDefault() ? "Yes" : "No";
+                isCompleted = true;
+            }
+
+            formFields.AddField("previouslyappliedapplicant1", previouslyApplied);
+
+            if (model.SecondApplicant != null)
+            {
+                if (model.SecondApplicant.PreviouslyApplied != null)
+                {
+                    previouslyApplied = model.SecondApplicant.PreviouslyApplied.GetValueOrDefault() ? "Yes" : "No";
+                }
+                else
+                {
+                    isCompleted = false;
+                }
+
+                formFields.AddField("previouslyappliedapplicant2", previouslyApplied);
+            }
+
+            var currentStatus = isCompleted
+                                ? ETaskStatus.Completed
+                                : ETaskStatus.NotCompleted;
+
+            var builtfields = formFields.AddField("yourfosteringhistorystatus", Enum.GetName(typeof(ETaskStatus),currentStatus)).Build();
+
+            await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = builtfields,
+                IntegrationFormName = _integrationFormName
+            });
+
+            return currentStatus;
+        }
+
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
@@ -247,17 +389,22 @@ namespace fostering_service.Services
                 return true;
             }
 
-            if(model.AreYouEmployed.Value  && 
+            if (model.AreYouEmployed.Value &&
               !string.IsNullOrEmpty(model.JobTitle) &&
               !string.IsNullOrEmpty(model.CurrentEmployer) &&
-              Enum.IsDefined(typeof(EHoursOfWork),model.CurrentHoursOfWork))
+              Enum.IsDefined(typeof(EHoursOfWork), model.CurrentHoursOfWork))
             {
                 return true;
             }
 
             return false;
         }
-        
+
+        private bool UpdateLanguagesSpokenInYourHomeIsValid(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
+        {
+            return !string.IsNullOrEmpty(model.PrimaryLanguage) && !string.IsNullOrEmpty(model.OtherLanguagesSpoken);
+        }
+
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);

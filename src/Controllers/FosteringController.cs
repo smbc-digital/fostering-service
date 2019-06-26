@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Services;
+using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 
 namespace fostering_service.Controllers
@@ -66,6 +67,22 @@ namespace fostering_service.Controllers
             }
         }
 
+        [Route("languages-spoken-in-your-home")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateLanguagesSpokenInYourHome(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
         [Route("update-form-status")]
         [HttpPatch]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
@@ -75,6 +92,38 @@ namespace fostering_service.Controllers
                 await _fosteringService.UpdateStatus(model.CaseId, model.Status, model.Form);
 
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [Route("partnership-status")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdatePartnershipStatus(FosteringCasePartnershipStatusUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdatePartnershipStatus(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [Route("your-fostering-history")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateYourFosteringHistory(model);
+
+                return Ok(response);
             }
             catch (Exception ex)
             {
