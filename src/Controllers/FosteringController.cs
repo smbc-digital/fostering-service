@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Services;
+using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 
@@ -10,6 +11,7 @@ namespace fostering_service.Controllers
     [Produces("application/json")]
     [Route("api/v1/[Controller]")]
     [ApiController]
+    [TokenAuthentication]
     public class FosteringController : ControllerBase
     {
         private readonly IFosteringService _fosteringService;
