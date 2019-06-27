@@ -655,7 +655,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = "English",
-                OtherLanguagesSpoken = "Dutch"
+                OtherLanguages = "Dutch"
             };
 
             // Act
@@ -696,7 +696,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = "English",
-                OtherLanguagesSpoken = "Dutch"
+                OtherLanguages = "Dutch"
             };
 
             // Act
@@ -720,7 +720,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = primaryLanguage,
-                OtherLanguagesSpoken = "Dutch"
+                OtherLanguages = "Dutch"
             };
 
             // Act
@@ -752,7 +752,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = primaryLanguage,
-                OtherLanguagesSpoken = otherLanguages
+                OtherLanguages = otherLanguages
             };
 
             // Act
