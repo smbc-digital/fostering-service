@@ -655,7 +655,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = "English",
-                OtherLanguagesSpoken = "Dutch"
+                OtherLanguages = "Dutch"
             };
 
             // Act
@@ -696,7 +696,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = "English",
-                OtherLanguagesSpoken = "Dutch"
+                OtherLanguages = "Dutch"
             };
 
             // Act
@@ -720,7 +720,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = primaryLanguage,
-                OtherLanguagesSpoken = "Dutch"
+                OtherLanguages = "Dutch"
             };
 
             // Act
@@ -752,7 +752,7 @@ namespace fostering_service_tests.Service
             {
                 CaseReference = "0121DO1",
                 PrimaryLanguage = primaryLanguage,
-                OtherLanguagesSpoken = otherLanguages
+                OtherLanguages = otherLanguages
             };
 
             // Act
@@ -856,6 +856,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.NotCompleted, result);
+            _verintServiceGatewayMock.Verify(_ =>_.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "yourpartnershipstatus" && field.FormFieldValue == "NotCompleted")
+            )), Times.Once);
         }
 
         [Fact]
@@ -875,6 +878,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.Completed, result);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "yourpartnershipstatus" && field.FormFieldValue == "Completed")
+            )), Times.Once);
         }
 
         [Fact]
@@ -894,6 +900,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.Completed, result);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "yourpartnershipstatus" && field.FormFieldValue == "Completed")
+            )), Times.Once);
         }
 
         [Fact]
@@ -913,6 +922,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.NotCompleted, result);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "yourpartnershipstatus" && field.FormFieldValue == "NotCompleted")
+            )), Times.Once);
         }
 
         [Theory]
