@@ -62,7 +62,9 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty
-                }
+                },
+                PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
+                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty
             };
 
             var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
@@ -268,7 +270,7 @@ namespace fostering_service.Services
 
             formFields
                 .AddField("primarylanguage", model.PrimaryLanguage)
-                .AddField("otherlanguages", model.OtherLanguagesSpoken);
+                .AddField("otherlanguages", model.OtherLanguages);
 
             formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.LanguageSpokenInYourHome),
                 GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
@@ -402,7 +404,7 @@ namespace fostering_service.Services
 
         private bool UpdateLanguagesSpokenInYourHomeIsValid(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
         {
-            return !string.IsNullOrEmpty(model.PrimaryLanguage) && !string.IsNullOrEmpty(model.OtherLanguagesSpoken);
+            return !string.IsNullOrEmpty(model.PrimaryLanguage) && !string.IsNullOrEmpty(model.OtherLanguages);
         }
 
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
