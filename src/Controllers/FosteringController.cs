@@ -85,6 +85,22 @@ namespace fostering_service.Controllers
             }
         }
 
+        [Route("health-status")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateHealthStatus(FosteringCaseHealthUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateHealthStatus(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
         [Route("update-form-status")]
         [HttpPatch]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)

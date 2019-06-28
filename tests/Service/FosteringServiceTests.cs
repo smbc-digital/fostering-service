@@ -1017,5 +1017,106 @@ namespace fostering_service_tests.Service
             Assert.Equal(expectedETaskStatus, result);
             Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "yourfosteringhistorystatus" && _.FormFieldValue == expectedETaskStatus.ToString());
         }
+
+        [Theory]
+        [InlineData(true, true, "Yes", "Yes")]
+        [InlineData(false, false, "No", "No")]
+        public async Task UpdateYourHealthStatus_ShouldAddFormFieldsForFirstApplicant(bool registeredDisabled, bool practitioner, string firstExpectedFormValue, string secondExpectedFormValue)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseHealthUpdateModel
+            {
+                FirstApplicant = new FosteringCaseHealthApplicantUpdateModel
+                {
+                   RegisteredDisabled = registeredDisabled,
+                   Practitioner = practitioner,
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            await _service.UpdateHealthStatus(model);
+
+            // Assert
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "registereddisabled" && _.FormFieldValue == firstExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "practitioner" && _.FormFieldValue == secondExpectedFormValue);
+        }
+
+        [Theory]
+        [InlineData(true, true, true, true, "Yes", "Yes", "Yes", "Yes")]
+        [InlineData(false, false, false, false, "No", "No", "No", "No")]
+        public async Task UpdateHealthSt5tatus_ShouldAddFormFieldsForBothApplicants(bool registeredDisabled, bool practitioner, bool registeredDisabled2, bool practitioner2, string firstExpectedFormValue, string secondExpectedFormValue, string thirdExpectedFormValue, string fourthExpectedFormValue)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseHealthUpdateModel
+            {
+                FirstApplicant = new FosteringCaseHealthApplicantUpdateModel
+                {
+                    RegisteredDisabled = registeredDisabled,
+                    Practitioner = practitioner,
+                },
+                SecondApplicant = new FosteringCaseHealthApplicantUpdateModel
+                {
+                    RegisteredDisabled = registeredDisabled2,
+                    Practitioner = practitioner2,
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            await _service.UpdateHealthStatus(model);
+
+            // Assert
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "registereddisabled" && _.FormFieldValue == firstExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "practitioner" && _.FormFieldValue == secondExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "registereddisabled2" && _.FormFieldValue == thirdExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "practitioner2" && _.FormFieldValue == fourthExpectedFormValue);
+        }
+
+        [Theory]
+        [InlineData(ETaskStatus.NotCompleted, null, null)]
+        [InlineData(ETaskStatus.NotCompleted, null, true)]
+        [InlineData(ETaskStatus.Completed, true, true)]
+        [InlineData(ETaskStatus.Completed, false, true)]
+        public async Task UpdateHealthStatus_ShouldCorrectlyAddFormStatus(ETaskStatus expectedETaskStatus, bool? practitioner, bool? registeredDisabled)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseHealthUpdateModel
+            {
+                FirstApplicant = new FosteringCaseHealthApplicantUpdateModel()
+                {
+                    Practitioner = practitioner,
+                    RegisteredDisabled = registeredDisabled
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            var result = await _service.UpdateHealthStatus(model);
+
+            // Assert
+            Assert.Equal(expectedETaskStatus, result);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "yourhealthstatus" && _.FormFieldValue == expectedETaskStatus.ToString());
+        }
+
+
     }
 }

@@ -21,5 +21,7 @@ namespace fostering_service.Services
         Task<ETaskStatus> UpdatePartnershipStatus(FosteringCasePartnershipStatusUpdateModel model);
 
         Task<ETaskStatus> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model);
+
+        Task<ETaskStatus> UpdateHealthStatus(FosteringCaseHealthUpdateModel model);
     }
 }

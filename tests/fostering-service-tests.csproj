@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Moq" Version="4.10.1" />
-    <PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.3.0-prerelease95" />
+    <PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.3.0-prerelease96" />
     <PackageReference Include="StockportGovUK.AspNetCore.Logging.Elasticsearch.Aws" Version="0.2.0-prerelease23" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
