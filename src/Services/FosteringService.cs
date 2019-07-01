@@ -255,10 +255,8 @@ namespace fostering_service.Services
 
             if (model.FirstApplicant.AreYouEmployed.Value)
             {
-                var areYouEmployed = model.FirstApplicant.AreYouEmployed.Value;
-
                 formFields
-                    .AddField("employed", areYouEmployed ? "Yes" : "No")
+                    .AddField("employed", model.FirstApplicant.AreYouEmployed.Value ? "Yes" : "No")
                     .AddField("jobtitle", model.FirstApplicant.JobTitle)
                     .AddField("currentemployer", model.FirstApplicant.CurrentEmployer)
                     .AddField("hoursofwork",
@@ -267,7 +265,7 @@ namespace fostering_service.Services
             else
             {
                 formFields
-               .AddField("employed", model.FirstApplicant.AreYouEmployed.Value ? "Yes" : "No")
+               .AddField("employed", "No")
                     .AddField("jobtitle",string.Empty)
                     .AddField("currentemployer", string.Empty)
                     .AddField("hoursofwork", 
@@ -278,19 +276,19 @@ namespace fostering_service.Services
             {
 
                 completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
-                if (model.FirstApplicant.AreYouEmployed.Value)
+                if (model.SecondApplicant.AreYouEmployed.Value)
                 {
                     formFields
-                        .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
-                        .AddField("jobtitle2", model.FirstApplicant.JobTitle)
-                        .AddField("currentemployer2", model.FirstApplicant.CurrentEmployer)
+                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
+                        .AddField("jobtitle2", model.SecondApplicant.JobTitle)
+                        .AddField("currentemployer2", model.SecondApplicant.CurrentEmployer)
                         .AddField("hoursofwork2",
-                            Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
+                            Enum.GetName(typeof(EHoursOfWork), model.SecondApplicant.CurrentHoursOfWork));
                 }
                 else
                 {
                     formFields
-                        .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
                         .AddField("jobtitle2", string.Empty)
                         .AddField("currentemployer2", string.Empty)
                         .AddField("hoursofwork2",
