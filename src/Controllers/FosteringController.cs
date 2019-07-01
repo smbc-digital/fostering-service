@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Services;
+using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 
@@ -10,6 +11,7 @@ namespace fostering_service.Controllers
     [Produces("application/json")]
     [Route("api/v1/[Controller]")]
     [ApiController]
+    [TokenAuthentication]
     public class FosteringController : ControllerBase
     {
         private readonly IFosteringService _fosteringService;
@@ -83,6 +85,22 @@ namespace fostering_service.Controllers
             }
         }
 
+        [Route("health-status")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateHealthStatus(FosteringCaseHealthUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateHealthStatus(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
         [Route("update-form-status")]
         [HttpPatch]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
@@ -122,6 +140,22 @@ namespace fostering_service.Controllers
             try
             {
                 var response = await _fosteringService.UpdateYourFosteringHistory(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [Route("interest-in-fostering")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateInterestInFostering(model);
 
                 return Ok(response);
             }

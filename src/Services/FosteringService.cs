@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -61,11 +62,16 @@ namespace fostering_service.Services
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup")?.Value ?? string.Empty,
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
-                    JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty
+                    JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty,
+                    RegisteredDisabled = integrationFormFields.FirstOrDefault(_ => _.Name == "registereddisabled")?.Value.ToLower() == "yes",
+                    Practitioner = integrationFormFields.FirstOrDefault(_ => _.Name == "practitioner")?.Value.ToLower() == "yes"
                 },
+                WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
-                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty
-            };
+                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty,
+                TypesOfFostering = new List<string>(),
+                ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty
+        };
 
             var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
             if (!string.IsNullOrEmpty(marriedOrInACivilPartnership))
@@ -108,6 +114,36 @@ namespace fostering_service.Services
                 fosteringCase.FirstApplicant.PreviouslyApplied = hasPreviouslyApplied.ToLower() == "yes";
             }
 
+            if (integrationFormFields.Exists(_ => _.Name == "fiichildrenwithdisability"))
+            {
+                fosteringCase.TypesOfFostering.Add("childrenWithDisability");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiirespite"))
+            {
+                fosteringCase.TypesOfFostering.Add("respite");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiishortterm"))
+            {
+                fosteringCase.TypesOfFostering.Add("shortTerm");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiilongterm"))
+            {
+                fosteringCase.TypesOfFostering.Add("longTerm");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiiunsure"))
+            {
+                fosteringCase.TypesOfFostering.Add("unsure");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiishortbreaks"))
+            {
+                fosteringCase.TypesOfFostering.Add("shortBreaks");
+            }
+
             if (hasSecondApplicant)
             {
                 fosteringCase.SecondApplicant = new FosteringApplicant
@@ -123,6 +159,8 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
+                    RegisteredDisabled = integrationFormFields.FirstOrDefault(_ => _.Name == "registereddisabled2")?.Value.ToLower() == "yes",
+                    Practitioner = integrationFormFields.FirstOrDefault(_ => _.Name == "practitioner2")?.Value.ToLower() == "yes"
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
@@ -362,7 +400,7 @@ namespace fostering_service.Services
                                 ? ETaskStatus.Completed
                                 : ETaskStatus.NotCompleted;
 
-            var builtfields = formFields.AddField("yourfosteringhistorystatus", Enum.GetName(typeof(ETaskStatus),currentStatus)).Build();
+            var builtfields = formFields.AddField("yourfosteringhistorystatus", Enum.GetName(typeof(ETaskStatus), currentStatus)).Build();
 
             await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
             {
@@ -372,6 +410,79 @@ namespace fostering_service.Services
             });
 
             return currentStatus;
+        }
+
+        public async Task<ETaskStatus> UpdateHealthStatus(FosteringCaseHealthUpdateModel model)
+        {
+            var completed = UpdateHealthStatusIsCompleted(model);
+            var formFields = new FormFieldBuilder();
+
+            if (model.FirstApplicant.RegisteredDisabled != null)
+            {
+                formFields
+                    .AddField("registereddisabled", model.FirstApplicant.RegisteredDisabled.GetValueOrDefault() ? "Yes" : "No");
+            }
+            if (model.FirstApplicant.Practitioner != null)
+            {
+                formFields
+                    .AddField("practitioner", model.FirstApplicant.Practitioner.GetValueOrDefault() ? "Yes" : "No");
+            }
+
+            if (model.SecondApplicant != null)
+            {
+                if (model.SecondApplicant.RegisteredDisabled != null)
+                {
+                    formFields
+                        .AddField("registereddisabled2", model.SecondApplicant.RegisteredDisabled.GetValueOrDefault() ? "Yes" : "No");
+                }
+                if (model.SecondApplicant.Practitioner != null)
+                {
+                    formFields
+                        .AddField("practitioner2", model.SecondApplicant.Practitioner.GetValueOrDefault() ? "Yes" : "No");
+                }
+            }
+
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHealth), GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build(),
+                IntegrationFormName = _integrationFormName
+            });
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update health-status failure");
+            }
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
+        public async Task<ETaskStatus> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder()
+                .AddField("fiichildrenwithdisability", model.TypesOfFostering.Exists(_ => _.Equals("childrenWithDisability")) ? "ChildrenWithDisability" : string.Empty)
+                .AddField("fiirespite", model.TypesOfFostering.Exists(_ => _.Equals("respite")) ? "Respite" : string.Empty)
+                .AddField("fiishortterm", model.TypesOfFostering.Exists(_ => _.Equals("shortTerm")) ? "ShortTerm" : string.Empty)
+                .AddField("fiilongterm", model.TypesOfFostering.Exists(_ => _.Equals("longTerm")) ? "LongTerm" : string.Empty)
+                .AddField("fiiunsure", model.TypesOfFostering.Exists(_ => _.Equals("unsure")) ? "Unsure" : string.Empty)
+                .AddField("fiishortbreaks", model.TypesOfFostering.Exists(_ => _.Equals("shortBreaks")) ? "ShortBreaks" : string.Empty)
+                .AddField("reasonsforfosteringapplicant1", model.ReasonsForFostering ?? string.Empty)
+                .Build();
+
+            await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormName = _integrationFormName,
+                IntegrationFormFields = formFields
+            });
+
+            var completed = !string.IsNullOrEmpty(model.ReasonsForFostering) && model.TypesOfFostering.Any();
+
+            return completed 
+                ? ETaskStatus.Completed 
+                : ETaskStatus.NotCompleted;
         }
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
@@ -395,6 +506,19 @@ namespace fostering_service.Services
               !string.IsNullOrEmpty(model.JobTitle) &&
               !string.IsNullOrEmpty(model.CurrentEmployer) &&
               Enum.IsDefined(typeof(EHoursOfWork), model.CurrentHoursOfWork))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool UpdateHealthStatusIsCompleted(FosteringCaseHealthUpdateModel model)
+        {
+            if (model.SecondApplicant != null ?
+                (model.FirstApplicant.RegisteredDisabled != null && model.FirstApplicant.Practitioner != null &&
+                model.SecondApplicant.RegisteredDisabled != null && model.SecondApplicant.Practitioner != null) :
+                model.FirstApplicant.RegisteredDisabled != null && model.FirstApplicant.Practitioner != null)
             {
                 return true;
             }
@@ -486,6 +610,5 @@ namespace fostering_service.Services
                     return null;
             }
         }
-
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -339,6 +340,66 @@ namespace fostering_service_tests.Service
             // Assert
             Assert.True(result.FirstApplicant.PreviouslyApplied);
             Assert.False(result.SecondApplicant.PreviouslyApplied);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldMapTypesOfFostering()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("fiichildrenwithdisability", "ChildrenWithDisability")
+                .WithIntegrationFormField("fiirespite", "Respite")
+                .WithIntegrationFormField("fiishortterm", "ShortTerm")
+                .WithIntegrationFormField("fiilongterm", "LongTerm")
+                .WithIntegrationFormField("fiiunsure", "Unsure")
+                .WithIntegrationFormField("fiishortbreaks", "ShortBreaks")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("");
+
+            // Assert
+            Assert.True(result.TypesOfFostering.Exists(_ => _.Equals("childrenWithDisability")));
+            Assert.True(result.TypesOfFostering.Exists(_ => _.Equals("respite")));
+            Assert.True(result.TypesOfFostering.Exists(_ => _.Equals("shortTerm")));
+            Assert.True(result.TypesOfFostering.Exists(_ => _.Equals("longTerm")));
+            Assert.True(result.TypesOfFostering.Exists(_ => _.Equals("unsure")));
+            Assert.True(result.TypesOfFostering.Exists(_ => _.Equals("shortBreaks")));
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldMapReasonsForFostering()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("reasonsforfosteringapplicant1", "test")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("");
+
+            // Assert
+            Assert.Equal("test", result.ReasonsForFostering);
         }
 
         [Fact]
@@ -1017,5 +1078,286 @@ namespace fostering_service_tests.Service
             Assert.Equal(expectedETaskStatus, result);
             Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "yourfosteringhistorystatus" && _.FormFieldValue == expectedETaskStatus.ToString());
         }
+
+        [Theory]
+        [InlineData(true, true, "Yes", "Yes")]
+        [InlineData(false, false, "No", "No")]
+        public async Task UpdateYourHealthStatus_ShouldAddFormFieldsForFirstApplicant(bool registeredDisabled, bool practitioner, string firstExpectedFormValue, string secondExpectedFormValue)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseHealthUpdateModel
+            {
+                FirstApplicant = new FosteringCaseHealthApplicantUpdateModel
+                {
+                   RegisteredDisabled = registeredDisabled,
+                   Practitioner = practitioner,
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            await _service.UpdateHealthStatus(model);
+
+            // Assert
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "registereddisabled" && _.FormFieldValue == firstExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "practitioner" && _.FormFieldValue == secondExpectedFormValue);
+        }
+
+        [Theory]
+        [InlineData(true, true, true, true, "Yes", "Yes", "Yes", "Yes")]
+        [InlineData(false, false, false, false, "No", "No", "No", "No")]
+        public async Task UpdateHealthSt5tatus_ShouldAddFormFieldsForBothApplicants(bool registeredDisabled, bool practitioner, bool registeredDisabled2, bool practitioner2, string firstExpectedFormValue, string secondExpectedFormValue, string thirdExpectedFormValue, string fourthExpectedFormValue)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseHealthUpdateModel
+            {
+                FirstApplicant = new FosteringCaseHealthApplicantUpdateModel
+                {
+                    RegisteredDisabled = registeredDisabled,
+                    Practitioner = practitioner,
+                },
+                SecondApplicant = new FosteringCaseHealthApplicantUpdateModel
+                {
+                    RegisteredDisabled = registeredDisabled2,
+                    Practitioner = practitioner2,
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            await _service.UpdateHealthStatus(model);
+
+            // Assert
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "registereddisabled" && _.FormFieldValue == firstExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "practitioner" && _.FormFieldValue == secondExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "registereddisabled2" && _.FormFieldValue == thirdExpectedFormValue);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "practitioner2" && _.FormFieldValue == fourthExpectedFormValue);
+        }
+
+        [Theory]
+        [InlineData(ETaskStatus.NotCompleted, null, null)]
+        [InlineData(ETaskStatus.NotCompleted, null, true)]
+        [InlineData(ETaskStatus.Completed, true, true)]
+        [InlineData(ETaskStatus.Completed, false, true)]
+        public async Task UpdateHealthStatus_ShouldCorrectlyAddFormStatus(ETaskStatus expectedETaskStatus, bool? practitioner, bool? registeredDisabled)
+        {
+            // Arrange
+            var callbackModel = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseHealthUpdateModel
+            {
+                FirstApplicant = new FosteringCaseHealthApplicantUpdateModel()
+                {
+                    Practitioner = practitioner,
+                    RegisteredDisabled = registeredDisabled
+                },
+                CaseReference = "1234"
+            };
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(() => new HttpResponseMessage())
+                .Callback<IntegrationFormFieldsUpdateModel>(a => callbackModel = a);
+
+            // Act
+            var result = await _service.UpdateHealthStatus(model);
+
+            // Assert
+            Assert.Equal(expectedETaskStatus, result);
+            Assert.Contains(callbackModel.IntegrationFormFields, _ => _.FormFieldName == "yourhealthstatus" && _.FormFieldValue == expectedETaskStatus.ToString());
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldCreateTypesOfFosteringIntegrationFormFields()
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                ReasonsForFostering = "test",
+                TypesOfFostering = new List<string>
+                {
+                    "childrenWithDisability",
+                    "respite",
+                    "shortTerm",
+                    "longTerm",
+                    "unsure",
+                    "shortBreaks"
+                }
+            };
+
+            // Act
+            await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiichildrenwithdisability" && field.FormFieldValue == "ChildrenWithDisability")
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiirespite" && field.FormFieldValue == "Respite")
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiishortterm" && field.FormFieldValue == "ShortTerm")
+            )), Times.Once);
+             _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiilongterm" && field.FormFieldValue == "LongTerm")
+            )), Times.Once);
+             _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiiunsure" && field.FormFieldValue == "Unsure")
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiishortbreaks" && field.FormFieldValue == "ShortBreaks")
+            )), Times.Once);
+
+        }
+
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldCreateTypesOfFosteringEmptyIntegrationFormFields()
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                ReasonsForFostering = "test",
+                TypesOfFostering = new List<string>()
+            };
+
+            // Act
+            await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiichildrenwithdisability" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiirespite" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiishortterm" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+               updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiilongterm" && field.FormFieldValue == string.Empty)
+           )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+               updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiiunsure" && field.FormFieldValue == string.Empty)
+           )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "fiishortbreaks" && field.FormFieldValue == string.Empty)
+            )), Times.Once);
+        }
+
+        [Theory]
+        [InlineData("reasons", "reasons")]
+        [InlineData(null, "")]
+        public async Task UpdateInterestInFostering_ShouldCreateEmptyReasonsForFosteringIntegrationFormFields(string reasons, string expectedReasons)
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                TypesOfFostering = new List<string>(),
+                ReasonsForFostering = reasons
+            };
+
+            // Act
+            await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "reasonsforfosteringapplicant1" && field.FormFieldValue == expectedReasons)
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldCall_VerintService()
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                TypesOfFostering = new List<string>()
+            };
+
+            // Act
+            await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(
+                _ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldReturnCompleted()
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                TypesOfFostering = new List<string>
+                {
+                    "unsure"
+                },
+                ReasonsForFostering = "test"
+            };
+
+            // Act
+            var result = await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.Completed, result);
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldReturnNotCompleted()
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                TypesOfFostering = new List<string>
+                {
+                    "unsure"
+                },
+                ReasonsForFostering = string.Empty
+            };
+
+            // Act
+            var result = await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldReturnNotCompleted_WhenTypesOfFosteringEmpty()
+        {
+            // Arrange
+            var model = new FosteringCaseInterestInFosteringUpdateModel
+            {
+                CaseReference = "1234",
+                TypesOfFostering = new List<string>(),
+                ReasonsForFostering = "Test"
+            };
+
+            // Act
+            var result = await _service.UpdateInterestInFostering(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
     }
 }
