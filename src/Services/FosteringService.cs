@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -67,8 +68,10 @@ namespace fostering_service.Services
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
-                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty
-            };
+                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty,
+                TypesOfFostering = new List<string>(),
+                ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty
+        };
 
             var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
             if (!string.IsNullOrEmpty(marriedOrInACivilPartnership))
@@ -109,6 +112,36 @@ namespace fostering_service.Services
             if (!string.IsNullOrWhiteSpace(hasPreviouslyApplied))
             {
                 fosteringCase.FirstApplicant.PreviouslyApplied = hasPreviouslyApplied.ToLower() == "yes";
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiichildrenwithdisability"))
+            {
+                fosteringCase.TypesOfFostering.Add("childrenWithDisability");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiirespite"))
+            {
+                fosteringCase.TypesOfFostering.Add("respite");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiishortterm"))
+            {
+                fosteringCase.TypesOfFostering.Add("shortTerm");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiilongterm"))
+            {
+                fosteringCase.TypesOfFostering.Add("longTerm");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiiunsure"))
+            {
+                fosteringCase.TypesOfFostering.Add("unsure");
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "fiishortbreaks"))
+            {
+                fosteringCase.TypesOfFostering.Add("shortBreaks");
             }
 
             if (hasSecondApplicant)
@@ -426,6 +459,32 @@ namespace fostering_service.Services
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
+        public async Task<ETaskStatus> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder()
+                .AddField("fiichildrenwithdisability", model.TypesOfFostering.Exists(_ => _.Equals("childrenWithDisability")) ? "ChildrenWithDisability" : string.Empty)
+                .AddField("fiirespite", model.TypesOfFostering.Exists(_ => _.Equals("respite")) ? "Respite" : string.Empty)
+                .AddField("fiishortterm", model.TypesOfFostering.Exists(_ => _.Equals("shortTerm")) ? "ShortTerm" : string.Empty)
+                .AddField("fiilongterm", model.TypesOfFostering.Exists(_ => _.Equals("longTerm")) ? "LongTerm" : string.Empty)
+                .AddField("fiiunsure", model.TypesOfFostering.Exists(_ => _.Equals("unsure")) ? "Unsure" : string.Empty)
+                .AddField("fiishortbreaks", model.TypesOfFostering.Exists(_ => _.Equals("shortBreaks")) ? "ShortBreaks" : string.Empty)
+                .AddField("reasonsforfosteringapplicant1", model.ReasonsForFostering ?? string.Empty)
+                .Build();
+
+            await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormName = _integrationFormName,
+                IntegrationFormFields = formFields
+            });
+
+            var completed = !string.IsNullOrEmpty(model.ReasonsForFostering) && model.TypesOfFostering.Any();
+
+            return completed 
+                ? ETaskStatus.Completed 
+                : ETaskStatus.NotCompleted;
+        }
+
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
@@ -551,6 +610,5 @@ namespace fostering_service.Services
                     return null;
             }
         }
-
     }
 }

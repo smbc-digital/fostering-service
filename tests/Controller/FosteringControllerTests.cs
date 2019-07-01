@@ -234,5 +234,52 @@ namespace fostering_service_tests.Controller
             // Assert
             Assert.IsType<OkObjectResult>(result);
         }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldCallFosteringService()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateInterestInFostering(It.IsAny<FosteringCaseInterestInFosteringUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+
+            // Act
+            await _controller.UpdateInterestInFostering(new FosteringCaseInterestInFosteringUpdateModel());
+
+            // Assert
+            _mockFosteringService
+                .Verify(_ => _.UpdateInterestInFostering(It.IsAny<FosteringCaseInterestInFosteringUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldReturn200()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateInterestInFostering(It.IsAny<FosteringCaseInterestInFosteringUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+
+            // Act
+            var result = await _controller.UpdateInterestInFostering(new FosteringCaseInterestInFosteringUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateInterestInFostering_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateInterestInFostering(It.IsAny<FosteringCaseInterestInFosteringUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.UpdateInterestInFostering(new FosteringCaseInterestInFosteringUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
     }
 }

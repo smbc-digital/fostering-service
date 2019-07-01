@@ -148,5 +148,21 @@ namespace fostering_service.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [Route("interest-in-fostering")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateInterestInFostering(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 }
