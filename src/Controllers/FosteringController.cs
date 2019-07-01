@@ -59,9 +59,9 @@ namespace fostering_service.Controllers
         {
             try
             {
-                await _fosteringService.UpdateYourEmploymentDetails(model);
+                var response = await _fosteringService.UpdateYourEmploymentDetails(model);
 
-                return Ok();
+                return Ok(response);
             }
             catch (Exception ex)
             {

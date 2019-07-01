@@ -247,7 +247,7 @@ namespace fostering_service.Services
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
-        public async Task UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
+        public async Task<ETaskStatus> UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
         {
 
             var formFields = new FormFieldBuilder();
@@ -255,33 +255,35 @@ namespace fostering_service.Services
 
             if (model.FirstApplicant.AreYouEmployed.Value)
             {
+                var areYouEmployed = model.FirstApplicant.AreYouEmployed.Value;
+
                 formFields
-                    .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
+                    .AddField("employed", areYouEmployed ? "Yes" : "No")
                     .AddField("jobtitle", model.FirstApplicant.JobTitle)
-                    .AddField("currenemployer", model.FirstApplicant.CurrentEmployer)
+                    .AddField("currentemployer", model.FirstApplicant.CurrentEmployer)
                     .AddField("hoursofwork",
                         Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
             }
             else
             {
                 formFields
-               .AddField("employed", model.FirstApplicant.AreYouEmployed.Value.ToString())
-                    .AddField("jobtitle", string.Empty)
-                    .AddField("currenemployer", string.Empty)
-                    .AddField("hoursofwork",
-                        Enum.GetName(typeof(EHoursOfWork), null));
+               .AddField("employed", model.FirstApplicant.AreYouEmployed.Value ? "Yes" : "No")
+                    .AddField("jobtitle",string.Empty)
+                    .AddField("currentemployer", string.Empty)
+                    .AddField("hoursofwork", 
+                        Enum.GetName(typeof(EHoursOfWork), 0));
             }
 
             if (model.SecondApplicant != null)
             {
 
-                completed = UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
+                completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
                 if (model.FirstApplicant.AreYouEmployed.Value)
                 {
                     formFields
                         .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
                         .AddField("jobtitle2", model.FirstApplicant.JobTitle)
-                        .AddField("currenemployer2", model.FirstApplicant.CurrentEmployer)
+                        .AddField("currentemployer2", model.FirstApplicant.CurrentEmployer)
                         .AddField("hoursofwork2",
                             Enum.GetName(typeof(EHoursOfWork), model.FirstApplicant.CurrentHoursOfWork));
                 }
@@ -290,14 +292,31 @@ namespace fostering_service.Services
                     formFields
                         .AddField("employed2", model.FirstApplicant.AreYouEmployed.Value.ToString())
                         .AddField("jobtitle2", string.Empty)
-                        .AddField("currenemployer2", string.Empty)
+                        .AddField("currentemployer2", string.Empty)
                         .AddField("hoursofwork2",
-                            Enum.GetName(typeof(EHoursOfWork), null));
+                            Enum.GetName(typeof(EHoursOfWork), 0));
                 }
             }
 
             formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.YourEmploymentDetails),
                 GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                IntegrationFormName = _integrationFormName,
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build()
+            };
+
+            var response = await _verintServiceGateway
+                .UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update about-your employment details failure");
+            }
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
         }
 
