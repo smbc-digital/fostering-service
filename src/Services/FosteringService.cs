@@ -478,6 +478,11 @@ namespace fostering_service.Services
 
         public async Task<ETaskStatus> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
         {
+            var completed = !string.IsNullOrEmpty(model.ReasonsForFostering) && model.TypesOfFostering.Any();
+            var currentStatus = completed
+                ? ETaskStatus.Completed
+                : ETaskStatus.NotCompleted;
+
             var formFields = new FormFieldBuilder()
                 .AddField("fiichildrenwithdisability", model.TypesOfFostering.Exists(_ => _.Equals("childrenWithDisability")) ? "ChildrenWithDisability" : string.Empty)
                 .AddField("fiirespite", model.TypesOfFostering.Exists(_ => _.Equals("respite")) ? "Respite" : string.Empty)
@@ -486,6 +491,7 @@ namespace fostering_service.Services
                 .AddField("fiiunsure", model.TypesOfFostering.Exists(_ => _.Equals("unsure")) ? "Unsure" : string.Empty)
                 .AddField("fiishortbreaks", model.TypesOfFostering.Exists(_ => _.Equals("shortBreaks")) ? "ShortBreaks" : string.Empty)
                 .AddField("reasonsforfosteringapplicant1", model.ReasonsForFostering ?? string.Empty)
+                .AddField("tellusaboutyourinterestinfosteringstatus", Enum.GetName(typeof(ETaskStatus), currentStatus))
                 .Build();
 
             await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
@@ -495,11 +501,8 @@ namespace fostering_service.Services
                 IntegrationFormFields = formFields
             });
 
-            var completed = !string.IsNullOrEmpty(model.ReasonsForFostering) && model.TypesOfFostering.Any();
 
-            return completed 
-                ? ETaskStatus.Completed 
-                : ETaskStatus.NotCompleted;
+            return currentStatus;
         }
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)

@@ -1318,6 +1318,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.Completed, result);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "tellusaboutyourinterestinfosteringstatus" && field.FormFieldValue == "Completed")
+            )), Times.Once);
         }
 
         [Fact]
@@ -1339,6 +1342,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.NotCompleted, result);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "tellusaboutyourinterestinfosteringstatus" && field.FormFieldValue == "NotCompleted")
+            )), Times.Once);
         }
 
         [Fact]
@@ -1357,6 +1363,9 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal(ETaskStatus.NotCompleted, result);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                updateModel => updateModel.IntegrationFormFields.Exists(field => field.FormFieldName == "tellusaboutyourinterestinfosteringstatus" && field.FormFieldValue == "NotCompleted")
+            )), Times.Once);
         }
 
     }
