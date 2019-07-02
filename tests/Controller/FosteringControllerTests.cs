@@ -127,7 +127,7 @@ namespace fostering_service_tests.Controller
             var result = await _controller.UpdateYourEmploymentDetails(new FosteringCaseYourEmploymentDetailsUpdateModel());
 
             // Assert
-           Assert.IsType<OkResult>(result);
+           Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
