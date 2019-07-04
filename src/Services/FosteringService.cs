@@ -574,7 +574,17 @@ namespace fostering_service.Services
 
         public Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
         {
-            
+            /**
+             * check if the form is complete
+             *
+             * map from updatemodel to the integrated form fields
+             *
+             * call the fosteringgatewayservice update method -> throw error if this fails
+             *
+             * return the ETaskStatus
+             */
+
+            throw new NotImplementedException();
         }
 
 
