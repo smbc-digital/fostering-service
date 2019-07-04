@@ -4,11 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
+using fostering_service.Models;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 
 namespace fostering_service.Services
@@ -70,8 +72,27 @@ namespace fostering_service.Services
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
                 OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty,
                 TypesOfFostering = new List<string>(),
-                ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty
+                ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
+                OtherPeopleInYourHousehold = CreateOtherPersonList(new OtherPeopleConfigurationModel
+                {
+                    DateOfBirth = "opdateofbirth",
+                    FirstName = "opfirstname",
+                    LastName = "oplastname",
+                    Gender = "opgender"
+                }, integrationFormFields)
         };
+
+            var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
+            if (!string.IsNullOrEmpty(anyOtherPeopleInYourHousehold))
+            {
+                fosteringCase.AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold.ToLower() == "yes";
+            }
+
+            var doYouHaveAnyPets = integrationFormFields.FirstOrDefault(_ => _.Name == "doyouhaveanypets")?.Value;
+            if (!string.IsNullOrEmpty(doYouHaveAnyPets))
+            {
+                fosteringCase.DoYouHaveAnyPets = doYouHaveAnyPets.ToLower() == "yes";
+            }
 
             var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
             if (!string.IsNullOrEmpty(marriedOrInACivilPartnership))
@@ -484,6 +505,78 @@ namespace fostering_service.Services
                 ? ETaskStatus.Completed 
                 : ETaskStatus.NotCompleted;
         }
+
+        public List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields)
+        {
+            var otherPersonList = new List<OtherPerson>
+            {
+                new OtherPerson(),
+                new OtherPerson(),
+                new OtherPerson(),
+                new OtherPerson(),
+                new OtherPerson(),
+                new OtherPerson(),
+                new OtherPerson(),
+                new OtherPerson()
+            };
+
+            formFields.ForEach(field =>
+            {
+                var index = int.Parse(field.Name[field.Name.Length - 1].ToString()) - 1;
+
+                if (field.Name.Contains(config.DateOfBirth))
+                {
+                    otherPersonList[index].DateOfBirth = DateTime.Parse(field.Value);
+                }
+
+                if (field.Name.Contains(config.FirstName))
+                {
+                    otherPersonList[index].FirstName = field.Value;
+                }
+
+                if (field.Name.Contains(config.LastName))
+                {
+                    otherPersonList[index].LastName = field.Value;
+                }
+
+                if (field.Name.Contains(config.Gender))
+                {
+                    otherPersonList[index].Gender = field.Value;
+                }
+            });
+
+            return otherPersonList.Where(person => 
+                person.Gender != null || 
+                person.LastName != null || 
+                person.FirstName != null ||
+                person.DateOfBirth != null).
+                ToList();
+        }
+
+        public FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople)
+        {
+            var builder = new FormFieldBuilder();
+
+            for (int i = 0; i < otherPeople.Count; i++)
+            {
+                var nameSuffix = i + 1;
+
+                builder
+                    .AddField($"{config.FirstName}{nameSuffix}", otherPeople[i].FirstName ?? string.Empty)
+                    .AddField($"{config.DateOfBirth}{nameSuffix}", otherPeople[i].DateOfBirth?.ToString("dd/MM/yyyy") ?? string.Empty)
+                    .AddField($"{config.Gender}{nameSuffix}", otherPeople[i].Gender ?? string.Empty)
+                    .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty);
+
+            }
+
+            return builder;
+        }
+
+        public Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
+        {
+            
+        }
+
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {

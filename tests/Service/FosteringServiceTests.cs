@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using fostering_service.Models;
 using fostering_service.Services;
 using fostering_service_tests.Builders;
 using Moq;
@@ -1359,5 +1360,140 @@ namespace fostering_service_tests.Service
             Assert.Equal(ETaskStatus.NotCompleted, result);
         }
 
+        [Fact]
+        public void CreateOtherPersonList_ShouldMapCustomFormFieldToOtherPersonList()
+        {
+            // Arrange
+            var config = new OtherPeopleConfigurationModel
+            {
+                DateOfBirth = "PREFIX_DOB",
+                FirstName = "ANOTHER_PREFIX_FIRSTNAME",
+                Gender = "PREFIX_EXAMPLE_GENDER",
+                LastName = "PREFIX_EXAMPLE_LASTNAME"
+            };
+
+            var model = new List<CustomField>
+            {
+                new CustomField
+                {
+                    Name = $"{config.DateOfBirth}1",
+                    Value =  "01/02/1996"
+                },
+                new CustomField
+                {
+                    Name = $"{config.FirstName}1",
+                    Value =  "firstname1"
+                },
+                new CustomField
+                {
+                    Name = $"{config.DateOfBirth}2",
+                    Value =  "01/02/1996"
+                },
+                new CustomField
+                {
+                    Name = $"{config.FirstName}2",
+                    Value =  "firstname2"
+                },
+                new CustomField
+                {
+                    Name = $"{config.DateOfBirth}3",
+                    Value =  "01/02/1996"
+                },
+                new CustomField
+                {
+                    Name = $"{config.FirstName}3",
+                    Value =  "firstname3"
+                }
+            };
+
+            // Act
+            var result = _service.CreateOtherPersonList(config, model);
+
+            // Assert
+            Assert.Equal(model[0].Value, result[0].DateOfBirth.GetValueOrDefault().ToString("dd/MM/yyyy"));
+            Assert.Equal(model[1].Value, result[0].FirstName);
+            Assert.Equal(model[2].Value, result[1].DateOfBirth.GetValueOrDefault().ToString("dd/MM/yyyy"));
+            Assert.Equal(model[3].Value, result[1].FirstName);
+            Assert.Equal(model[4].Value, result[2].DateOfBirth.GetValueOrDefault().ToString("dd/MM/yyyy"));
+            Assert.Equal(model[5].Value, result[2].FirstName);
+
+            Assert.Equal(3, result.Count);
+        }
+
+
+        [Fact]
+        public void CreateOtherPersonList_ShouldMapCustomFormFieldToOtherPersonList_When8thFieldPopulated()
+        {
+            // Arrange
+            var config = new OtherPeopleConfigurationModel
+            {
+                DateOfBirth = "PREFIX_DOB",
+                FirstName = "ANOTHER_PREFIX_FIRSTNAME",
+                Gender = "PREFIX_EXAMPLE_GENDER",
+                LastName = "PREFIX_EXAMPLE_LASTNAME"
+            };
+
+            var model = new List<CustomField>
+            {
+                new CustomField
+                {
+                    Name = $"{config.Gender}1",
+                    Value =  "test"
+                },
+                new CustomField
+                {
+                    Name = $"{config.LastName}1",
+                    Value =  "last name test"
+                },
+                new CustomField
+                {
+                    Name = $"{config.Gender}8",
+                    Value =  "test 2"
+                },
+                new CustomField
+                {
+                    Name = $"{config.LastName}8",
+                    Value =  "last name test 2"
+                }
+            };
+
+            // Act
+            var result = _service.CreateOtherPersonList(config, model);
+
+            // Assert
+            Assert.Equal(model[0].Value, result[0].Gender);
+            Assert.Equal(model[1].Value, result[0].LastName);
+            Assert.Equal(model[2].Value, result[1].Gender);
+            Assert.Equal(model[3].Value, result[1].LastName);
+
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public void CreateOtherPersonBuilder_ShouldMapPersonListToIntegratedFormFields()
+        {
+            // Arrange
+            var peopleList = new List<OtherPerson>
+            {
+                new OtherPerson
+                {
+                    FirstName = "test first name"
+                }
+            };
+
+            var config = new OtherPeopleConfigurationModel
+            {
+                FirstName = "FIRSTNAME_TEST_PREFIX"
+            };
+
+            // Act
+            var result = _service.CreateOtherPersonBuilder(config, peopleList).Build();
+
+            // Assert
+            Assert.Equal(peopleList[0].FirstName, result[0].FormFieldValue);
+            Assert.Equal($"{config.FirstName}1", result[0].FormFieldName);
+
+            Assert.Equal(4, result.Count);
+        }
     }
 }

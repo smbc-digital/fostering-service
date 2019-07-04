@@ -1,8 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using fostering_service.Builder;
+using fostering_service.Models;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Verint;
 
 namespace fostering_service.Services
 {
@@ -25,5 +29,11 @@ namespace fostering_service.Services
         Task<ETaskStatus> UpdateHealthStatus(FosteringCaseHealthUpdateModel model);
         
         Task<ETaskStatus> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model);
+
+        Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model);
+
+        List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields);
+
+        FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople);
     }
 }
