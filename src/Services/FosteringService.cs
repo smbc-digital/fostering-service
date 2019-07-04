@@ -274,12 +274,11 @@ namespace fostering_service.Services
 
             if (model.SecondApplicant != null)
             {
-
-                completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
-                if (model.SecondApplicant.AreYouEmployed.Value)
+         
+                if (model.SecondApplicant.AreYouEmployed != null && model.SecondApplicant.AreYouEmployed.Value == true)
                 {
                     formFields
-                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
+                        .AddField("employed2", "Yes")
                         .AddField("jobtitle2", model.SecondApplicant.JobTitle)
                         .AddField("currentemployer2", model.SecondApplicant.CurrentEmployer)
                         .AddField("hoursofwork2",
@@ -288,12 +287,14 @@ namespace fostering_service.Services
                 else
                 {
                     formFields
-                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
+                        .AddField("employed2", "No")
                         .AddField("jobtitle2", string.Empty)
                         .AddField("currentemployer2", string.Empty)
                         .AddField("hoursofwork2",
                             Enum.GetName(typeof(EHoursOfWork), 0));
                 }
+
+                completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
             }
 
             formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.YourEmploymentDetails),
@@ -517,12 +518,12 @@ namespace fostering_service.Services
 
         private bool UpdateAboutEmploymentIsCompleted(FosteringCaseYourEmploymentDetailsApplicantUpdateModel model)
         {
-            if (model.AreYouEmployed.Value == false)
+            if (model.AreYouEmployed != null && model.AreYouEmployed.Value == false)
             {
                 return true;
             }
 
-            if (model.AreYouEmployed.Value &&
+            if (model.AreYouEmployed != null && model.AreYouEmployed.Value &&
               !string.IsNullOrEmpty(model.JobTitle) &&
               !string.IsNullOrEmpty(model.CurrentEmployer) &&
               Enum.IsDefined(typeof(EHoursOfWork), model.CurrentHoursOfWork))
