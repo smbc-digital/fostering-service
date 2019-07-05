@@ -74,9 +74,17 @@ namespace fostering_service
             app.UseMiddleware<ExceptionHandling>();
             app.UseHttpsRedirection();
             app.UseSwagger();
+
+            var swaggerPrefix = string.Empty;
+
+            if (!env.IsDevelopment())
+            {
+                swaggerPrefix = "/fosteringservice";
+            }
+
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "fostering_service API");
+                c.SwaggerEndpoint($"{swaggerPrefix}/swagger/v1/swagger.json", "fostering_service API");
             });
             app.UseMvc();
         }

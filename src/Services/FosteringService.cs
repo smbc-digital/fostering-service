@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
+using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
@@ -16,19 +17,25 @@ namespace fostering_service.Services
     public class FosteringService : IFosteringService
     {
         private readonly IVerintServiceGateway _verintServiceGateway;
+        private readonly ILogger<FosteringService> _logger;
         private readonly string _integrationFormName = "Fostering_Home_Visit";
 
-        public FosteringService(IVerintServiceGateway verintServiceGateway)
+        public FosteringService(IVerintServiceGateway verintServiceGateway, ILogger<FosteringService> logger)
         {
             _verintServiceGateway = verintServiceGateway;
+            _logger = logger;
         }
 
         public async Task<FosteringCase> GetCase(string caseId)
         {
+            _logger.LogWarning("**DEBUG:FosteringService GetCase starting getCase");
             var response = await _verintServiceGateway.GetCase(caseId);
+
+            _logger.LogInformation($"**DEBUG:FosteringService GetCase returned status: {response.StatusCode}");
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                _logger.LogWarning($"**DEBUG:FosteringService GetCase an exception has occured while getting case from verint service, statuscode: {response.StatusCode}");
                 throw new Exception($"Fostering service exception. Verint service gateway failed to respond with OK. Response: {response}");
             }
 
@@ -212,6 +219,7 @@ namespace fostering_service.Services
 
         public async Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
+            _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself starting update process");
             var completed = UpdateAboutYourselfIsValid(model.FirstApplicant);
 
             var formFields = new FormFieldBuilder()
@@ -255,14 +263,18 @@ namespace fostering_service.Services
                 IntegrationFormFields = formFields.Build()
             };
 
+
+            _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself starting call to verintService");
             var response = await _verintServiceGateway
                 .UpdateCaseIntegrationFormField(updateModel);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself an error has occured while attempting to call verintGateway");
                 throw new Exception("Update about-yourself failure");
             }
 
+            _logger.LogWarning($"**DEBUG:FosteringService UpdateAboutYourself verint Service returned status {response.StatusCode}");
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
@@ -293,12 +305,11 @@ namespace fostering_service.Services
 
             if (model.SecondApplicant != null)
             {
-
-                completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
-                if (model.SecondApplicant.AreYouEmployed.Value)
+         
+                if (model.SecondApplicant.AreYouEmployed != null && model.SecondApplicant.AreYouEmployed.Value == true)
                 {
                     formFields
-                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
+                        .AddField("employed2", "Yes")
                         .AddField("jobtitle2", model.SecondApplicant.JobTitle)
                         .AddField("currentemployer2", model.SecondApplicant.CurrentEmployer)
                         .AddField("hoursofwork2",
@@ -307,12 +318,14 @@ namespace fostering_service.Services
                 else
                 {
                     formFields
-                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
+                        .AddField("employed2", "No")
                         .AddField("jobtitle2", string.Empty)
                         .AddField("currentemployer2", string.Empty)
                         .AddField("hoursofwork2",
                             Enum.GetName(typeof(EHoursOfWork), 0));
                 }
+
+                completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
             }
 
             formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.YourEmploymentDetails),
@@ -536,12 +549,12 @@ namespace fostering_service.Services
 
         private bool UpdateAboutEmploymentIsCompleted(FosteringCaseYourEmploymentDetailsApplicantUpdateModel model)
         {
-            if (model.AreYouEmployed.Value == false)
+            if (model.AreYouEmployed != null && model.AreYouEmployed.Value == false)
             {
                 return true;
             }
 
-            if (model.AreYouEmployed.Value &&
+            if (model.AreYouEmployed != null && model.AreYouEmployed.Value &&
               !string.IsNullOrEmpty(model.JobTitle) &&
               !string.IsNullOrEmpty(model.CurrentEmployer) &&
               Enum.IsDefined(typeof(EHoursOfWork), model.CurrentHoursOfWork))
