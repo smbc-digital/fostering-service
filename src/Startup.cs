@@ -79,7 +79,7 @@ namespace fostering_service
 
             if (!env.IsDevelopment())
             {
-                swaggerPrefix = "fosteringservice";
+                swaggerPrefix = "/fosteringservice";
             }
 
             app.UseSwaggerUI(c =>
