@@ -63,8 +63,6 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty,
-                    RegisteredDisabled = integrationFormFields.FirstOrDefault(_ => _.Name == "registereddisabled")?.Value.ToLower() == "yes",
-                    Practitioner = integrationFormFields.FirstOrDefault(_ => _.Name == "practitioner")?.Value.ToLower() == "yes"
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -144,6 +142,16 @@ namespace fostering_service.Services
                 fosteringCase.TypesOfFostering.Add("shortBreaks");
             }
 
+            if (integrationFormFields.Exists(_ => _.Name == "registereddisabled"))
+            {
+                fosteringCase.FirstApplicant.RegisteredDisabled = integrationFormFields.FirstOrDefault(_ => _.Name == "registereddisabled")?.Value.ToLower() == "yes";
+            }
+
+            if (integrationFormFields.Exists(_ => _.Name == "practitioner"))
+            {
+                fosteringCase.FirstApplicant.Practitioner = integrationFormFields.FirstOrDefault(_ => _.Name == "practitioner")?.Value.ToLower() == "yes";
+            }
+
             if (hasSecondApplicant)
             {
                 fosteringCase.SecondApplicant = new FosteringApplicant
@@ -159,8 +167,6 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
-                    RegisteredDisabled = integrationFormFields.FirstOrDefault(_ => _.Name == "registereddisabled2")?.Value.ToLower() == "yes",
-                    Practitioner = integrationFormFields.FirstOrDefault(_ => _.Name == "practitioner2")?.Value.ToLower() == "yes"
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
@@ -186,6 +192,19 @@ namespace fostering_service.Services
                 {
                     fosteringCase.SecondApplicant.PreviouslyApplied = hasPreviouslyAppliedApplicant2.ToLower() == "yes";
                 }
+
+                var registereddisabled2 = integrationFormFields.FirstOrDefault(_ => _.Name == "registereddisabled2")?.Value;
+                if (!string.IsNullOrEmpty(registereddisabled2))
+                {
+                    fosteringCase.SecondApplicant.RegisteredDisabled = registereddisabled2.ToLower() == "yes";
+                }
+
+                var practitioner2 = integrationFormFields.FirstOrDefault(_ => _.Name == "practitioner2")?.Value;
+                if (!string.IsNullOrEmpty(practitioner2))
+                {
+                    fosteringCase.SecondApplicant.Practitioner = practitioner2.ToLower() == "yes";
+                }
+
             }
 
             return fosteringCase;
