@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
+using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
@@ -16,19 +17,25 @@ namespace fostering_service.Services
     public class FosteringService : IFosteringService
     {
         private readonly IVerintServiceGateway _verintServiceGateway;
+        private readonly ILogger<FosteringService> _logger;
         private readonly string _integrationFormName = "Fostering_Home_Visit";
 
-        public FosteringService(IVerintServiceGateway verintServiceGateway)
+        public FosteringService(IVerintServiceGateway verintServiceGateway, ILogger<FosteringService> logger)
         {
             _verintServiceGateway = verintServiceGateway;
+            _logger = logger;
         }
 
         public async Task<FosteringCase> GetCase(string caseId)
         {
+            _logger.LogWarning("**DEBUG:FosteringService GetCase starting getCase");
             var response = await _verintServiceGateway.GetCase(caseId);
+
+            _logger.LogInformation($"**DEBUG:FosteringService GetCase returned status: {response.StatusCode}");
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                _logger.LogWarning($"**DEBUG:FosteringService GetCase an exception has occured while getting case from verint service, statuscode: {response.StatusCode}");
                 throw new Exception($"Fostering service exception. Verint service gateway failed to respond with OK. Response: {response}");
             }
 
@@ -193,6 +200,7 @@ namespace fostering_service.Services
 
         public async Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
+            _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself starting update process");
             var completed = UpdateAboutYourselfIsValid(model.FirstApplicant);
 
             var formFields = new FormFieldBuilder()
@@ -236,14 +244,18 @@ namespace fostering_service.Services
                 IntegrationFormFields = formFields.Build()
             };
 
+
+            _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself starting call to verintService");
             var response = await _verintServiceGateway
                 .UpdateCaseIntegrationFormField(updateModel);
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
+                _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself an error has occured while attempting to call verintGateway");
                 throw new Exception("Update about-yourself failure");
             }
 
+            _logger.LogWarning($"**DEBUG:FosteringService UpdateAboutYourself verint Service returned status {response.StatusCode}");
             return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
