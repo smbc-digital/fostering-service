@@ -78,8 +78,9 @@ namespace fostering_service.Services
                 OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty,
                 TypesOfFostering = new List<string>(),
                 ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
-                OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields)
-        };
+                OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields),
+                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "petsinformation")?.Value ?? string.Empty
+            };
 
             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
             if (!string.IsNullOrEmpty(anyOtherPeopleInYourHousehold))
@@ -312,15 +313,15 @@ namespace fostering_service.Services
             {
                 formFields
                .AddField("employed", "No")
-                    .AddField("jobtitle",string.Empty)
+                    .AddField("jobtitle", string.Empty)
                     .AddField("currentemployer", string.Empty)
-                    .AddField("hoursofwork", 
+                    .AddField("hoursofwork",
                         Enum.GetName(typeof(EHoursOfWork), 0));
             }
 
             if (model.SecondApplicant != null)
             {
-         
+
                 if (model.SecondApplicant.AreYouEmployed != null && model.SecondApplicant.AreYouEmployed.Value == true)
                 {
                     formFields
@@ -556,7 +557,7 @@ namespace fostering_service.Services
         {
             var otherPersonList = new List<OtherPerson>();
 
-            for (var i=0; i < capacity; i++)
+            for (var i = 0; i < capacity; i++)
                 otherPersonList.Add(new OtherPerson());
 
             formFields.ForEach(field =>
@@ -585,9 +586,9 @@ namespace fostering_service.Services
 
             });
 
-            return otherPersonList.Where(person => 
-                person.Gender != null || 
-                person.LastName != null || 
+            return otherPersonList.Where(person =>
+                person.Gender != null ||
+                person.LastName != null ||
                 person.FirstName != null ||
                 person.DateOfBirth != null).
                 ToList();
@@ -612,13 +613,15 @@ namespace fostering_service.Services
             return builder;
         }
 
-        //TODO: add pets textarea to model
         public async Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
         {
             var completed = UpdateHouseholdIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
-            var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel, model.OtherPeopleInYourHousehold)
-                .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHousehold), GetTaskStatus(completed));
+            var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel,
+                    model.OtherPeopleInYourHousehold)
+                .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHousehold), GetTaskStatus(completed))
+                .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? string.Empty : model.PetsInformation)
+                .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No" );
 
             var updateModel = new IntegrationFormFieldsUpdateModel
             {
@@ -637,12 +640,11 @@ namespace fostering_service.Services
             return completed;
         }
 
-        //TODO: add pets textarea to model
         private bool UpdateHouseholdIsComplete(FosteringCaseHouseholdUpdateModel model)
         {
-            return (!model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty("")) &&
+            return (!model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty(model.PetsInformation)) &&
                    (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || model.OtherPeopleInYourHousehold != null) &&
-                    (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || 
+                    (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() ||
                             !model.OtherPeopleInYourHousehold.Exists(
                                person => string.IsNullOrEmpty(person.Gender) ||
                                          string.IsNullOrEmpty(person.LastName) ||
