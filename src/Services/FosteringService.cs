@@ -235,6 +235,8 @@ namespace fostering_service.Services
 
         public async Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
+            _logger.LogWarning($"**DEBUG:FosteringService UpdateAboutYourself case reference: {model.CaseReference}");
+            _logger.LogWarning($"**DEBUG:FosteringService UpdateAboutYourself FA another name: {model.FirstApplicant.AnotherName}");
             _logger.LogWarning("**DEBUG:FosteringService UpdateAboutYourself starting update process");
             var completed = UpdateAboutYourselfIsValid(model.FirstApplicant);
 
