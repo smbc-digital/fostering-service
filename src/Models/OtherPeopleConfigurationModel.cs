@@ -1,5 +1,16 @@
 namespace fostering_service.Models
 {
+    public static class ConfigurationModels
+    {
+        public static OtherPeopleConfigurationModel HouseholdConfigurationModel = new OtherPeopleConfigurationModel
+        {
+            DateOfBirth = "opdateofbirth",
+            FirstName = "opfirstname",
+            Gender = "opgender",
+            LastName = "oplastname"
+        };
+    }
+
     public class OtherPeopleConfigurationModel
     {
         public string FirstName { get; set; }

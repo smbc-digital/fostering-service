@@ -32,7 +32,7 @@ namespace fostering_service.Services
 
         Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model);
 
-        List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields);
+        List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8);
 
         FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople);
     }

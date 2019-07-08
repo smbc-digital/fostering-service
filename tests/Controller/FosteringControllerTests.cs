@@ -281,5 +281,52 @@ namespace fostering_service_tests.Controller
             var resultType = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, resultType.StatusCode);
         }
+
+        [Fact]
+        public async Task UpdateHousehold_ShouldCallFosteringService()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateHousehold(It.IsAny<FosteringCaseHouseholdUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+
+            // Act
+            await _controller.UpdateHousehold(new FosteringCaseHouseholdUpdateModel());
+
+            // Assert
+            _mockFosteringService
+                .Verify(_ => _.UpdateHousehold(It.IsAny<FosteringCaseHouseholdUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateHousehold_ShouldReturn200()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateHousehold(It.IsAny<FosteringCaseHouseholdUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+
+            // Act
+            var result = await _controller.UpdateHousehold(new FosteringCaseHouseholdUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateHousehold_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateHousehold(It.IsAny<FosteringCaseHouseholdUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.UpdateHousehold(new FosteringCaseHouseholdUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
     }
 }

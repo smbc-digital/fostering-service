@@ -73,13 +73,7 @@ namespace fostering_service.Services
                 OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty,
                 TypesOfFostering = new List<string>(),
                 ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
-                OtherPeopleInYourHousehold = CreateOtherPersonList(new OtherPeopleConfigurationModel
-                {
-                    DateOfBirth = "opdateofbirth",
-                    FirstName = "opfirstname",
-                    LastName = "oplastname",
-                    Gender = "opgender"
-                }, integrationFormFields)
+                OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields)
         };
 
             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
@@ -506,43 +500,37 @@ namespace fostering_service.Services
                 : ETaskStatus.NotCompleted;
         }
 
-        public List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields)
+        public List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8)
         {
-            var otherPersonList = new List<OtherPerson>
-            {
-                new OtherPerson(),
-                new OtherPerson(),
-                new OtherPerson(),
-                new OtherPerson(),
-                new OtherPerson(),
-                new OtherPerson(),
-                new OtherPerson(),
-                new OtherPerson()
-            };
+            var otherPersonList = new List<OtherPerson>();
+
+            for (var i=0; i < capacity; i++)
+                otherPersonList.Add(new OtherPerson());
 
             formFields.ForEach(field =>
             {
-                var index = int.Parse(field.Name[field.Name.Length - 1].ToString()) - 1;
+                if (string.IsNullOrEmpty(field.Name))
+                    return;
+
+                int.TryParse(field.Name[field.Name.Length - 1].ToString(), out var index);
+
+                index--;
+
+                if (index < 0)
+                    return;
 
                 if (field.Name.Contains(config.DateOfBirth))
-                {
                     otherPersonList[index].DateOfBirth = DateTime.Parse(field.Value);
-                }
 
                 if (field.Name.Contains(config.FirstName))
-                {
                     otherPersonList[index].FirstName = field.Value;
-                }
 
                 if (field.Name.Contains(config.LastName))
-                {
                     otherPersonList[index].LastName = field.Value;
-                }
 
                 if (field.Name.Contains(config.Gender))
-                {
                     otherPersonList[index].Gender = field.Value;
-                }
+
             });
 
             return otherPersonList.Where(person => 
@@ -557,7 +545,7 @@ namespace fostering_service.Services
         {
             var builder = new FormFieldBuilder();
 
-            for (int i = 0; i < otherPeople.Count; i++)
+            for (var i = 0; i < otherPeople?.Count; i++)
             {
                 var nameSuffix = i + 1;
 
@@ -572,19 +560,42 @@ namespace fostering_service.Services
             return builder;
         }
 
-        public Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
+        //TODO: add pets textarea to model
+        public async Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
         {
-            /**
-             * check if the form is complete
-             *
-             * map from updatemodel to the integrated form fields
-             *
-             * call the fosteringgatewayservice update method -> throw error if this fails
-             *
-             * return the ETaskStatus
-             */
+            var completed = UpdateHouseholdIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
-            throw new NotImplementedException();
+            var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel, model.OtherPeopleInYourHousehold)
+                .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHousehold), GetTaskStatus(completed));
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build(),
+                IntegrationFormName = _integrationFormName
+            };
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update household failure");
+            }
+
+            return completed;
+        }
+
+        //TODO: add pets textarea to model
+        private bool UpdateHouseholdIsComplete(FosteringCaseHouseholdUpdateModel model)
+        {
+            return (!model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty("")) &&
+                   (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || model.OtherPeopleInYourHousehold != null) &&
+                    (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || 
+                            !model.OtherPeopleInYourHousehold.Exists(
+                               person => string.IsNullOrEmpty(person.Gender) ||
+                                         string.IsNullOrEmpty(person.LastName) ||
+                                         string.IsNullOrEmpty(person.FirstName) ||
+                                         person.DateOfBirth == null));
         }
 
 

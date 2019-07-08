@@ -1495,5 +1495,247 @@ namespace fostering_service_tests.Service
 
             Assert.Equal(4, result.Count);
         }
+
+
+        /**
+         * Household tests
+         */
+
+        [Fact]
+        public async Task UpdateHousehold_ShouldCallVerintServiceGateway()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseHouseholdUpdateModel
+            {
+                CaseReference = "0121DO1"
+            };
+
+            // Act
+            await _service.UpdateHousehold(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateHousehold_ShouldThrowError()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadGateway
+                });
+
+            var model = new FosteringCaseHouseholdUpdateModel
+            {
+                CaseReference = "0121DO1"
+            };
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateHousehold(model));
+        }
+
+        [Theory]
+        [InlineData(true, ETaskStatus.NotCompleted)]
+        [InlineData(false, ETaskStatus.Completed)]
+        public async Task UpdateHousehold_ShouldReturnETaskStatus(bool anyOtherPeopleInYourHousehold, ETaskStatus expectedStatus)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            var model = new FosteringCaseHouseholdUpdateModel
+            {
+                CaseReference = "0121DO1",
+                AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold,
+                DoYouHaveAnyPets = false
+            };
+
+            // Act
+            var result = await _service.UpdateHousehold(model);
+
+            // Assert
+            Assert.Equal(expectedStatus, result);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "yourhouseholdstatus" && match.FormFieldValue == expectedStatus.ToString())
+                )), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(false, "false")]
+        [InlineData(null, "")]
+        public async Task UpdateHousehold_ShouldMapApplicantToIntegratedFormFields(bool? hasAnotherName, string expectedAnotherName)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            var model = new FosteringCaseAboutYourselfUpdateModel
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseAboutYourselfApplicantUpdateModel
+                {
+                    Religion = "religion",
+                    Ethnicity = "ethnicity",
+                    Gender = "gender",
+                    SexualOrientation = "sexual-orientation",
+                    Nationality = "nationality",
+                    PlaceOfBirth = "place-of-birth",
+                    EverBeenKnownByAnotherName = hasAnotherName
+                }
+            };
+
+            // Act
+            await _service.UpdateAboutYourself(model);
+
+            // Assert
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "tellusaboutyourselfstatus" && match.FormFieldValue == "Completed")
+           )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "previousname" && match.FormFieldValue == "")
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "ethnicity" && match.FormFieldValue == model.FirstApplicant.Ethnicity)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "gender" && match.FormFieldValue == model.FirstApplicant.Gender)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "nationality" && match.FormFieldValue == model.FirstApplicant.Nationality)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "placeofbirth" && match.FormFieldValue == model.FirstApplicant.PlaceOfBirth)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "religionorfaithgroup" && match.FormFieldValue == model.FirstApplicant.Religion)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "sexualorientation" && match.FormFieldValue == model.FirstApplicant.SexualOrientation)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "hasanothername" && match.FormFieldValue == expectedAnotherName)
+            )), Times.Once);
+        }
+
+        [Theory]
+        [InlineData(false, "false")]
+        [InlineData(null, "")]
+        public async Task UpdateHousehold_ShouldMapSecondApplicant(bool? hasAnotherName, string expectedAnotherName)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            var model = new FosteringCaseAboutYourselfUpdateModel
+            {
+                CaseReference = "0121DO1",
+                SecondApplicant = new FosteringCaseAboutYourselfApplicantUpdateModel
+                {
+                    Religion = "religion",
+                    Ethnicity = "ethnicity",
+                    Gender = "gender",
+                    SexualOrientation = "sexual-orientation",
+                    Nationality = "nationality",
+                    PlaceOfBirth = "place-of-birth",
+                    EverBeenKnownByAnotherName = hasAnotherName
+                },
+                FirstApplicant = new FosteringCaseAboutYourselfApplicantUpdateModel
+                {
+                    Religion = "religion",
+                    Ethnicity = "ethnicity",
+                    Gender = "gender",
+                    SexualOrientation = "sexual-orientation",
+                    Nationality = "nationality",
+                    PlaceOfBirth = "place-of-birth",
+                    EverBeenKnownByAnotherName = false
+                }
+            };
+
+            // Act
+            await _service.UpdateAboutYourself(model);
+
+            // Assert
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "tellusaboutyourselfstatus" && match.FormFieldValue == "Completed")
+           )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "previousname_2" && match.FormFieldValue == "")
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "ethnicity2" && match.FormFieldValue == model.SecondApplicant.Ethnicity)
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "gender2" && match.FormFieldValue == model.SecondApplicant.Gender)
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "nationality2" && match.FormFieldValue == model.SecondApplicant.Nationality)
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "placeofbirth_2" && match.FormFieldValue == model.SecondApplicant.PlaceOfBirth)
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "religionorfaithgroup2" && match.FormFieldValue == model.SecondApplicant.Religion)
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "sexualorientation2" && match.FormFieldValue == model.SecondApplicant.SexualOrientation)
+            )), Times.Once);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "hasanothername2" && match.FormFieldValue == expectedAnotherName)
+            )), Times.Once);
+        }
+
     }
 }
