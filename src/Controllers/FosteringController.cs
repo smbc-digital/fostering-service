@@ -2,6 +2,7 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Services;
+using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
@@ -15,10 +16,12 @@ namespace fostering_service.Controllers
     public class FosteringController : ControllerBase
     {
         private readonly IFosteringService _fosteringService;
+        private readonly ILogger<FosteringController> _logger;
 
-        public FosteringController(IFosteringService fosteringService)
+        public FosteringController(IFosteringService fosteringService, ILogger<FosteringController> logger)
         {
             _fosteringService = fosteringService;
+            _logger = logger;
         }
 
         [Route("case")]
@@ -27,12 +30,14 @@ namespace fostering_service.Controllers
         {
             try
             {
+                _logger.LogWarning("**DEBUG:FosteringController GetCase starting getCase");
                 var result = await _fosteringService.GetCase(caseId);
 
                 return Ok(result);
             }
             catch (Exception ex)
             {
+                _logger.LogWarning("**DEBUG:FosteringController GetCase an error has occured while calling fostering sevice getCase");
                 return StatusCode(500, ex);
             }
         }
@@ -43,12 +48,15 @@ namespace fostering_service.Controllers
         {
             try
             {
+                _logger.LogWarning("**DEBUG:FosteringController UpdateAboutYourself, starting request to update about yourself");
                 var response = await _fosteringService.UpdateAboutYourself(model);
 
+                _logger.LogInformation($"**DEBUG:FosteringController UpdateAboutYourself, response  status {response}");
                 return Ok(response);
             }
             catch (Exception ex)
             {
+                _logger.LogWarning($"**DEBUG:FosteringController UpdateAboutYourself, an error has occured while attempting to call fostering service, ex: {ex}");
                 return StatusCode(500, ex);
             }
         }
@@ -59,9 +67,9 @@ namespace fostering_service.Controllers
         {
             try
             {
-                await _fosteringService.UpdateYourEmploymentDetails(model);
+                var response = await _fosteringService.UpdateYourEmploymentDetails(model);
 
-                return Ok();
+                return Ok(response);
             }
             catch (Exception ex)
             {

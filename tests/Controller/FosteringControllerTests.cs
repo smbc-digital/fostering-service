@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using fostering_service.Controllers;
 using fostering_service.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
@@ -15,11 +16,12 @@ namespace fostering_service_tests.Controller
     public class FosteringControllerTests
     {
         private readonly Mock<IFosteringService> _mockFosteringService = new Mock<IFosteringService>();
-        private FosteringController _controller;
+        private readonly Mock<ILogger<FosteringController>> _mockLogger = new Mock<ILogger<FosteringController>>();
+        private readonly FosteringController _controller;
 
         public FosteringControllerTests()
         {
-            _controller = new FosteringController(_mockFosteringService.Object);
+            _controller = new FosteringController(_mockFosteringService.Object, _mockLogger.Object);
         }
 
         [Fact]
@@ -127,7 +129,7 @@ namespace fostering_service_tests.Controller
             var result = await _controller.UpdateYourEmploymentDetails(new FosteringCaseYourEmploymentDetailsUpdateModel());
 
             // Assert
-           Assert.IsType<OkResult>(result);
+           Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
