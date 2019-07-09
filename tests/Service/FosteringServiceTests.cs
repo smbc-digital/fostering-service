@@ -1503,13 +1503,8 @@ namespace fostering_service_tests.Service
             Assert.Equal(peopleList[0].FirstName, result[0].FormFieldValue);
             Assert.Equal($"{config.FirstName}1", result[0].FormFieldName);
 
-            Assert.Equal(4, result.Count);
+            Assert.Equal(32, result.Count);
         }
-
-
-        /**
-         * Household tests
-         */
 
         [Fact]
         public async Task UpdateHousehold_ShouldCallVerintServiceGateway()
