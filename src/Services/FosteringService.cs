@@ -666,7 +666,6 @@ namespace fostering_service.Services
                                          person.DateOfBirth == null));
         }
 
-
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
         {
             return !string.IsNullOrEmpty(model.Ethnicity) &&
