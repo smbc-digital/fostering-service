@@ -30,6 +30,8 @@ namespace fostering_service
 
             Log.Logger = Configurator.Create(Configuration, logConfig);
 
+            Log.Logger.Debug("Logger configured");
+
             BuildWebHost(args).Run();
         }
 
