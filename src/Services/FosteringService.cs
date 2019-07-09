@@ -80,10 +80,10 @@ namespace fostering_service.Services
                 TypesOfFostering = new List<string>(),
                 ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
                 OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields),
-                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "petsinformation")?.Value ?? string.Empty
+                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty
             };
 
-            var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
+             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
             if (!string.IsNullOrEmpty(anyOtherPeopleInYourHousehold))
             {
                 fosteringCase.AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold.ToLower() == "yes";
@@ -597,7 +597,7 @@ namespace fostering_service.Services
                 ToList();
         }
 
-        public FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople)
+        public FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople, int capacity = 8)
         {
             var builder = new FormFieldBuilder();
 
@@ -613,6 +613,17 @@ namespace fostering_service.Services
 
             }
 
+            for (var i = otherPeople?.Count; i < capacity; i++)
+            {
+                var nameSuffix = i + 1;
+
+                builder
+                    .AddField($"{config.FirstName}{nameSuffix}", string.Empty)
+                    .AddField($"{config.DateOfBirth}{nameSuffix}", string.Empty)
+                    .AddField($"{config.Gender}{nameSuffix}", string.Empty)
+                    .AddField($"{config.LastName}{nameSuffix}",  string.Empty);
+            }
+
             return builder;
         }
 
@@ -620,11 +631,11 @@ namespace fostering_service.Services
         {
             var completed = UpdateHouseholdIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
-            var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel,
-                    model.OtherPeopleInYourHousehold)
+            var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel, model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() ? model.OtherPeopleInYourHousehold : new List<OtherPerson>())
                 .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHousehold), GetTaskStatus(completed))
-                .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? string.Empty : model.PetsInformation)
-                .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No" );
+                .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? model.PetsInformation : string.Empty )
+                .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No" )
+                .AddField("otherpeopleinyourhousehold", model.AnyOtherPeopleInYourHousehold == null ? string.Empty : model.AnyOtherPeopleInYourHousehold == true ? "Yes" : "No");
 
             var updateModel = new IntegrationFormFieldsUpdateModel
             {
@@ -646,7 +657,7 @@ namespace fostering_service.Services
         private bool UpdateHouseholdIsComplete(FosteringCaseHouseholdUpdateModel model)
         {
             return (!model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty(model.PetsInformation)) &&
-                   (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || model.OtherPeopleInYourHousehold != null) &&
+                   (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || model.OtherPeopleInYourHousehold != null && model.OtherPeopleInYourHousehold?.Count != 0) &&
                     (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() ||
                             !model.OtherPeopleInYourHousehold.Exists(
                                person => string.IsNullOrEmpty(person.Gender) ||
