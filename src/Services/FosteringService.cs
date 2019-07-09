@@ -50,7 +50,8 @@ namespace fostering_service.Services
                 Statuses = new FosteringCaseStatuses
                 {
                     TellUsAboutYourselfStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourselfstatus")?.Value),
-                    ChildrenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenlivingawayfromyourhomestatus")?.Value),
+                    ChildrenUnderSixteenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenundersixteenlivingawayfromyourhomestatus")?.Value),
+                    ChildrenOverSixteenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenoversixteenlivingawayfromyourhomestatus")?.Value),
                     LanguageSpokenInYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "languagespokeninyourhomestatus")?.Value),
                     TellUsAboutYourInterestInFosteringStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourinterestinfosteringstatus")?.Value),
                     YourEmploymentDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "youremploymentdetailsstatus")?.Value),
@@ -758,8 +759,10 @@ namespace fostering_service.Services
         {
             switch (form)
             {
-                case EFosteringCaseForm.ChildrenLivingAwayFromYourHome:
-                    return "childrenlivingawayfromyourhomestatus";
+                case EFosteringCaseForm.ChildrenUnderSixteenLivingAwayFromYourHome:
+                    return "childrenundersixteenlivingawayfromyourhomestatus";
+                case EFosteringCaseForm.ChildrenOverSixteenLivingAwayFromYourHome:
+                    return "childrenoversixteenlivingawayfromyourhomestatus";
                 case EFosteringCaseForm.LanguageSpokenInYourHome:
                     return "languagespokeninyourhomestatus";
                 case EFosteringCaseForm.TellUsAboutYourInterestInFostering:
