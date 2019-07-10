@@ -75,12 +75,7 @@ namespace fostering_service
             app.UseHttpsRedirection();
             app.UseSwagger();
 
-            var swaggerPrefix = string.Empty;
-
-            if (!env.IsDevelopment())
-            {
-                swaggerPrefix = "/fosteringservice";
-            }
+            var swaggerPrefix = env.IsDevelopment() ? "/fosteringservice" : string.Empty;
 
             app.UseSwaggerUI(c =>
             {
