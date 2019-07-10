@@ -16,46 +16,38 @@ namespace fostering_service.Models
             LastName = "Under16LastName1",
             Gender = "Under16Gender1",
             DateOfBirth = "Under16DateOfBirth1",
-            AddressLine1 = "Under16Address1",
-            AddressLine2 = "",
-            Town = "",
-            Postcode = ""
+            Address = "Under16Address1",
+            Postcode = "Under16Postcode1"
         };
 
         public static OtherPeopleConfigurationModel SecondApplicantUnderSixteenConfigurationModel = new OtherPeopleConfigurationModel
         {
-            FirstName = "",
-            LastName = "",
-            Gender = "",
-            DateOfBirth = "",
-            AddressLine1 = "",
-            AddressLine2 = "",
-            Town = "",
-            Postcode = ""
+            FirstName = "Under16FirstName2",
+            LastName = "Under16LastName2",
+            Gender = "Under16Gender2",
+            DateOfBirth = "Under16DateOfBirth2",
+            Address = "Under16Address2",
+            Postcode = "Under16Postcode2"
         };
 
         public static OtherPeopleConfigurationModel FirstApplicantOverSixteenConfigurationModel = new OtherPeopleConfigurationModel
         {
-            FirstName = "",
-            LastName = "",
-            Gender = "",
-            DateOfBirth = "",
-            AddressLine1 = "",
-            AddressLine2 = "",
-            Town = "",
-            Postcode = ""
+            FirstName = "Over16FirstName1",
+            LastName = "Over16LastName1",
+            Gender = "Over16Gender1",
+            DateOfBirth = "Over16DateOfBirth1",
+            Address = "Over16Address1",
+            Postcode = "Over16Postcode1"
         };
 
         public static OtherPeopleConfigurationModel SecondApplicantOverSixteenConfigurationModel = new OtherPeopleConfigurationModel
         {
-            FirstName = "",
-            LastName = "",
-            Gender = "",
-            DateOfBirth = "",
-            AddressLine1 = "",
-            AddressLine2 = "",
-            Town = "",
-            Postcode = ""
+            FirstName = "Over16FirstName2",
+            LastName = "Over16LastName2",
+            Gender = "Over16Gender2",
+            DateOfBirth = "Over16DateOfBirth2",
+            Address = "Over16Address2",
+            Postcode = "Over16Postcode2"
         };
     }
 
@@ -69,11 +61,7 @@ namespace fostering_service.Models
 
         public string DateOfBirth { get; set; }
 
-        public string AddressLine1 { get; set; }
-
-        public string AddressLine2 { get; set; }
-
-        public string Town { get; set; }
+        public string Address { get; set; }
 
         public string Postcode { get; set; }
     }

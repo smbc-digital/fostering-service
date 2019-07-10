@@ -72,6 +72,8 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty,
+                    ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
+                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, integrationFormFields, 4)
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -190,6 +192,8 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
+                    ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfurationModels.SecondApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
+                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, integrationFormFields, 4)
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
@@ -586,6 +590,11 @@ namespace fostering_service.Services
                 if (field.Name.Contains(config.Gender))
                     otherPersonList[index].Gender = field.Value;
 
+                // This is where we need to split the address string into line 1, line 2, and town
+
+                if (field.Name.Contains(config.Postcode))
+                    otherPersonList[i].Postcode = field.Value;
+
             });
 
             return otherPersonList.Where(person =>
@@ -608,7 +617,9 @@ namespace fostering_service.Services
                     .AddField($"{config.FirstName}{nameSuffix}", otherPeople[i].FirstName ?? string.Empty)
                     .AddField($"{config.DateOfBirth}{nameSuffix}", otherPeople[i].DateOfBirth?.ToString("dd/MM/yyyy") ?? string.Empty)
                     .AddField($"{config.Gender}{nameSuffix}", otherPeople[i].Gender ?? string.Empty)
-                    .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty);
+                    .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty)
+                    .AddField($"{config.Address}{nameSuffix}", otherPeople[i].AddressLine1 + "|" + otherPeople[i].AddressLine2 + "|" + otherPeople[i].Town ?? string.Empty)
+                    .AddField($"{config.Postcode}{nameSuffix}", otherPeople[i].Postcode ?? string.Empty);
 
             }
 
@@ -620,7 +631,9 @@ namespace fostering_service.Services
                     .AddField($"{config.FirstName}{nameSuffix}", string.Empty)
                     .AddField($"{config.DateOfBirth}{nameSuffix}", string.Empty)
                     .AddField($"{config.Gender}{nameSuffix}", string.Empty)
-                    .AddField($"{config.LastName}{nameSuffix}",  string.Empty);
+                    .AddField($"{config.LastName}{nameSuffix}",  string.Empty)
+                    .AddField($"{config.Address}{nameSuffix}", string.Empty)
+                    .AddField($"{config.Postcode}{nameSuffix}", string.Empty);
             }
 
             return builder;
@@ -634,7 +647,7 @@ namespace fostering_service.Services
                 .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHousehold), GetTaskStatus(completed))
                 .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? model.PetsInformation : string.Empty )
                 .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No" )
-                .AddField("otherpeopleinyourhousehold", model.AnyOtherPeopleInYourHousehold == null ? string.Empty : model.AnyOtherPeopleInYourHousehold == true ? "Yes" : "No");
+                .AddField("otherpeopleinyourhousehold",   model.AnyOtherPeopleInYourHousehold == null ? string.Empty : model.AnyOtherPeopleInYourHousehold == true ? "Yes" : "No");
 
             var updateModel = new IntegrationFormFieldsUpdateModel
             {
