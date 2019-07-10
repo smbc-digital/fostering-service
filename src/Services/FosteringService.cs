@@ -50,8 +50,7 @@ namespace fostering_service.Services
                 Statuses = new FosteringCaseStatuses
                 {
                     TellUsAboutYourselfStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourselfstatus")?.Value),
-                    ChildrenUnderSixteenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenundersixteenlivingawayfromyourhomestatus")?.Value),
-                    ChildrenOverSixteenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenoversixteenlivingawayfromyourhomestatus")?.Value),
+                    ChildrenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenlivingawayfromyourhomestatus")?.Value),
                     LanguageSpokenInYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "languagespokeninyourhomestatus")?.Value),
                     TellUsAboutYourInterestInFosteringStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourinterestinfosteringstatus")?.Value),
                     YourEmploymentDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "youremploymentdetailsstatus")?.Value),
@@ -712,6 +711,88 @@ namespace fostering_service.Services
             return !string.IsNullOrEmpty(model.PrimaryLanguage) && !string.IsNullOrEmpty(model.OtherLanguages);
         }
 
+        public async Task<ETaskStatus> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
+        {
+            var completed = UpdateChildrenLivingAwayFromHomeIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+
+            var firstApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>())
+                .AddField(GetFormStatusFieldName(EFosteringCaseForm.ChildrenLivingAwayFromYourHome), GetTaskStatus(completed))
+                .AddField("HasChildrenUnderSixteen1", model.FirstApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenUnderSixteen == true ? "Yes" : "No");
+
+            var firstApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>())
+                .AddField("HasChildrenOverSixteen1", model.FirstApplicant.AnyChildrenOverSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenOverSixteen == true ? "Yes" : "No")
+                .Build();
+
+            List<IntegrationFormField> secondApplicantUnderSixteen = new List<IntegrationFormField>();
+            List<IntegrationFormField> secondApplicantOverSixteen = new List<IntegrationFormField>();
+
+            if (model.SecondApplicant != null)
+            {
+                secondApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>()).Build();
+
+                secondApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>()).Build();
+            }
+
+            var integrationFormFields = model.SecondApplicant != null ? firstApplicantUnderSixteen.Build().Concat(firstApplicantOverSixteen).ToList().Concat(secondApplicantUnderSixteen).ToList().Concat(secondApplicantOverSixteen).ToList() : firstApplicantUnderSixteen.Build().Concat(firstApplicantOverSixteen).ToList();
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = integrationFormFields,
+                IntegrationFormName = _integrationFormName
+            };
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update children living away from home failure");
+            }
+
+            return completed;
+        }
+
+        private bool UpdateChildrenLivingAwayFromHomeIsComplete(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
+        {
+            var firstApplicantUnderSixteen = (!model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null && 
+                    model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) && 
+                    !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) || 
+                    string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
+                    string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) || 
+                    string.IsNullOrEmpty(person.Town));
+
+            var firstApplicantOverSixteen = (!model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
+                model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
+                !model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
+                string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
+                string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
+                string.IsNullOrEmpty(person.Town));
+
+            bool secondApplicantUnderSixteen;
+            bool secondApplicantOverSixteen;
+
+            if (model.SecondApplicant != null)
+            {
+                secondApplicantUnderSixteen = (!model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
+                    model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) &&
+                    !model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
+                    string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
+                    string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
+                    string.IsNullOrEmpty(person.Town));
+
+                secondApplicantOverSixteen = (!model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
+                    model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
+                    !model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
+                    string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
+                    string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
+                    string.IsNullOrEmpty(person.Town));
+
+                return firstApplicantUnderSixteen && firstApplicantOverSixteen && secondApplicantUnderSixteen && secondApplicantOverSixteen;
+            }
+
+            return firstApplicantUnderSixteen && firstApplicantOverSixteen;
+        }
+
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);
@@ -769,10 +850,8 @@ namespace fostering_service.Services
         {
             switch (form)
             {
-                case EFosteringCaseForm.ChildrenUnderSixteenLivingAwayFromYourHome:
-                    return "childrenundersixteenlivingawayfromyourhomestatus";
-                case EFosteringCaseForm.ChildrenOverSixteenLivingAwayFromYourHome:
-                    return "childrenoversixteenlivingawayfromyourhomestatus";
+                case EFosteringCaseForm.ChildrenLivingAwayFromYourHome:
+                    return "childrenlivingawayfromyourhomestatus";
                 case EFosteringCaseForm.LanguageSpokenInYourHome:
                     return "languagespokeninyourhomestatus";
                 case EFosteringCaseForm.TellUsAboutYourInterestInFostering:

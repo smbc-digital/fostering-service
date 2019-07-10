@@ -188,5 +188,21 @@ namespace fostering_service.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [Route("children-living-away-from-home")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateChildrenLivingAwayFromHome(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 }

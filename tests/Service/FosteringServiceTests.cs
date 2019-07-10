@@ -416,7 +416,7 @@ namespace fostering_service_tests.Service
                 });
 
             // Act
-            await _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenUnderSixteenLivingAwayFromYourHome);
+            await _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenLivingAwayFromYourHome);
 
             // Assert
             _verintServiceGatewayMock
@@ -435,7 +435,7 @@ namespace fostering_service_tests.Service
                 });
 
             // Act
-            await Assert.ThrowsAsync<Exception>(() => _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenUnderSixteenLivingAwayFromYourHome));
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenLivingAwayFromYourHome));
         }
 
         [Fact]
