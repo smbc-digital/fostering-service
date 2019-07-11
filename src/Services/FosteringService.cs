@@ -84,7 +84,7 @@ namespace fostering_service.Services
                 PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty
             };
 
-             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
+            var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
             if (!string.IsNullOrEmpty(anyOtherPeopleInYourHousehold))
             {
                 fosteringCase.AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold.ToLower() == "yes";
@@ -94,6 +94,18 @@ namespace fostering_service.Services
             if (!string.IsNullOrEmpty(doYouHaveAnyPets))
             {
                 fosteringCase.DoYouHaveAnyPets = doYouHaveAnyPets.ToLower() == "yes";
+            }
+
+            var firstApplicantAnyChildrenUnderSixteen = integrationFormFields.FirstOrDefault(_ => _.Name == "haschildrenundersixteen1")?.Value;
+            if (!string.IsNullOrEmpty(firstApplicantAnyChildrenUnderSixteen))
+            {
+                fosteringCase.FirstApplicant.AnyChildrenUnderSixteen = firstApplicantAnyChildrenUnderSixteen.ToLower() == "yes";
+            }
+
+            var firstApplicantAnyChildrenOverSixteen = integrationFormFields.FirstOrDefault(_ => _.Name == "haschildrenoversixteen1")?.Value;
+            if (!string.IsNullOrEmpty(firstApplicantAnyChildrenOverSixteen))
+            {
+                fosteringCase.FirstApplicant.AnyChildrenOverSixteen = firstApplicantAnyChildrenOverSixteen.ToLower() == "yes";
             }
 
             var marriedOrInACivilPartnership = integrationFormFields.FirstOrDefault(_ => _.Name == "marriedorinacivilpartnership")?.Value;
@@ -192,7 +204,7 @@ namespace fostering_service.Services
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
-                    ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfurationModels.SecondApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
+                    ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
                     ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, integrationFormFields, 4)
                 };
 
@@ -230,6 +242,18 @@ namespace fostering_service.Services
                 if (!string.IsNullOrEmpty(practitioner2))
                 {
                     fosteringCase.SecondApplicant.Practitioner = practitioner2.ToLower() == "yes";
+                }
+
+                var secondApplicantAnyChildrenUnderSixteen = integrationFormFields.FirstOrDefault(_ => _.Name == "haschildrenundersixteen2")?.Value;
+                if (!string.IsNullOrEmpty(secondApplicantAnyChildrenUnderSixteen))
+                {
+                    fosteringCase.SecondApplicant.AnyChildrenUnderSixteen = secondApplicantAnyChildrenUnderSixteen.ToLower() == "yes";
+                }
+
+                var secondApplicantAnyChildrenOverSixteen = integrationFormFields.FirstOrDefault(_ => _.Name == "haschildrenoversixteen2")?.Value;
+                if (!string.IsNullOrEmpty(secondApplicantAnyChildrenOverSixteen))
+                {
+                    fosteringCase.SecondApplicant.AnyChildrenOverSixteen = secondApplicantAnyChildrenOverSixteen.ToLower() == "yes";
                 }
 
             }
@@ -592,8 +616,16 @@ namespace fostering_service.Services
 
                 // This is where we need to split the address string into line 1, line 2, and town
 
-                if (field.Name.Contains(config.Postcode))
-                    otherPersonList[i].Postcode = field.Value;
+                if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
+                {
+                    var address = field.Value.Split("|");
+                    otherPersonList[index].AddressLine1 = address[0];
+                    otherPersonList[index].AddressLine2 = address[1];
+                    otherPersonList[index].Town = address[2];
+                }
+
+                if (!string.IsNullOrEmpty(config.Postcode) && field.Name.Contains(config.Postcode))
+                    otherPersonList[index].Postcode = field.Value;
 
             });
 
@@ -601,7 +633,11 @@ namespace fostering_service.Services
                 person.Gender != null ||
                 person.LastName != null ||
                 person.FirstName != null ||
-                person.DateOfBirth != null).
+                person.DateOfBirth != null ||
+                person.AddressLine1 != null ||
+                person.AddressLine2 != null ||
+                person.Town != null ||
+                person.Postcode != null).
                 ToList();
         }
 
@@ -615,11 +651,17 @@ namespace fostering_service.Services
 
                 builder
                     .AddField($"{config.FirstName}{nameSuffix}", otherPeople[i].FirstName ?? string.Empty)
-                    .AddField($"{config.DateOfBirth}{nameSuffix}", otherPeople[i].DateOfBirth?.ToString("dd/MM/yyyy") ?? string.Empty)
+                    .AddField($"{config.DateOfBirth}{nameSuffix}",
+                        otherPeople[i].DateOfBirth?.ToString("dd/MM/yyyy") ?? string.Empty)
                     .AddField($"{config.Gender}{nameSuffix}", otherPeople[i].Gender ?? string.Empty)
-                    .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty)
-                    .AddField($"{config.Address}{nameSuffix}", otherPeople[i].AddressLine1 + "|" + otherPeople[i].AddressLine2 + "|" + otherPeople[i].Town ?? string.Empty)
-                    .AddField($"{config.Postcode}{nameSuffix}", otherPeople[i].Postcode ?? string.Empty);
+                    .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty);
+
+                if (!string.IsNullOrEmpty(config.Address) && !string.IsNullOrEmpty(config.Postcode))
+                {
+                    builder
+                        .AddField($"{config.Address}{nameSuffix}", otherPeople[i].AddressLine1 + "|" + otherPeople[i].AddressLine2 + "|" + otherPeople[i].Town ?? string.Empty)
+                        .AddField($"{config.Postcode}{nameSuffix}", otherPeople[i].Postcode ?? string.Empty);
+                }
 
             }
 
@@ -631,9 +673,14 @@ namespace fostering_service.Services
                     .AddField($"{config.FirstName}{nameSuffix}", string.Empty)
                     .AddField($"{config.DateOfBirth}{nameSuffix}", string.Empty)
                     .AddField($"{config.Gender}{nameSuffix}", string.Empty)
-                    .AddField($"{config.LastName}{nameSuffix}",  string.Empty)
+                    .AddField($"{config.LastName}{nameSuffix}", string.Empty);
+
+                if (!string.IsNullOrEmpty(config.Address) && !string.IsNullOrEmpty(config.Postcode))
+                {
+                    builder
                     .AddField($"{config.Address}{nameSuffix}", string.Empty)
-                    .AddField($"{config.Postcode}{nameSuffix}", string.Empty);
+                        .AddField($"{config.Postcode}{nameSuffix}", string.Empty);
+                }
             }
 
             return builder;
@@ -645,9 +692,9 @@ namespace fostering_service.Services
 
             var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel, model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() ? model.OtherPeopleInYourHousehold : new List<OtherPerson>())
                 .AddField(GetFormStatusFieldName(EFosteringCaseForm.YourHousehold), GetTaskStatus(completed))
-                .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? model.PetsInformation : string.Empty )
-                .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No" )
-                .AddField("otherpeopleinyourhousehold",   model.AnyOtherPeopleInYourHousehold == null ? string.Empty : model.AnyOtherPeopleInYourHousehold == true ? "Yes" : "No");
+                .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? model.PetsInformation : string.Empty)
+                .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No")
+                .AddField("otherpeopleinyourhousehold", model.AnyOtherPeopleInYourHousehold == null ? string.Empty : model.AnyOtherPeopleInYourHousehold == true ? "Yes" : "No");
 
             var updateModel = new IntegrationFormFieldsUpdateModel
             {
@@ -730,10 +777,10 @@ namespace fostering_service.Services
 
             var firstApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>())
                 .AddField(GetFormStatusFieldName(EFosteringCaseForm.ChildrenLivingAwayFromYourHome), GetTaskStatus(completed))
-                .AddField("HasChildrenUnderSixteen1", model.FirstApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenUnderSixteen == true ? "Yes" : "No");
+                .AddField("haschildrenundersixteen1", model.FirstApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenUnderSixteen == true ? "yes" : "no");
 
             var firstApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>())
-                .AddField("HasChildrenOverSixteen1", model.FirstApplicant.AnyChildrenOverSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenOverSixteen == true ? "Yes" : "No")
+                .AddField("haschildrenoversixteen1", model.FirstApplicant.AnyChildrenOverSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenOverSixteen == true ? "yes" : "no")
                 .Build();
 
             List<IntegrationFormField> secondApplicantUnderSixteen = new List<IntegrationFormField>();
@@ -741,9 +788,11 @@ namespace fostering_service.Services
 
             if (model.SecondApplicant != null)
             {
-                secondApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>()).Build();
+                secondApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>())
+                    .AddField("haschildrenundersixteen2", model.SecondApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.SecondApplicant.AnyChildrenUnderSixteen == true ? "yes" : "no").Build();
 
-                secondApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>()).Build();
+                secondApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>())
+                    .AddField("haschildrenoversixteen2", model.SecondApplicant.AnyChildrenOverSixteen == null ? string.Empty : model.SecondApplicant.AnyChildrenOverSixteen == true ? "yes" : "no").Build();
             }
 
             var integrationFormFields = model.SecondApplicant != null ? firstApplicantUnderSixteen.Build().Concat(firstApplicantOverSixteen).ToList().Concat(secondApplicantUnderSixteen).ToList().Concat(secondApplicantOverSixteen).ToList() : firstApplicantUnderSixteen.Build().Concat(firstApplicantOverSixteen).ToList();
@@ -767,19 +816,19 @@ namespace fostering_service.Services
 
         private bool UpdateChildrenLivingAwayFromHomeIsComplete(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
         {
-            var firstApplicantUnderSixteen = (!model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null && 
-                    model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) && 
-                    !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) || 
+            var firstApplicantUnderSixteen = (!model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
+                    model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) &&
+                    !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
                     string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
-                    string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) || 
+                    string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
                     string.IsNullOrEmpty(person.Town));
 
             var firstApplicantOverSixteen = (!model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
-                model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
-                !model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
-                string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
-                string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
-                string.IsNullOrEmpty(person.Town));
+                    model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
+                    !model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
+                    string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
+                    string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
+                    string.IsNullOrEmpty(person.Town));
 
             bool secondApplicantUnderSixteen;
             bool secondApplicantOverSixteen;

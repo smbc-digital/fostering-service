@@ -204,6 +204,8 @@ namespace fostering_service_tests.Service
                             .WithIntegrationFormField("sexualorientation2", "Sexual orientation")
                             .WithIntegrationFormField("religionorfaithgroup2", "Religion")
                             .WithIntegrationFormField("hasanothername2", "True")
+                            .WithIntegrationFormField("haschildrenundersixteen2", "yes")
+                            .WithIntegrationFormField("haschildrenoversixteen2", "yes")
                             .Build();
 
             _verintServiceGatewayMock
@@ -1742,5 +1744,99 @@ namespace fostering_service_tests.Service
             )), Times.Once);
         }
 
+
+        [Fact]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldCallVerintServiceGateway()
+        {
+            //Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel
+            {
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                }
+            };
+
+            //Act
+            await _service.UpdateChildrenLivingAwayFromHome(model);
+
+            //Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldThrowError()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadGateway
+                });
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                }
+            };
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateChildrenLivingAwayFromHome(model));
+        }
+
+        [Theory]
+        [InlineData(true, null, ETaskStatus.NotCompleted)]
+        [InlineData(true, true, ETaskStatus.NotCompleted)]
+        [InlineData(false, false, ETaskStatus.Completed)]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldReturnETaskStatus(bool? hasUnderSixteenLivingAwayFromHome, bool? hasOverSixteenLivingAwayFromHome, ETaskStatus expectedStatus)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    AnyChildrenUnderSixteen = hasUnderSixteenLivingAwayFromHome,
+                    AnyChildrenOverSixteen = hasOverSixteenLivingAwayFromHome,
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                }
+
+                //AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold,
+                //DoYouHaveAnyPets = false
+            };
+
+            // Act
+            var result = await _service.UpdateChildrenLivingAwayFromHome(model);
+
+            // Assert
+            Assert.Equal(expectedStatus, result);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "childrenlivingawayfromyourhomestatus" && match.FormFieldValue == expectedStatus.ToString())
+                )), Times.Once);
+        }
     }
 }
