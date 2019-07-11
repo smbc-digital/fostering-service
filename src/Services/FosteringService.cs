@@ -622,6 +622,9 @@ namespace fostering_service.Services
 
                     switch (address.Length)
                     {
+                        case 0:
+                            otherPersonList[index].AddressLine1 = string.Empty;
+                            break;
                         case 1:
                             otherPersonList[index].AddressLine1 = address[0];
                             break;
@@ -629,7 +632,7 @@ namespace fostering_service.Services
                             otherPersonList[index].AddressLine1 = address[0];
                             otherPersonList[index].Town = address[1];
                             break;
-                        case 3:
+                        default:
                             otherPersonList[index].AddressLine1 = address[0];
                             otherPersonList[index].AddressLine2 = address[1];
                             otherPersonList[index].Town = address[2];
@@ -841,19 +844,16 @@ namespace fostering_service.Services
                     string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
                     string.IsNullOrEmpty(person.Town));
 
-            bool secondApplicantUnderSixteen;
-            bool secondApplicantOverSixteen;
-
             if (model.SecondApplicant != null)
             {
-                secondApplicantUnderSixteen = (!model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
+                var secondApplicantUnderSixteen = (!model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
                     model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) &&
                     !model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
                     string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||
                     string.IsNullOrEmpty(person.AddressLine1) || string.IsNullOrEmpty(person.AddressLine2) || string.IsNullOrEmpty(person.Postcode) ||
                     string.IsNullOrEmpty(person.Town));
 
-                secondApplicantOverSixteen = (!model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
+                var secondApplicantOverSixteen = (!model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
                     model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
                     !model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => string.IsNullOrEmpty(person.FirstName) ||
                     string.IsNullOrEmpty(person.LastName) || string.IsNullOrEmpty(person.Gender) || person.DateOfBirth == null ||

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Castle.Core.Internal;
 using fostering_service.Models;
 using fostering_service.Services;
 using fostering_service_tests.Builders;
@@ -2072,29 +2073,38 @@ namespace fostering_service_tests.Service
 
         [Theory]
         [InlineData("addressLine1|fghf|ttykuuky", "addressLine1", "fghf", "ttykuuky")]
-        //[InlineData("", "", "", "")]
-        public async Task UpdateChildrenLivingAwayFromHome_ShouldReturnCorrectAddress(string address, string expectedLine1, string expectedLine2, string expectedTown)
+        [InlineData("line1|line2||", "line1", "line2", "")]
+        [InlineData("|", "", null, "")]
+        [InlineData("||", "", "", "")]
+        [InlineData("|||", "", "", "")]
+        public void CreateOtherPersonList_ShouldReturnCorrectAddress(string address, string expectedLine1, string expectedLine2, string expectedTown)
         {
             // Arrange
-            var entity = new CaseBuilder()
-                .WithIntegrationFormField("firstname", "First name")
-                .WithIntegrationFormField("surname", "Surname")
-                .WithIntegrationFormField("over16address11", address)
-                .Build();
+             var config = new OtherPeopleConfigurationModel
+             {
+                 DateOfBirth = "PREFIX_DOB",
+                 FirstName = "ANOTHER_PREFIX_FIRSTNAME",
+                 Gender = "PREFIX_EXAMPLE_GENDER",
+                 LastName = "PREFIX_EXAMPLE_LASTNAME",
+                 Address = "over16address1"
+             };
 
-            _verintServiceGatewayMock
-                .Setup(_ => _.GetCase(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponse<Case>
+            var model = new List<CustomField>
+            {
+                new CustomField
                 {
-                    StatusCode = HttpStatusCode.OK,
-                    ResponseContent = entity
-                });
+                    Name = $"{config.Address}1",
+                    Value =  address
+                },
+            };
 
             // Act
-            var result = await _service.GetCase("1234");
+            var result = _service.CreateOtherPersonList(config, model, 1);
 
             // Assert
-            Assert.Equal(result.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].AddressLine1, expectedLine1);
+            Assert.Equal(result[0].AddressLine1, expectedLine1);
+            Assert.Equal(result[0].AddressLine2, expectedLine2);
+            Assert.Equal(result[0].Town, expectedTown);
         }
     }
 }
