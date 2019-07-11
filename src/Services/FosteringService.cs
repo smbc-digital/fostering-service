@@ -651,8 +651,7 @@ namespace fostering_service.Services
 
                 builder
                     .AddField($"{config.FirstName}{nameSuffix}", otherPeople[i].FirstName ?? string.Empty)
-                    .AddField($"{config.DateOfBirth}{nameSuffix}",
-                        otherPeople[i].DateOfBirth?.ToString("dd/MM/yyyy") ?? string.Empty)
+                    .AddField($"{config.DateOfBirth}{nameSuffix}", otherPeople[i].DateOfBirth?.ToString("dd/MM/yyyy") ?? string.Empty)
                     .AddField($"{config.Gender}{nameSuffix}", otherPeople[i].Gender ?? string.Empty)
                     .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty);
 
