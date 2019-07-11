@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
 using fostering_service.Models;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
@@ -615,18 +616,29 @@ namespace fostering_service.Services
                     otherPersonList[index].Gender = field.Value;
 
                 // This is where we need to split the address string into line 1, line 2, and town
-
                 if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
                 {
                     var address = field.Value.Split("|");
-                    otherPersonList[index].AddressLine1 = address[0];
-                    otherPersonList[index].AddressLine2 = address[1];
-                    otherPersonList[index].Town = address[2];
+
+                    switch (address.Length)
+                    {
+                        case 1:
+                            otherPersonList[index].AddressLine1 = address[0];
+                            break;
+                        case 2:
+                            otherPersonList[index].AddressLine1 = address[0];
+                            otherPersonList[index].Town = address[1];
+                            break;
+                        case 3:
+                            otherPersonList[index].AddressLine1 = address[0];
+                            otherPersonList[index].AddressLine2 = address[1];
+                            otherPersonList[index].Town = address[2];
+                            break;
+                    }        
                 }
 
                 if (!string.IsNullOrEmpty(config.Postcode) && field.Name.Contains(config.Postcode))
                     otherPersonList[index].Postcode = field.Value;
-
             });
 
             return otherPersonList.Where(person =>

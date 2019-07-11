@@ -2069,5 +2069,32 @@ namespace fostering_service_tests.Service
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Postcode)
                 )), Times.Once);
         }
+
+        [Theory]
+        [InlineData("addressLine1|fghf|ttykuuky", "addressLine1", "fghf", "ttykuuky")]
+        //[InlineData("", "", "", "")]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldReturnCorrectAddress(string address, string expectedLine1, string expectedLine2, string expectedTown)
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithIntegrationFormField("over16address11", address)
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.Equal(result.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].AddressLine1, expectedLine1);
+        }
     }
 }
