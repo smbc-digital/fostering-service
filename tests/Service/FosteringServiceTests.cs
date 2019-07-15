@@ -1876,21 +1876,13 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Male",
                             DateOfBirth = date,
-<<<<<<< HEAD
                             Address = new Model.Address
-=======
-                            Address = new Models.Address
->>>>>>> master
                             {
                                 AddressLine1 = "31 Street",
                                 AddressLine2 = "Place",
                                 Town = "Town",
                                 Postcode = "SK1 3XE"
                             }
-<<<<<<< HEAD
-=======
-
->>>>>>> master
                         }
                     },
                     ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>
@@ -1901,11 +1893,7 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Female",
                             DateOfBirth = date,
-<<<<<<< HEAD
                             Address = new Model.Address
-=======
-                            Address = new Models.Address 
->>>>>>> master
                             {
                                 AddressLine1 = "31 Road",
                                 AddressLine2 = "Place",
@@ -2014,11 +2002,7 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Male",
                             DateOfBirth = date,
-<<<<<<< HEAD
                             Address = new Model.Address
-=======
-                            Address = new Models.Address
->>>>>>> master
                             {
                                 AddressLine1 = "31 Street",
                                 AddressLine2 = "Place",
@@ -2035,11 +2019,7 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Female",
                             DateOfBirth = date,
-<<<<<<< HEAD
                             Address = new Model.Address
-=======
-                            Address = new Models.Address
->>>>>>> master
                             {
                                 AddressLine1 = "31 Road",
                                 AddressLine2 = "Place",
@@ -2140,13 +2120,9 @@ namespace fostering_service_tests.Service
             var result = _service.CreateOtherPersonList(config, model, 1);
 
             // Assert
-<<<<<<< HEAD
-            Assert.Equal(result.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.AddressLine1, expectedLine1);
-=======
             Assert.Equal(result[0].Address.AddressLine1, expectedLine1);
             Assert.Equal(result[0].Address.AddressLine2, expectedLine2);
             Assert.Equal(result[0].Address.Town, expectedTown);
->>>>>>> master
         }
     }
 }
