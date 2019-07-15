@@ -18,6 +18,7 @@ using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 using Xunit;
+using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
 
 namespace fostering_service_tests.Service
 {
@@ -1869,10 +1870,13 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Male",
                             DateOfBirth = date,
-                            AddressLine1 = "31 Street",
-                            AddressLine2 = "Place",
-                            Town = "Town",
-                            Postcode = "SK1 3XE"
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Street",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
                         }
                     },
                     ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>
@@ -1883,10 +1887,13 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Female",
                             DateOfBirth = date,
-                            AddressLine1 = "31 Road",
-                            AddressLine2 = "Place",
-                            Town = "Town",
-                            Postcode = "SK1 3XE"
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Road",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
                         }
                     }
                 }
@@ -1918,7 +1925,7 @@ namespace fostering_service_tests.Service
                 )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16postcode11" && match.FormFieldValue == model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Postcode)
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16postcode11" && match.FormFieldValue == model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Address.Postcode)
                 )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
@@ -1946,7 +1953,7 @@ namespace fostering_service_tests.Service
                 )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode11" && match.FormFieldValue == model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Postcode)
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode11" && match.FormFieldValue == model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.Postcode)
                 )), Times.Once);
         }
 
@@ -1989,10 +1996,13 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Male",
                             DateOfBirth = date,
-                            AddressLine1 = "31 Street",
-                            AddressLine2 = "Place",
-                            Town = "Town",
-                            Postcode = "SK1 3XE"
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Street",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
                         }
                     },
                     ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>
@@ -2003,10 +2013,13 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Female",
                             DateOfBirth = date,
-                            AddressLine1 = "31 Road",
-                            AddressLine2 = "Place",
-                            Town = "Town",
-                            Postcode = "SK1 3XE"
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Road",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
                         }
                     }
                 }
@@ -2038,7 +2051,7 @@ namespace fostering_service_tests.Service
                 )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Postcode)
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Address.Postcode)
                 )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
@@ -2066,7 +2079,7 @@ namespace fostering_service_tests.Service
                 )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Postcode)
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.Postcode)
                 )), Times.Once);
         }
 
@@ -2094,7 +2107,7 @@ namespace fostering_service_tests.Service
             var result = await _service.GetCase("1234");
 
             // Assert
-            Assert.Equal(result.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].AddressLine1, expectedLine1);
+            Assert.Equal(result.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.AddressLine1, expectedLine1);
         }
     }
 }
