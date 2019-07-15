@@ -14,6 +14,7 @@ using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
+using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
 
 namespace fostering_service.Services
 {
@@ -620,10 +621,14 @@ namespace fostering_service.Services
                 {
                     var address = field.Value.Split("|");
 
+                    otherPersonList[index].Address = new Model.Address();
+
                     switch (address.Length)
                     {
                         case 0:
                             otherPersonList[index].Address.AddressLine1 = string.Empty;
+                            otherPersonList[index].Address.AddressLine2 = string.Empty;
+                            otherPersonList[index].Address.Town = string.Empty;
                             break;
                         case 1:
                             otherPersonList[index].Address.AddressLine1 = address[0];
@@ -644,16 +649,18 @@ namespace fostering_service.Services
                     otherPersonList[index].Address.Postcode = field.Value;
             });
 
-            return otherPersonList.Where(person =>
+            var list = otherPersonList.Where(person =>
                 person.Gender != null ||
                 person.LastName != null ||
                 person.FirstName != null ||
                 person.DateOfBirth != null ||
-                person.Address.AddressLine1 != null ||
-                person.Address.AddressLine2 != null ||
-                person.Address.Town != null ||
-                person.Address.Postcode != null).
+                person.Address?.AddressLine1 != null ||
+                person.Address?.AddressLine2 != null ||
+                person.Address?.Town != null ||
+                person.Address?.Postcode != null).
                 ToList();
+
+            return list;
         }
 
         public FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople, int capacity = 8)

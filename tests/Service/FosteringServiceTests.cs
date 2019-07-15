@@ -2113,7 +2113,7 @@ namespace fostering_service_tests.Service
                 {
                     Name = $"{config.Address}1",
                     Value =  address
-                },
+                }
             };
 
             // Act
