@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Castle.Core.Internal;
 using fostering_service.Models;
 using fostering_service.Services;
 using fostering_service_tests.Builders;
@@ -17,6 +18,7 @@ using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
+using Models = StockportGovUK.NetStandard.Models.Models.Fostering;
 using Xunit;
 using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
 
@@ -156,6 +158,10 @@ namespace fostering_service_tests.Service
                 .WithIntegrationFormField("surname", "Last Name")
                 .WithIntegrationFormField("firstname", "First Name")
                 .WithIntegrationFormField("hasanothername", "True")
+                .WithIntegrationFormField("under16address11", "test|test|test")
+                .WithIntegrationFormField("under16postcode11", "test")
+                .WithIntegrationFormField("over16address11", "test|test|test")
+                .WithIntegrationFormField("over16postcode11", "test")
                 .Build();
 
             _verintServiceGatewayMock
@@ -1870,13 +1876,21 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Male",
                             DateOfBirth = date,
+<<<<<<< HEAD
                             Address = new Model.Address
+=======
+                            Address = new Models.Address
+>>>>>>> master
                             {
                                 AddressLine1 = "31 Street",
                                 AddressLine2 = "Place",
                                 Town = "Town",
                                 Postcode = "SK1 3XE"
                             }
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
                         }
                     },
                     ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>
@@ -1887,7 +1901,11 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Female",
                             DateOfBirth = date,
+<<<<<<< HEAD
                             Address = new Model.Address
+=======
+                            Address = new Models.Address 
+>>>>>>> master
                             {
                                 AddressLine1 = "31 Road",
                                 AddressLine2 = "Place",
@@ -1996,7 +2014,11 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Male",
                             DateOfBirth = date,
+<<<<<<< HEAD
                             Address = new Model.Address
+=======
+                            Address = new Models.Address
+>>>>>>> master
                             {
                                 AddressLine1 = "31 Street",
                                 AddressLine2 = "Place",
@@ -2013,7 +2035,11 @@ namespace fostering_service_tests.Service
                             LastName = "Sixteen",
                             Gender = "Female",
                             DateOfBirth = date,
+<<<<<<< HEAD
                             Address = new Model.Address
+=======
+                            Address = new Models.Address
+>>>>>>> master
                             {
                                 AddressLine1 = "31 Road",
                                 AddressLine2 = "Place",
@@ -2085,29 +2111,42 @@ namespace fostering_service_tests.Service
 
         [Theory]
         [InlineData("addressLine1|fghf|ttykuuky", "addressLine1", "fghf", "ttykuuky")]
-        //[InlineData("", "", "", "")]
-        public async Task UpdateChildrenLivingAwayFromHome_ShouldReturnCorrectAddress(string address, string expectedLine1, string expectedLine2, string expectedTown)
+        [InlineData("line1|line2||", "line1", "line2", "")]
+        [InlineData("|", "", null, "")]
+        [InlineData("||", "", "", "")]
+        [InlineData("|||", "", "", "")]
+        public void CreateOtherPersonList_ShouldReturnCorrectAddress(string address, string expectedLine1, string expectedLine2, string expectedTown)
         {
             // Arrange
-            var entity = new CaseBuilder()
-                .WithIntegrationFormField("firstname", "First name")
-                .WithIntegrationFormField("surname", "Surname")
-                .WithIntegrationFormField("over16address11", address)
-                .Build();
+             var config = new OtherPeopleConfigurationModel
+             {
+                 DateOfBirth = "PREFIX_DOB",
+                 FirstName = "ANOTHER_PREFIX_FIRSTNAME",
+                 Gender = "PREFIX_EXAMPLE_GENDER",
+                 LastName = "PREFIX_EXAMPLE_LASTNAME",
+                 Address = "over16address1"
+             };
 
-            _verintServiceGatewayMock
-                .Setup(_ => _.GetCase(It.IsAny<string>()))
-                .ReturnsAsync(new HttpResponse<Case>
+            var model = new List<CustomField>
+            {
+                new CustomField
                 {
-                    StatusCode = HttpStatusCode.OK,
-                    ResponseContent = entity
-                });
+                    Name = $"{config.Address}1",
+                    Value =  address
+                },
+            };
 
             // Act
-            var result = await _service.GetCase("1234");
+            var result = _service.CreateOtherPersonList(config, model, 1);
 
             // Assert
+<<<<<<< HEAD
             Assert.Equal(result.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.AddressLine1, expectedLine1);
+=======
+            Assert.Equal(result[0].Address.AddressLine1, expectedLine1);
+            Assert.Equal(result[0].Address.AddressLine2, expectedLine2);
+            Assert.Equal(result[0].Address.Town, expectedTown);
+>>>>>>> master
         }
     }
 }
