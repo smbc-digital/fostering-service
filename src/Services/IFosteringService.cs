@@ -32,6 +32,8 @@ namespace fostering_service.Services
 
         Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model);
 
+        Task<ETaskStatus> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model);
+
         List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8);
 
         FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople, int capacity = 8);

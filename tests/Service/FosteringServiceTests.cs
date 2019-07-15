@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Castle.Core.Internal;
 using fostering_service.Models;
 using fostering_service.Services;
 using fostering_service_tests.Builders;
@@ -16,7 +18,9 @@ using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
+using Models = StockportGovUK.NetStandard.Models.Models.Fostering;
 using Xunit;
+using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
 
 namespace fostering_service_tests.Service
 {
@@ -154,6 +158,10 @@ namespace fostering_service_tests.Service
                 .WithIntegrationFormField("surname", "Last Name")
                 .WithIntegrationFormField("firstname", "First Name")
                 .WithIntegrationFormField("hasanothername", "True")
+                .WithIntegrationFormField("under16address11", "test|test|test")
+                .WithIntegrationFormField("under16postcode11", "test")
+                .WithIntegrationFormField("over16address11", "test|test|test")
+                .WithIntegrationFormField("over16postcode11", "test")
                 .Build();
 
             _verintServiceGatewayMock
@@ -204,6 +212,8 @@ namespace fostering_service_tests.Service
                             .WithIntegrationFormField("sexualorientation2", "Sexual orientation")
                             .WithIntegrationFormField("religionorfaithgroup2", "Religion")
                             .WithIntegrationFormField("hasanothername2", "True")
+                            .WithIntegrationFormField("haschildrenundersixteen2", "yes")
+                            .WithIntegrationFormField("haschildrenoversixteen2", "yes")
                             .Build();
 
             _verintServiceGatewayMock
@@ -416,7 +426,7 @@ namespace fostering_service_tests.Service
                 });
 
             // Act
-            await _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenUnderSixteenLivingAwayFromYourHome);
+            await _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenLivingAwayFromYourHome);
 
             // Assert
             _verintServiceGatewayMock
@@ -435,7 +445,7 @@ namespace fostering_service_tests.Service
                 });
 
             // Act
-            await Assert.ThrowsAsync<Exception>(() => _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenUnderSixteenLivingAwayFromYourHome));
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenLivingAwayFromYourHome));
         }
 
         [Fact]
@@ -1742,5 +1752,377 @@ namespace fostering_service_tests.Service
             )), Times.Once);
         }
 
+
+        [Fact]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldCallVerintServiceGateway()
+        {
+            //Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel
+            {
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                }
+            };
+
+            //Act
+            await _service.UpdateChildrenLivingAwayFromHome(model);
+
+            //Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldThrowError()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadGateway
+                });
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                }
+            };
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateChildrenLivingAwayFromHome(model));
+        }
+
+        [Theory]
+        [InlineData(true, null, ETaskStatus.NotCompleted)]
+        [InlineData(true, true, ETaskStatus.NotCompleted)]
+        [InlineData(false, false, ETaskStatus.Completed)]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldReturnETaskStatus(bool? hasUnderSixteenLivingAwayFromHome, bool? hasOverSixteenLivingAwayFromHome, ETaskStatus expectedStatus)
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    AnyChildrenUnderSixteen = hasUnderSixteenLivingAwayFromHome,
+                    AnyChildrenOverSixteen = hasOverSixteenLivingAwayFromHome,
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                }
+            };
+
+            // Act
+            var result = await _service.UpdateChildrenLivingAwayFromHome(model);
+
+            // Assert
+            Assert.Equal(expectedStatus, result);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "childrenlivingawayfromyourhomestatus" && match.FormFieldValue == expectedStatus.ToString())
+                )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldMapFirstApplicantToIntegratedFormFields()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var date = DateTime.Now;
+            var expectedDate = date.ToString("dd/MM/yyyy");
+
+            var expectedUnderSixteenAddress = "31 Street|Place|Town";
+            var expectedOverSixteenAddress = "31 Road|Place|Town";
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    AnyChildrenUnderSixteen = true,
+                    AnyChildrenOverSixteen = true,
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>
+                    {
+                        new OtherPerson
+                        {
+                            FirstName = "Under",
+                            LastName = "Sixteen",
+                            Gender = "Male",
+                            DateOfBirth = date,
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Street",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
+                        }
+                    },
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>
+                    {
+                        new OtherPerson
+                        {
+                            FirstName = "Over",
+                            LastName = "Sixteen",
+                            Gender = "Female",
+                            DateOfBirth = date,
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Road",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Act
+            await _service.UpdateChildrenLivingAwayFromHome(model);
+
+            // Assert
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "childrenlivingawayfromyourhomestatus" && match.FormFieldValue == "Completed")
+           )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16firstname11" && match.FormFieldValue == model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].FirstName)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16lastname11" && match.FormFieldValue == model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].LastName)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16gender11" && match.FormFieldValue == model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Gender)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16address11" && match.FormFieldValue == expectedUnderSixteenAddress)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16postcode11" && match.FormFieldValue == model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Address.Postcode)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16dateofbirth11" && Equals(match.FormFieldValue, expectedDate))
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16firstname11" && match.FormFieldValue == model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].FirstName)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16lastname11" && match.FormFieldValue == model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].LastName)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16gender11" && match.FormFieldValue == model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Gender)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16dateofbirth11" && Equals(match.FormFieldValue, expectedDate))
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16address11" && match.FormFieldValue == expectedOverSixteenAddress)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode11" && match.FormFieldValue == model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.Postcode)
+                )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateChildrenLivingAwayFromHome_ShouldMapSecondApplicantToIntegratedFormFields()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var date = DateTime.Now;
+            var expectedDate = date.ToString("dd/MM/yyyy");
+
+            var expectedUnderSixteenAddress = "31 Street|Place|Town";
+            var expectedOverSixteenAddress = "31 Road|Place|Town";
+
+            var model = new FosteringCaseChildrenLivingAwayFromHomeUpdateModel
+            {
+                CaseReference = "0121DO1",
+                FirstApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    AnyChildrenUnderSixteen = false,
+                    AnyChildrenOverSixteen = false,
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>(),
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>()
+                },
+                SecondApplicant = new FosteringCaseChildrenLivingAwayFromHomeApplicantUpdateModel
+                {
+                    AnyChildrenUnderSixteen = true,
+                    AnyChildrenOverSixteen = true,
+                    ChildrenUnderSixteenLivingAwayFromHome = new List<OtherPerson>
+                    {
+                        new OtherPerson
+                        {
+                            FirstName = "Under",
+                            LastName = "Sixteen",
+                            Gender = "Male",
+                            DateOfBirth = date,
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Street",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
+                        }
+                    },
+                    ChildrenOverSixteenLivingAwayFromHome = new List<OtherPerson>
+                    {
+                        new OtherPerson
+                        {
+                            FirstName = "Over",
+                            LastName = "Sixteen",
+                            Gender = "Female",
+                            DateOfBirth = date,
+                            Address = new Model.Address
+                            {
+                                AddressLine1 = "31 Road",
+                                AddressLine2 = "Place",
+                                Town = "Town",
+                                Postcode = "SK1 3XE"
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Act
+            await _service.UpdateChildrenLivingAwayFromHome(model);
+
+            // Assert
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "childrenlivingawayfromyourhomestatus" && match.FormFieldValue == "Completed")
+           )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16firstname21" && match.FormFieldValue == model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].FirstName)
+            )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16lastname21" && match.FormFieldValue == model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].LastName)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16gender21" && match.FormFieldValue == model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Gender)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16address21" && match.FormFieldValue == expectedUnderSixteenAddress)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome[0].Address.Postcode)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "under16dateofbirth21" && Equals(match.FormFieldValue, expectedDate))
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16firstname21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].FirstName)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16lastname21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].LastName)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16gender21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Gender)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16dateofbirth21" && Equals(match.FormFieldValue, expectedDate))
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16address21" && match.FormFieldValue == expectedOverSixteenAddress)
+                )), Times.Once);
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "over16postcode21" && match.FormFieldValue == model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome[0].Address.Postcode)
+                )), Times.Once);
+        }
+
+        [Theory]
+        [InlineData("addressLine1|fghf|ttykuuky", "addressLine1", "fghf", "ttykuuky")]
+        [InlineData("line1|line2||", "line1", "line2", "")]
+        [InlineData("|", "", null, "")]
+        [InlineData("||", "", "", "")]
+        [InlineData("|||", "", "", "")]
+        public void CreateOtherPersonList_ShouldReturnCorrectAddress(string address, string expectedLine1, string expectedLine2, string expectedTown)
+        {
+            // Arrange
+             var config = new OtherPeopleConfigurationModel
+             {
+                 DateOfBirth = "PREFIX_DOB",
+                 FirstName = "ANOTHER_PREFIX_FIRSTNAME",
+                 Gender = "PREFIX_EXAMPLE_GENDER",
+                 LastName = "PREFIX_EXAMPLE_LASTNAME",
+                 Address = "over16address1"
+             };
+
+            var model = new List<CustomField>
+            {
+                new CustomField
+                {
+                    Name = $"{config.Address}1",
+                    Value =  address
+                }
+            };
+
+            // Act
+            var result = _service.CreateOtherPersonList(config, model, 1);
+
+            // Assert
+            Assert.Equal(result[0].Address.AddressLine1, expectedLine1);
+            Assert.Equal(result[0].Address.AddressLine2, expectedLine2);
+            Assert.Equal(result[0].Address.Town, expectedTown);
+        }
     }
 }
