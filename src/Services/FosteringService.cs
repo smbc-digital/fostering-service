@@ -590,7 +590,10 @@ namespace fostering_service.Services
             var otherPersonList = new List<OtherPerson>();
 
             for (var i = 0; i < capacity; i++)
-                otherPersonList.Add(new OtherPerson());
+                otherPersonList.Add(new OtherPerson
+                {
+                    Address = new Model.Address()
+                });
 
             formFields.ForEach(field =>
             {
@@ -616,12 +619,9 @@ namespace fostering_service.Services
                 if (field.Name.Contains(config.Gender))
                     otherPersonList[index].Gender = field.Value;
 
-                // This is where we need to split the address string into line 1, line 2, and town
                 if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
                 {
                     var address = field.Value.Split("|");
-
-                    otherPersonList[index].Address = new Model.Address();
 
                     switch (address.Length)
                     {
@@ -649,7 +649,7 @@ namespace fostering_service.Services
                     otherPersonList[index].Address.Postcode = field.Value;
             });
 
-            var list = otherPersonList.Where(person =>
+            return otherPersonList.Where(person =>
                 person.Gender != null ||
                 person.LastName != null ||
                 person.FirstName != null ||
@@ -659,8 +659,6 @@ namespace fostering_service.Services
                 person.Address?.Town != null ||
                 person.Address?.Postcode != null).
                 ToList();
-
-            return list;
         }
 
         public FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople, int capacity = 8)
