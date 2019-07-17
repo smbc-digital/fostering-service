@@ -620,7 +620,7 @@ namespace fostering_service.Services
                 if (field.Name.Contains(config.Gender))
                     otherPersonList[index].Gender = field.Value;
 
-                if (string.IsNullOrEmpty(config.Address))
+                if (!string.IsNullOrEmpty(config.Address) && !field.Name.Contains(config.Address))
                 {
                     otherPersonList[index].Address.AddressLine1 = "Address was null or empty";
                 }
