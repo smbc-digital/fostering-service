@@ -622,12 +622,11 @@ namespace fostering_service.Services
 
                 if (string.IsNullOrEmpty(config.Address))
                 {
-                    _logger.LogInformation("**DEBUG:FosteringService GetCase Address is null or empty" + field.Value);
+                    otherPersonList[index].Address.AddressLine1 = "Address was null or empty";
                 }
 
                 if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
                 {
-                    _logger.LogInformation("**DEBUG:FosteringService GetCase Address" + field.Value);
                     var address = field.Value.Split("|");
 
                     switch (address.Length)
