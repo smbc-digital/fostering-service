@@ -619,13 +619,9 @@ namespace fostering_service.Services
                 if (field.Name.Contains(config.Gender))
                     otherPersonList[index].Gender = field.Value;
 
-                if (field.Name.Contains(config.Address))
-                {
-                    Console.WriteLine(field.Value);
-                }
-
                 if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
                 {
+                    Console.WriteLine(field.Value);
                     var address = field.Value.Split("|");
 
                     switch (address.Length)
