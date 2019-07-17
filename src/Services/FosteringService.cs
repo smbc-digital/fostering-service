@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using fostering_service.Builder;
 using fostering_service.Models;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
@@ -619,9 +620,14 @@ namespace fostering_service.Services
                 if (field.Name.Contains(config.Gender))
                     otherPersonList[index].Gender = field.Value;
 
+                if (string.IsNullOrEmpty(config.Address))
+                {
+                    _logger.LogInformation("**DEBUG:FosteringService GetCase Address is null or empty" + field.Value);
+                }
+
                 if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
                 {
-                    Console.WriteLine(field.Value);
+                    _logger.LogInformation("**DEBUG:FosteringService GetCase Address" + field.Value);
                     var address = field.Value.Split("|");
 
                     switch (address.Length)
