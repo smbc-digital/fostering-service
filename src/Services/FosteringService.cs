@@ -676,8 +676,13 @@ namespace fostering_service.Services
                     .AddField($"{config.Gender}{nameSuffix}", otherPeople[i].Gender ?? string.Empty)
                     .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty);
 
+                
                 if (!string.IsNullOrEmpty(config.Address) && !string.IsNullOrEmpty(config.Postcode))
                 {
+                    if (otherPeople[i].Address == null)
+                    {
+                        otherPeople[i].Address = new Model.Address();
+                    }
                     builder
                         .AddField($"{config.Address}{nameSuffix}", otherPeople[i].Address.AddressLine1 + "|" + otherPeople[i].Address.AddressLine2 + "|" + otherPeople[i].Address.Town)
                         .AddField($"{config.Postcode}{nameSuffix}", otherPeople[i].Address.Postcode ?? string.Empty);
@@ -795,11 +800,11 @@ namespace fostering_service.Services
         {
             var completed = UpdateChildrenLivingAwayFromHomeIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
-            var firstApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>())
+            var firstApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>(), 4)
                 .AddField(GetFormStatusFieldName(EFosteringCaseForm.ChildrenLivingAwayFromYourHome), GetTaskStatus(completed))
                 .AddField("haschildrenundersixteen1", model.FirstApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenUnderSixteen == true ? "yes" : "no");
 
-            var firstApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>())
+            var firstApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>(), 4)
                 .AddField("haschildrenoversixteen1", model.FirstApplicant.AnyChildrenOverSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenOverSixteen == true ? "yes" : "no")
                 .Build();
 
@@ -808,10 +813,10 @@ namespace fostering_service.Services
 
             if (model.SecondApplicant != null)
             {
-                secondApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>())
+                secondApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>(), 4)
                     .AddField("haschildrenundersixteen2", model.SecondApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.SecondApplicant.AnyChildrenUnderSixteen == true ? "yes" : "no").Build();
 
-                secondApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>())
+                secondApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>(), 4)
                     .AddField("haschildrenoversixteen2", model.SecondApplicant.AnyChildrenOverSixteen == null ? string.Empty : model.SecondApplicant.AnyChildrenOverSixteen == true ? "yes" : "no").Build();
             }
 
