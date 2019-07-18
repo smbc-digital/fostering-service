@@ -1529,7 +1529,11 @@ namespace fostering_service_tests.Service
 
             var model = new FosteringCaseHouseholdUpdateModel
             {
-                CaseReference = "0121DO1"
+                CaseReference = "0121DO1",
+                DoYouHaveAnyPets = null,
+                AnyOtherPeopleInYourHousehold = null,
+                OtherPeopleInYourHousehold = new List<OtherPerson>(),
+                PetsInformation = ""
             };
 
             // Act
@@ -1552,7 +1556,11 @@ namespace fostering_service_tests.Service
 
             var model = new FosteringCaseHouseholdUpdateModel
             {
-                CaseReference = "0121DO1"
+                CaseReference = "0121DO1",
+                DoYouHaveAnyPets = false,
+                AnyOtherPeopleInYourHousehold = false,
+                OtherPeopleInYourHousehold = new List<OtherPerson>(),
+                PetsInformation = ""
             };
 
             // Act
@@ -1562,7 +1570,7 @@ namespace fostering_service_tests.Service
         [Theory]
         [InlineData(true, ETaskStatus.NotCompleted)]
         [InlineData(false, ETaskStatus.Completed)]
-        public async Task UpdateHousehold_ShouldReturnETaskStatus(bool anyOtherPeopleInYourHousehold, ETaskStatus expectedStatus)
+        public async Task UpdateHousehold_ShouldReturnETaskStatus(bool anyPets, ETaskStatus expectedStatus)
         {
             // Arrange
             _verintServiceGatewayMock
@@ -1576,8 +1584,10 @@ namespace fostering_service_tests.Service
             var model = new FosteringCaseHouseholdUpdateModel
             {
                 CaseReference = "0121DO1",
-                AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold,
-                DoYouHaveAnyPets = false
+                AnyOtherPeopleInYourHousehold = false,
+                DoYouHaveAnyPets = anyPets,
+                OtherPeopleInYourHousehold = new List<OtherPerson>(),
+                PetsInformation = ""
             };
 
             // Act

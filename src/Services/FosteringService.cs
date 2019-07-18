@@ -740,14 +740,22 @@ namespace fostering_service.Services
 
         private bool UpdateHouseholdIsComplete(FosteringCaseHouseholdUpdateModel model)
         {
-            return (!model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty(model.PetsInformation)) &&
-                   (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || model.OtherPeopleInYourHousehold != null && model.OtherPeopleInYourHousehold?.Count != 0) &&
-                    (!model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() ||
-                            !model.OtherPeopleInYourHousehold.Exists(
-                               person => string.IsNullOrEmpty(person.Gender) ||
-                                         string.IsNullOrEmpty(person.LastName) ||
-                                         string.IsNullOrEmpty(person.FirstName) ||
-                                         person.DateOfBirth == null));
+            if (model.DoYouHaveAnyPets == null || model.AnyOtherPeopleInYourHousehold == null)
+                return false;
+
+            if (model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() && model.OtherPeopleInYourHousehold == null ||
+                model.OtherPeopleInYourHousehold.Count != 0)
+                return false;
+
+            var pets = !model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty(model.PetsInformation);
+
+            var people = !model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || !model.OtherPeopleInYourHousehold.Exists(
+                             person => string.IsNullOrEmpty(person.Gender) ||
+                                       string.IsNullOrEmpty(person.LastName) ||
+                                       string.IsNullOrEmpty(person.FirstName) ||
+                                       person.DateOfBirth == null);
+
+            return pets && people;
         }
 
         private bool UpdateAboutYourselfIsValid(FosteringCaseAboutYourselfApplicantUpdateModel model)
@@ -841,8 +849,10 @@ namespace fostering_service.Services
 
         private bool UpdateChildrenLivingAwayFromHomeIsComplete(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
         {
-            var firstApplicantUnderSixteen = (!model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
-                    model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) &&
+            var firstApplicantUnderSixteen = model.FirstApplicant.AnyChildrenUnderSixteen != null &&
+                (!model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() 
+                                              || (model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
+                    model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0)) &&
                     !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => 
                         string.IsNullOrEmpty(person.FirstName) ||
                         string.IsNullOrEmpty(person.LastName) || 
@@ -853,7 +863,8 @@ namespace fostering_service.Services
                         string.IsNullOrEmpty(person.Address.Town) ||
                         string.IsNullOrEmpty(person.Address.Postcode));
 
-            var firstApplicantOverSixteen = (!model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
+            var firstApplicantOverSixteen = model.FirstApplicant.AnyChildrenOverSixteen != null &&
+                (!model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
                     model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
                     !model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => 
                         string.IsNullOrEmpty(person.FirstName) ||
@@ -867,7 +878,8 @@ namespace fostering_service.Services
 
             if (model.SecondApplicant != null)
             {
-                var secondApplicantUnderSixteen = (!model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
+                var secondApplicantUnderSixteen = model.SecondApplicant.AnyChildrenUnderSixteen != null &&
+                    (!model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
                     model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) &&
                     !model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => 
                         string.IsNullOrEmpty(person.FirstName) ||
@@ -879,7 +891,8 @@ namespace fostering_service.Services
                         string.IsNullOrEmpty(person.Address.Town) || 
                         string.IsNullOrEmpty(person.Address.Postcode));
 
-                var secondApplicantOverSixteen = (!model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
+                var secondApplicantOverSixteen = model.SecondApplicant.AnyChildrenUnderSixteen != null &&
+                    (!model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
                     model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
                     !model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => 
                         string.IsNullOrEmpty(person.FirstName) ||
