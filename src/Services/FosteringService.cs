@@ -859,7 +859,6 @@ namespace fostering_service.Services
                         string.IsNullOrEmpty(person.Gender) || 
                         person.DateOfBirth == null ||
                         string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.AddressLine2) ||
                         string.IsNullOrEmpty(person.Address.Town) ||
                         string.IsNullOrEmpty(person.Address.Postcode));
 
@@ -872,7 +871,6 @@ namespace fostering_service.Services
                         string.IsNullOrEmpty(person.Gender) || 
                         person.DateOfBirth == null ||
                         string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.AddressLine2) ||
                         string.IsNullOrEmpty(person.Address.Town) ||
                         string.IsNullOrEmpty(person.Address.Postcode));
 
@@ -887,7 +885,6 @@ namespace fostering_service.Services
                         string.IsNullOrEmpty(person.Gender) || 
                         person.DateOfBirth == null ||
                         string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.AddressLine2) ||
                         string.IsNullOrEmpty(person.Address.Town) || 
                         string.IsNullOrEmpty(person.Address.Postcode));
 
@@ -900,7 +897,6 @@ namespace fostering_service.Services
                         string.IsNullOrEmpty(person.Gender) || 
                         person.DateOfBirth == null ||
                         string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.AddressLine2) || 
                         string.IsNullOrEmpty(person.Address.Town) ||
                         string.IsNullOrEmpty(person.Address.Postcode));
 
