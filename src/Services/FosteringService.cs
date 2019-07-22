@@ -740,20 +740,25 @@ namespace fostering_service.Services
 
         private bool UpdateHouseholdIsComplete(FosteringCaseHouseholdUpdateModel model)
         {
-            if (model.DoYouHaveAnyPets == null || model.AnyOtherPeopleInYourHousehold == null)
-                return false;
+            bool pets = false, people = false;
 
-            if (model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() && model.OtherPeopleInYourHousehold == null ||
-                model.OtherPeopleInYourHousehold.Count != 0)
-                return false;
+            if (model.DoYouHaveAnyPets == false ||
+                model.DoYouHaveAnyPets == true && !string.IsNullOrEmpty(model.PetsInformation))
+            {
+                pets = true;
+            }
 
-            var pets = !model.DoYouHaveAnyPets.GetValueOrDefault() || !string.IsNullOrEmpty(model.PetsInformation);
-
-            var people = !model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() || !model.OtherPeopleInYourHousehold.Exists(
-                             person => string.IsNullOrEmpty(person.Gender) ||
-                                       string.IsNullOrEmpty(person.LastName) ||
-                                       string.IsNullOrEmpty(person.FirstName) ||
-                                       person.DateOfBirth == null);
+            if (model.AnyOtherPeopleInYourHousehold == false || model.AnyOtherPeopleInYourHousehold == true
+                && model.OtherPeopleInYourHousehold != null
+                && model.OtherPeopleInYourHousehold?.Count != 0
+                && !model.OtherPeopleInYourHousehold.Exists(
+                    person => string.IsNullOrEmpty(person.Gender) ||
+                              string.IsNullOrEmpty(person.LastName) ||
+                              string.IsNullOrEmpty(person.FirstName) ||
+                              person.DateOfBirth == null))
+            {
+                people = true;
+            }
 
             return pets && people;
         }
@@ -849,56 +854,73 @@ namespace fostering_service.Services
 
         private bool UpdateChildrenLivingAwayFromHomeIsComplete(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
         {
-            var firstApplicantUnderSixteen = model.FirstApplicant.AnyChildrenUnderSixteen != null &&
-                (!model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() 
-                                              || (model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
-                    model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0)) &&
-                    !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => 
-                        string.IsNullOrEmpty(person.FirstName) ||
-                        string.IsNullOrEmpty(person.LastName) || 
-                        string.IsNullOrEmpty(person.Gender) || 
-                        person.DateOfBirth == null ||
-                        string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.Town) ||
-                        string.IsNullOrEmpty(person.Address.Postcode));
+            bool firstApplicantUnderSixteen = false, firstApplicantOverSixteen = false;
 
-            var firstApplicantOverSixteen = model.FirstApplicant.AnyChildrenOverSixteen != null &&
-                (!model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
-                    model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
-                    !model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => 
-                        string.IsNullOrEmpty(person.FirstName) ||
-                        string.IsNullOrEmpty(person.LastName) || 
-                        string.IsNullOrEmpty(person.Gender) || 
-                        person.DateOfBirth == null ||
-                        string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.Town) ||
-                        string.IsNullOrEmpty(person.Address.Postcode));
+            if (model.FirstApplicant.AnyChildrenUnderSixteen == false || model.FirstApplicant.AnyChildrenUnderSixteen == true
+                && model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome != null
+                && model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0
+                && !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person =>
+                    string.IsNullOrEmpty(person.FirstName) ||
+                    string.IsNullOrEmpty(person.LastName) ||
+                    string.IsNullOrEmpty(person.Gender) ||
+                    person.DateOfBirth == null ||
+                    string.IsNullOrEmpty(person.Address.AddressLine1) ||
+                    string.IsNullOrEmpty(person.Address.Town) ||
+                    string.IsNullOrEmpty(person.Address.Postcode)))
+            {
+                firstApplicantUnderSixteen = true;
+            }
+
+            if (model.FirstApplicant.AnyChildrenOverSixteen == false || model.FirstApplicant.AnyChildrenOverSixteen == true
+                && model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null
+                && model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0
+                && !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person =>
+                    string.IsNullOrEmpty(person.FirstName) ||
+                    string.IsNullOrEmpty(person.LastName) ||
+                    string.IsNullOrEmpty(person.Gender) ||
+                    person.DateOfBirth == null ||
+                    string.IsNullOrEmpty(person.Address.AddressLine1) ||
+                    string.IsNullOrEmpty(person.Address.Town) ||
+                    string.IsNullOrEmpty(person.Address.Postcode)))
+            {
+                firstApplicantOverSixteen = true;
+            }
 
             if (model.SecondApplicant != null)
             {
-                var secondApplicantUnderSixteen = model.SecondApplicant.AnyChildrenUnderSixteen != null &&
-                    (!model.SecondApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null &&
-                    model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0) &&
-                    !model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person => 
-                        string.IsNullOrEmpty(person.FirstName) ||
-                        string.IsNullOrEmpty(person.LastName) || 
-                        string.IsNullOrEmpty(person.Gender) || 
-                        person.DateOfBirth == null ||
-                        string.IsNullOrEmpty(person.Address.AddressLine1) || 
-                        string.IsNullOrEmpty(person.Address.Town) || 
-                        string.IsNullOrEmpty(person.Address.Postcode));
+                bool secondApplicantUnderSixteen = false, secondApplicantOverSixteen = false;
 
-                var secondApplicantOverSixteen = model.SecondApplicant.AnyChildrenUnderSixteen != null &&
-                    (!model.SecondApplicant.AnyChildrenOverSixteen.GetValueOrDefault() || model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null &&
-                    model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0) &&
-                    !model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person => 
+                if (model.SecondApplicant.AnyChildrenUnderSixteen == false ||
+                    model.SecondApplicant.AnyChildrenUnderSixteen == true
+                    && model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome != null
+                    && model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome?.Count != 0
+                    && !model.SecondApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person =>
                         string.IsNullOrEmpty(person.FirstName) ||
-                        string.IsNullOrEmpty(person.LastName) || 
-                        string.IsNullOrEmpty(person.Gender) || 
+                        string.IsNullOrEmpty(person.LastName) ||
+                        string.IsNullOrEmpty(person.Gender) ||
                         person.DateOfBirth == null ||
-                        string.IsNullOrEmpty(person.Address.AddressLine1) || 
+                        string.IsNullOrEmpty(person.Address.AddressLine1) ||
                         string.IsNullOrEmpty(person.Address.Town) ||
-                        string.IsNullOrEmpty(person.Address.Postcode));
+                        string.IsNullOrEmpty(person.Address.Postcode)))
+                {
+                    secondApplicantUnderSixteen = true;
+                }
+
+                if (model.SecondApplicant.AnyChildrenOverSixteen == false ||
+                    model.SecondApplicant.AnyChildrenOverSixteen == true
+                    && model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome != null
+                    && model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0
+                    && !model.SecondApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person =>
+                        string.IsNullOrEmpty(person.FirstName) ||
+                        string.IsNullOrEmpty(person.LastName) ||
+                        string.IsNullOrEmpty(person.Gender) ||
+                        person.DateOfBirth == null ||
+                        string.IsNullOrEmpty(person.Address.AddressLine1) ||
+                        string.IsNullOrEmpty(person.Address.Town) ||
+                        string.IsNullOrEmpty(person.Address.Postcode)))
+                {
+                    secondApplicantOverSixteen = true;
+                }
 
                 return firstApplicantUnderSixteen && firstApplicantOverSixteen && secondApplicantUnderSixteen && secondApplicantOverSixteen;
             }
