@@ -7,7 +7,8 @@ namespace fostering_service.Models
             DateOfBirth = "opdateofbirth",
             FirstName = "opfirstname",
             Gender = "opgender",
-            LastName = "oplastname"
+            LastName = "oplastname",
+            RelationshipToYou = "oprelationshiptoapplicant"
         };
 
         public static OtherPeopleConfigurationModel FirstApplicantUnderSixteenConfigurationModel = new OtherPeopleConfigurationModel
@@ -60,6 +61,8 @@ namespace fostering_service.Models
         public string Gender { get; set; }
 
         public string DateOfBirth { get; set; }
+
+        public string RelationshipToYou { get; set; }
 
         public string Address { get; set; }
 

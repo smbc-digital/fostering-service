@@ -620,6 +620,9 @@ namespace fostering_service.Services
                 if (field.Name.Contains(config.Gender))
                     otherPersonList[index].Gender = field.Value;
 
+                if (!string.IsNullOrEmpty(config.RelationshipToYou) && field.Name.Contains(config.RelationshipToYou))
+                    otherPersonList[index].RelationshipToYou = field.Value;
+
                 if (!string.IsNullOrEmpty(config.Address) && field.Name.Contains(config.Address))
                 {
                     var address = field.Value.Split("|");
@@ -655,6 +658,7 @@ namespace fostering_service.Services
                 person.LastName != null ||
                 person.FirstName != null ||
                 person.DateOfBirth != null ||
+                person.RelationshipToYou != null ||
                 person.Address?.AddressLine1 != null ||
                 person.Address?.AddressLine2 != null ||
                 person.Address?.Town != null ||
@@ -676,7 +680,9 @@ namespace fostering_service.Services
                     .AddField($"{config.Gender}{nameSuffix}", otherPeople[i].Gender ?? string.Empty)
                     .AddField($"{config.LastName}{nameSuffix}", otherPeople[i].LastName ?? string.Empty);
 
-                
+                if (!string.IsNullOrEmpty(config.RelationshipToYou))
+                    builder.AddField($"{config.RelationshipToYou}{nameSuffix}", otherPeople[i].RelationshipToYou ?? string.Empty);
+
                 if (!string.IsNullOrEmpty(config.Address) && !string.IsNullOrEmpty(config.Postcode))
                 {
                     if (otherPeople[i].Address == null)
@@ -687,7 +693,6 @@ namespace fostering_service.Services
                         .AddField($"{config.Address}{nameSuffix}", otherPeople[i].Address.AddressLine1 + "|" + otherPeople[i].Address.AddressLine2 + "|" + otherPeople[i].Address.Town)
                         .AddField($"{config.Postcode}{nameSuffix}", otherPeople[i].Address.Postcode ?? string.Empty);
                 }
-
             }
 
             for (var i = otherPeople?.Count; i < capacity; i++)
@@ -699,6 +704,9 @@ namespace fostering_service.Services
                     .AddField($"{config.DateOfBirth}{nameSuffix}", string.Empty)
                     .AddField($"{config.Gender}{nameSuffix}", string.Empty)
                     .AddField($"{config.LastName}{nameSuffix}", string.Empty);
+
+                if (!string.IsNullOrEmpty(config.RelationshipToYou))
+                    builder.AddField($"{config.RelationshipToYou}{nameSuffix}", string.Empty);
 
                 if (!string.IsNullOrEmpty(config.Address) && !string.IsNullOrEmpty(config.Postcode))
                 {
@@ -755,6 +763,7 @@ namespace fostering_service.Services
                     person => string.IsNullOrEmpty(person.Gender) ||
                               string.IsNullOrEmpty(person.LastName) ||
                               string.IsNullOrEmpty(person.FirstName) ||
+                              string.IsNullOrEmpty(person.RelationshipToYou) ||
                               person.DateOfBirth == null))
             {
                 people = true;
