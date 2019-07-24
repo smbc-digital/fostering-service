@@ -108,6 +108,40 @@ namespace fostering_service_tests.Service
             Assert.IsType<FosteringCase>(result);
         }
 
+        [Fact]
+        public async Task GetCase_ShouldReturn_FosteringCaseWithParsedDateTime()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("religionorfaithgroup", "Religion")
+                .WithIntegrationFormField("sexualorientation", "Sexual orientation")
+                .WithIntegrationFormField("gender", "Gender")
+                .WithIntegrationFormField("ethnicity", "Ethnicity")
+                .WithIntegrationFormField("nationality", "Nationality")
+                .WithIntegrationFormField("previousname", "Previous name")
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("dateofthehomevisit", "26/06/2019")
+                .WithIntegrationFormField("timeofhomevisit", "13:30")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act 
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.IsType<FosteringCase>(result);
+            Assert.Equal(DateTime.Parse("26/06/2019 13:30"), result.HomeVisitDateTime);
+
+        }
+
         [Theory]
         [InlineData("withpartner")]
         [InlineData("")]

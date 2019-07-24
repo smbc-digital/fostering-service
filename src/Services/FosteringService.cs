@@ -83,13 +83,21 @@ namespace fostering_service.Services
                 TypesOfFostering = new List<string>(),
                 ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
                 OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields),
-                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty
+                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty,
             };
 
             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
             if (!string.IsNullOrEmpty(anyOtherPeopleInYourHousehold))
             {
                 fosteringCase.AnyOtherPeopleInYourHousehold = anyOtherPeopleInYourHousehold.ToLower() == "yes";
+            }
+
+            var HomeVisitDate = integrationFormFields.FirstOrDefault(_ => _.Name == "dateofthehomevisit")?.Value;
+            var HomeVisitTime = integrationFormFields.FirstOrDefault(_ => _.Name == "timeofhomevisit")?.Value;
+            if (!string.IsNullOrEmpty(HomeVisitDate + HomeVisitTime))
+            {
+                fosteringCase.HomeVisitDateTime = DateTime.Parse($"{HomeVisitDate} {HomeVisitTime}");
+
             }
 
             var doYouHaveAnyPets = integrationFormFields.FirstOrDefault(_ => _.Name == "doyouhaveanypets")?.Value;

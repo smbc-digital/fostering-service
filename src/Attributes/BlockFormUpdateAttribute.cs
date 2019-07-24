@@ -18,7 +18,6 @@ namespace fostering_service.Attributes
             var caseReference = (string)model.GetType().GetProperty(CaseReferencePropertyName).GetValue(model, null);
 
             var fosteringService = (IFosteringService)context.HttpContext.RequestServices.GetService(typeof(IFosteringService));
-            var logger = (ILogger<BlockFormUpdateAttribute>)context.HttpContext.RequestServices.GetService(typeof(ILogger<BlockFormUpdateAttribute>));
 
             FosteringCase response;
             try
@@ -27,8 +26,7 @@ namespace fostering_service.Attributes
             }
             catch (Exception error)
             {
-                logger.LogWarning($"BlockFormUpdateAttribute: Error getting case with reference {caseReference}", error);
-                throw;
+                throw new Exception($"BlockFormUpdateAttribute: Error getting case with reference { caseReference }", error.InnerException);
             }
 
             try
@@ -37,7 +35,10 @@ namespace fostering_service.Attributes
                 {
                     context.Result = new Http423Result();
                 }
-            } catch (Exception error) {
+            }
+            catch (Exception error)
+            {
+                var logger = (ILogger<BlockFormUpdateAttribute>)context.HttpContext.RequestServices.GetService(typeof(ILogger<BlockFormUpdateAttribute>));
                 logger.LogWarning($"BlockFormUpdateAttribute: Error comparing home visit date time to current time, case reference {caseReference}, home visit time {response.HomeVisitDateTime.GetValueOrDefault():d}", error);
             }
         }
