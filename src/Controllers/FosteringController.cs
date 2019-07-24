@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using fostering_service.Attributes;
 using fostering_service.Services;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
@@ -44,6 +45,7 @@ namespace fostering_service.Controllers
 
         [Route("about-yourself")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
             try
@@ -63,6 +65,7 @@ namespace fostering_service.Controllers
 
         [Route("your-employment-details")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
         {
             try
@@ -79,6 +82,7 @@ namespace fostering_service.Controllers
 
         [Route("languages-spoken-in-your-home")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
         {
             try
@@ -95,6 +99,7 @@ namespace fostering_service.Controllers
 
         [Route("health-status")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateHealthStatus(FosteringCaseHealthUpdateModel model)
         {
             try
@@ -111,6 +116,7 @@ namespace fostering_service.Controllers
 
         [Route("update-household")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
         {
             try
@@ -127,6 +133,7 @@ namespace fostering_service.Controllers
 
         [Route("update-form-status")]
         [HttpPatch]
+        [BlockFormUpdate(CaseReferencePropertyName = "CaseId")]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
         {
             try
@@ -159,6 +166,7 @@ namespace fostering_service.Controllers
 
         [Route("your-fostering-history")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model)
         {
             try
@@ -175,6 +183,7 @@ namespace fostering_service.Controllers
 
         [Route("interest-in-fostering")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
         {
             try
@@ -191,6 +200,7 @@ namespace fostering_service.Controllers
 
         [Route("children-living-away-from-home")]
         [HttpPatch]
+        [BlockFormUpdate]
         public async Task<IActionResult> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
         {
             try
