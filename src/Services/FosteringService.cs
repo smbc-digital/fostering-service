@@ -70,7 +70,6 @@ namespace fostering_service.Services
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity")?.Value ?? string.Empty,
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender")?.Value ?? string.Empty,
-                    SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup")?.Value ?? string.Empty,
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
@@ -202,7 +201,6 @@ namespace fostering_service.Services
                     Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality2")?.Value ?? string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity2")?.Value ?? string.Empty,
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender2")?.Value ?? string.Empty,
-                    SexualOrientation = integrationFormFields.FirstOrDefault(_ => _.Name == "sexualorientation2")?.Value ?? string.Empty,
                     Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup2")?.Value ?? string.Empty,
                     PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth_2")?.Value ?? string.Empty,
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
@@ -281,8 +279,7 @@ namespace fostering_service.Services
                 .AddField("gender", model.FirstApplicant.Gender)
                 .AddField("nationality", model.FirstApplicant.Nationality)
                 .AddField("placeofbirth", model.FirstApplicant.PlaceOfBirth)
-                .AddField("religionorfaithgroup", model.FirstApplicant.Religion)
-                .AddField("sexualorientation", model.FirstApplicant.SexualOrientation);
+                .AddField("religionorfaithgroup", model.FirstApplicant.Religion);
 
             if (model.SecondApplicant != null)
             {
@@ -298,8 +295,7 @@ namespace fostering_service.Services
                     .AddField("gender2", model.SecondApplicant.Gender)
                     .AddField("placeofbirth_2", model.SecondApplicant.PlaceOfBirth)
                     .AddField("nationality2", model.SecondApplicant.Nationality)
-                    .AddField("religionorfaithgroup2", model.SecondApplicant.Religion)
-                    .AddField("sexualorientation2", model.SecondApplicant.SexualOrientation);
+                    .AddField("religionorfaithgroup2", model.SecondApplicant.Religion);
             }
 
             formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.TellUsAboutYourself),
@@ -778,7 +774,6 @@ namespace fostering_service.Services
                 !string.IsNullOrEmpty(model.Gender) &&
                 !string.IsNullOrEmpty(model.Nationality) &&
                 !string.IsNullOrEmpty(model.Religion) &&
-                !string.IsNullOrEmpty(model.SexualOrientation) &&
                 (!model.EverBeenKnownByAnotherName.GetValueOrDefault() || !string.IsNullOrEmpty(model.AnotherName));
         }
 

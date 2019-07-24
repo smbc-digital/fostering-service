@@ -41,7 +41,6 @@ namespace fostering_service_tests.Service
             // Arrange 
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("religionorfaithgroup", "Religion")
-                .WithIntegrationFormField("sexualorientation", "Sexual orientation")
                 .WithIntegrationFormField("gender", "Gender")
                 .WithIntegrationFormField("ethnicity", "Ethnicity")
                 .WithIntegrationFormField("nationality", "Nationality")
@@ -86,7 +85,6 @@ namespace fostering_service_tests.Service
             // Arrange
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("religionorfaithgroup", "Religion")
-                .WithIntegrationFormField("sexualorientation", "Sexual orientation")
                 .WithIntegrationFormField("gender", "Gender")
                 .WithIntegrationFormField("ethnicity", "Ethnicity")
                 .WithIntegrationFormField("nationality", "Nationality")
@@ -118,7 +116,6 @@ namespace fostering_service_tests.Service
             // Arrange
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("religionorfaithgroup", "Religion")
-                .WithIntegrationFormField("sexualorientation", "Sexual orientation")
                 .WithIntegrationFormField("gender", "Gender")
                 .WithIntegrationFormField("ethnicity", "Ethnicity")
                 .WithIntegrationFormField("nationality", "Nationality")
@@ -150,7 +147,6 @@ namespace fostering_service_tests.Service
             // Arrange
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("religionorfaithgroup", "Religion")
-                .WithIntegrationFormField("sexualorientation", "Sexual orientation")
                 .WithIntegrationFormField("gender", "Gender")
                 .WithIntegrationFormField("ethnicity", "Ethnicity")
                 .WithIntegrationFormField("nationality", "Nationality")
@@ -183,7 +179,6 @@ namespace fostering_service_tests.Service
             Assert.Equal("Nationality", result.FirstApplicant.Nationality);
             Assert.Equal("Ethnicity", result.FirstApplicant.Ethnicity);
             Assert.Equal("Gender", result.FirstApplicant.Gender);
-            Assert.Equal("Sexual orientation", result.FirstApplicant.SexualOrientation);
             Assert.Equal("Religion", result.FirstApplicant.Religion);
             Assert.NotNull(result.FirstApplicant);
             Assert.Null(result.SecondApplicant);
@@ -195,7 +190,6 @@ namespace fostering_service_tests.Service
             // Arrange
             var entity = new CaseBuilder()
                             .WithIntegrationFormField("religionorfaithgroup", "Religion")
-                            .WithIntegrationFormField("sexualorientation", "Sexual orientation")
                             .WithIntegrationFormField("gender", "Gender")
                             .WithIntegrationFormField("ethnicity", "Ethnicity")
                             .WithIntegrationFormField("nationality", "Nationality")
@@ -209,7 +203,6 @@ namespace fostering_service_tests.Service
                             .WithIntegrationFormField("nationality2", "Nationality")
                             .WithIntegrationFormField("ethnicity2", "Ethnicity")
                             .WithIntegrationFormField("gender2", "Gender")
-                            .WithIntegrationFormField("sexualorientation2", "Sexual orientation")
                             .WithIntegrationFormField("religionorfaithgroup2", "Religion")
                             .WithIntegrationFormField("hasanothername2", "True")
                             .WithIntegrationFormField("haschildrenundersixteen2", "yes")
@@ -237,7 +230,6 @@ namespace fostering_service_tests.Service
             Assert.Equal("Nationality", result.SecondApplicant.Nationality);
             Assert.Equal("Ethnicity", result.SecondApplicant.Ethnicity);
             Assert.Equal("Gender", result.SecondApplicant.Gender);
-            Assert.Equal("Sexual orientation", result.SecondApplicant.SexualOrientation);
             Assert.Equal("Religion", result.SecondApplicant.Religion);
         }
 
@@ -467,7 +459,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     AnotherName = "another-name",
                     Nationality = "nationality",
                     EverBeenKnownByAnotherName = true,
@@ -501,7 +492,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     AnotherName = "another-name",
                     Nationality = "nationality",
                     EverBeenKnownByAnotherName = true,
@@ -534,7 +524,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = hasAnotherName
@@ -575,7 +564,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = hasAnotherName
@@ -616,10 +604,6 @@ namespace fostering_service_tests.Service
             )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "sexualorientation" && match.FormFieldValue == model.FirstApplicant.SexualOrientation)
-            )), Times.Once);
-            _verintServiceGatewayMock
-                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "hasanothername" && match.FormFieldValue == expectedAnotherName)
             )), Times.Once);
         }
@@ -646,7 +630,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = hasAnotherName
@@ -656,7 +639,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = false
@@ -700,11 +682,6 @@ namespace fostering_service_tests.Service
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "religionorfaithgroup2" && match.FormFieldValue == model.SecondApplicant.Religion)
-            )), Times.Once);
-
-            _verintServiceGatewayMock
-                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "sexualorientation2" && match.FormFieldValue == model.SecondApplicant.SexualOrientation)
             )), Times.Once);
 
             _verintServiceGatewayMock
@@ -1624,7 +1601,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = hasAnotherName
@@ -1665,10 +1641,6 @@ namespace fostering_service_tests.Service
             )), Times.Once);
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "sexualorientation" && match.FormFieldValue == model.FirstApplicant.SexualOrientation)
-            )), Times.Once);
-            _verintServiceGatewayMock
-                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "hasanothername" && match.FormFieldValue == expectedAnotherName)
             )), Times.Once);
         }
@@ -1695,7 +1667,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = hasAnotherName
@@ -1705,7 +1676,6 @@ namespace fostering_service_tests.Service
                     Religion = "religion",
                     Ethnicity = "ethnicity",
                     Gender = "gender",
-                    SexualOrientation = "sexual-orientation",
                     Nationality = "nationality",
                     PlaceOfBirth = "place-of-birth",
                     EverBeenKnownByAnotherName = false
@@ -1749,11 +1719,6 @@ namespace fostering_service_tests.Service
             _verintServiceGatewayMock
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "religionorfaithgroup2" && match.FormFieldValue == model.SecondApplicant.Religion)
-            )), Times.Once);
-
-            _verintServiceGatewayMock
-                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
-                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "sexualorientation2" && match.FormFieldValue == model.SecondApplicant.SexualOrientation)
             )), Times.Once);
 
             _verintServiceGatewayMock
