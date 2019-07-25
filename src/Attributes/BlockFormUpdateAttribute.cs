@@ -44,7 +44,7 @@ namespace fostering_service.Attributes
         }
     }
 
-    internal class Http423Result : ActionResult
+    public class Http423Result : ActionResult
     {
         public override void ExecuteResult(ActionContext context)
         {
