@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
+using fostering_service.Mappers;
 using fostering_service.Models;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -24,6 +25,7 @@ namespace fostering_service.Services
         private readonly IVerintServiceGateway _verintServiceGateway;
         private readonly ILogger<FosteringService> _logger;
         private readonly string _integrationFormName = "Fostering_Home_Visit";
+        private readonly string _applicationFormName = "Fostering_Application";
 
         public FosteringService(IVerintServiceGateway verintServiceGateway, ILogger<FosteringService> logger)
         {
@@ -75,7 +77,11 @@ namespace fostering_service.Services
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty,
                     ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
-                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, integrationFormFields, 4)
+                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, integrationFormFields, 4),
+                    NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp")?.Value ?? string.Empty,
+                    NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice")?.Value ?? string.Empty,
+                    GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value ?? string.Empty,
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice")
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -214,7 +220,11 @@ namespace fostering_service.Services
                     CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer2")?.Value ?? string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
                     ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
-                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, integrationFormFields, 4)
+                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, integrationFormFields, 4),
+                    NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp2")?.Value ?? string.Empty,
+                    NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice2")?.Value ?? string.Empty,
+                    GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value ?? string.Empty,
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2")
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
@@ -588,6 +598,42 @@ namespace fostering_service.Services
 
 
             return currentStatus;
+        }
+
+        public async Task<ETaskStatus> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model)
+        {
+            var firstApplicantFormFields = new FormFieldBuilder()
+                .AddField("nameofgp", model.FirstApplicant.NameOfGp)
+                .AddField("nameofpractice", model.FirstApplicant.NameOfGpPractice)
+                .AddField("gpphonenumber", model.FirstApplicant.GpPhoneNumber)
+                .Build();
+            firstApplicantFormFields.AddRange(AddressMapper.MapToVerintAddress(model.FirstApplicant.GpAddress, "addressofpractice", "placerefofpractice", "postcodeofpractice"));
+
+            var secondApplicantFormFields = new List<IntegrationFormField>();
+
+            if (model.SecondApplicant != null)
+            {
+                secondApplicantFormFields = new FormFieldBuilder()
+                    .AddField("nameofgp2", model.SecondApplicant.NameOfGp)
+                    .AddField("nameofpractice2", model.SecondApplicant.NameOfGpPractice)
+                    .AddField("gpphonenumber2", model.SecondApplicant.GpPhoneNumber)
+                    .Build();
+                secondApplicantFormFields.AddRange(AddressMapper.MapToVerintAddress(model.SecondApplicant.GpAddress, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2"));
+            }
+
+            var result = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = firstApplicantFormFields.Concat(secondApplicantFormFields).ToList(),
+                IntegrationFormName = _applicationFormName
+            });
+
+            if (result.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update Gp details failure");
+            }
+
+            return ETaskStatus.Completed;
         }
 
         public List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8)

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Castle.Core.Internal;
 using fostering_service.Models;
 using fostering_service.Services;
 using fostering_service_tests.Builders;
@@ -18,9 +17,9 @@ using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
-using Models = StockportGovUK.NetStandard.Models.Models.Fostering;
 using Xunit;
 using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
+using Address = StockportGovUK.NetStandard.Models.Models.Fostering.Address;
 
 namespace fostering_service_tests.Service
 {
@@ -438,6 +437,83 @@ namespace fostering_service_tests.Service
 
             // Assert
             Assert.Equal("test", result.ReasonsForFostering);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldMapGpDetails()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("nameofgp", "Name of gp")
+                .WithIntegrationFormField("nameofpractice", "Name of practice")
+                .WithIntegrationFormField("gpphonenumber", "01234567890")
+                .WithIntegrationFormField("addressofpractice", "First Line 1|Second Line 2|Town")
+                .WithIntegrationFormField("postcodeofpractice", "SK1 3XE")
+                .WithIntegrationFormField("placerefofpractice", "12345")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.Equal("Name of gp", result.FirstApplicant.NameOfGp);
+            Assert.Equal("Name of practice", result.FirstApplicant.NameOfGpPractice);
+            Assert.Equal("01234567890", result.FirstApplicant.GpPhoneNumber);
+            Assert.Equal("First Line 1", result.FirstApplicant.GpAddress.AddressLine1);
+            Assert.Equal("Second Line 2", result.FirstApplicant.GpAddress.AddressLine2);
+            Assert.Equal("Town", result.FirstApplicant.GpAddress.Town);
+            Assert.Equal("12345", result.FirstApplicant.GpAddress.PlaceRef);
+            Assert.Equal("SK1 3XE", result.FirstApplicant.GpAddress.Postcode);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldMapGpDetails_SecondApplicant()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("withpartner", "Yes")
+                .WithIntegrationFormField("firstname_2", "First name")
+                .WithIntegrationFormField("surname_2", "Surname")
+                .WithIntegrationFormField("nameofgp2", "Name of gp")
+                .WithIntegrationFormField("nameofpractice2", "Name of practice")
+                .WithIntegrationFormField("gpphonenumber2", "01234567890")
+                .WithIntegrationFormField("addressofpractice2", "First Line 1|Second Line 2|Town")
+                .WithIntegrationFormField("postcodeofpractice2", "SK1 3XE")
+                .WithIntegrationFormField("placerefofpractice2", "12345")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.Equal("Name of gp", result.SecondApplicant.NameOfGp);
+            Assert.Equal("Name of practice", result.SecondApplicant.NameOfGpPractice);
+            Assert.Equal("01234567890", result.SecondApplicant.GpPhoneNumber);
+            Assert.Equal("First Line 1", result.SecondApplicant.GpAddress.AddressLine1);
+            Assert.Equal("Second Line 2", result.SecondApplicant.GpAddress.AddressLine2);
+            Assert.Equal("Town", result.SecondApplicant.GpAddress.Town);
+            Assert.Equal("12345", result.SecondApplicant.GpAddress.PlaceRef);
+            Assert.Equal("SK1 3XE", result.SecondApplicant.GpAddress.Postcode);
         }
 
         [Fact]
@@ -2132,6 +2208,173 @@ namespace fostering_service_tests.Service
             Assert.Equal(result[0].Address.AddressLine1, expectedLine1);
             Assert.Equal(result[0].Address.AddressLine2, expectedLine2);
             Assert.Equal(result[0].Address.Town, expectedTown);
+        }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldCallVerintServiceGateway()
+        {
+            //Arrange
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            //Act
+            await _service.UpdateGpDetails(model);
+
+            //Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldThrowException()
+        {
+            // Arrange
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateGpDetails(model));
+        }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldCreateIntegrationFormFields()
+        {
+            // Arrange
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            // Act
+            await _service.UpdateGpDetails(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "nameofgp" && field.FormFieldValue == model.FirstApplicant.NameOfGp)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "nameofpractice" && field.FormFieldValue == model.FirstApplicant.NameOfGpPractice)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "gpphonenumber" && field.FormFieldValue == model.FirstApplicant.GpPhoneNumber)
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldCreateIntegrationFormFields_ForSecondApplicant()
+        {
+            // Arrange
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                },
+                SecondApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+
+            // Act
+            await _service.UpdateGpDetails(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "nameofgp2" && field.FormFieldValue == model.SecondApplicant.NameOfGp)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "nameofpractice2" && field.FormFieldValue == model.SecondApplicant.NameOfGpPractice)
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "gpphonenumber2" && field.FormFieldValue == model.SecondApplicant.GpPhoneNumber)
+            )), Times.Once);
         }
     }
 }

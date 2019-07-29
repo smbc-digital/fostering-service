@@ -377,5 +377,102 @@ namespace fostering_service_tests.Controller
             var resultType = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, resultType.StatusCode);
         }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldCallFosteringService()
+        {
+            //Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateGpDetails(It.IsAny<FosteringCaseGpDetailsUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+
+            //Act
+            await _controller.UpdateGpDetails(model);
+
+            //Assert
+            _mockFosteringService.Verify(_ => _.UpdateGpDetails(model), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldReturn200()
+        {
+            //Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateGpDetails(It.IsAny<FosteringCaseGpDetailsUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+
+            //Act
+            var result = await _controller.UpdateGpDetails(model);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateGpDetails_ShouldReturn500()
+        {
+            //Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateGpDetails(It.IsAny<FosteringCaseGpDetailsUpdateModel>()))
+                .ThrowsAsync(new Exception());
+            var model = new FosteringCaseGpDetailsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseGpDetailsApplicantUpdateModel
+                {
+                    GpAddress = new Address
+                    {
+                        AddressLine1 = "Line 1",
+                        AddressLine2 = "Line 2",
+                        Postcode = "SK1 3XE",
+                        Town = "Stockport"
+                    },
+                    GpPhoneNumber = "0123456789",
+                    NameOfGpPractice = "Practice name",
+                    NameOfGp = "Gp name"
+                }
+            };
+
+            //Act
+            var result = await _controller.UpdateGpDetails(model);
+
+            //Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
     }
 }

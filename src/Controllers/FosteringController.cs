@@ -214,5 +214,22 @@ namespace fostering_service.Controllers
                 return StatusCode(500, ex);
             }
         }
+
+        [Route("gp-details")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateGpDetails(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+
+        }
     }
 }
