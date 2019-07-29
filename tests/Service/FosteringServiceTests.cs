@@ -2376,5 +2376,56 @@ namespace fostering_service_tests.Service
                 m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "gpphonenumber2" && field.FormFieldValue == model.SecondApplicant.GpPhoneNumber)
             )), Times.Once);
         }
+
+        [Fact]
+        public async Task GetCase_ShouldSetEnableAdditionalInformationToTrueWhenDefinitionNameIsSetToFosteringApplication()
+        {
+
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithDefinitionName("Fostering_Application")
+                .Build();
+
+            //Arrange
+            _verintServiceGatewayMock.Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK, 
+                    ResponseContent = entity
+                });
+
+
+            //Act
+            var result = await _service.GetCase("123");
+
+            //Assert
+            Assert.True(result.EnableAdditionalInformationSection);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldSetEnableAdditionalInformationToFalseWhenDefinitionNameIsNotFosteringApplication()
+        {
+
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithDefinitionName("Not_Appliation")
+                .Build();
+
+            //Arrange
+            _verintServiceGatewayMock.Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            //Act
+            var result = await _service.GetCase("123");
+
+            //Assert
+            Assert.False(result.EnableAdditionalInformationSection);
+        }
     }
 }
