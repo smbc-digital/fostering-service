@@ -141,6 +141,51 @@ namespace fostering_service_tests.Service
 
         }
 
+        [Fact]
+        public async Task GetCase_ShouldReturn_FosteringCaseWithAReference()
+        {
+            // Arrange
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithIntegrationFormField("prffirstname", "name")
+                .WithIntegrationFormField("prflastname", "last name")
+                .WithIntegrationFormField("prfrelation", "relation")
+                .WithIntegrationFormField("prfyears", "years")
+                .WithIntegrationFormField("prfemail", "test@test.com")
+                .WithIntegrationFormField("prfcontact", "contact")
+                .WithIntegrationFormField("prfplaceref", "123")
+                .WithIntegrationFormField("prfpostcode", "sk13xe")
+                .WithIntegrationFormField("prfaddress", "address")
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act 
+            var result = await _service.GetCase("1234");
+
+            // Assert
+            Assert.IsType<FosteringCase>(result);
+            Assert.Equal("name", result.FamilyReference.FirstName);
+            Assert.Equal("last name", result.FamilyReference.LastName);
+            Assert.Equal("relation", result.FamilyReference.RelationshipToYou);
+            Assert.Equal("years", result.FamilyReference.NumberOfYearsKnown);
+            Assert.Equal("test@test.com", result.FamilyReference.EmailAddress);
+            Assert.Equal("contact", result.FamilyReference.PhoneNumber);
+            Assert.Equal("123", result.FamilyReference.Address.PlaceRef);
+            Assert.Equal("sk13xe", result.FamilyReference.Address.Postcode);
+            Assert.Equal("address", result.FamilyReference.Address.SelectedAddress);
+            Assert.Equal("", result.FamilyReference.Address.AddressLine1);
+            Assert.Equal("", result.FamilyReference.Address.AddressLine2);
+            Assert.Equal("", result.FamilyReference.Address.Town);
+        }
+
         [Theory]
         [InlineData("withpartner")]
         [InlineData("")]
@@ -826,22 +871,6 @@ namespace fostering_service_tests.Service
         }
 
         [Fact]
-        public async Task UpdatePartnershipStatus_ShouldCallVerintService()
-        {
-            // Arrange
-            var model = new FosteringCasePartnershipStatusUpdateModel
-            {
-                CaseReference = "test"
-            };
-
-            // Act
-            await _service.UpdatePartnershipStatus(model);
-
-            // Assert
-            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
-        }
-
-        [Fact]
         public async Task UpdateLanguagesSpokenInYourHome_ShouldThrowError()
         {
             // Arrange
@@ -931,6 +960,22 @@ namespace fostering_service_tests.Service
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "otherlanguages" && match.FormFieldValue == "Dutch")
             )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdatePartnershipStatus_ShouldCallVerintService()
+        {
+            // Arrange
+            var model = new FosteringCasePartnershipStatusUpdateModel
+            {
+                CaseReference = "test"
+            };
+
+            // Act
+            await _service.UpdatePartnershipStatus(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
         }
 
         [Fact]
@@ -2375,6 +2420,270 @@ namespace fostering_service_tests.Service
             _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
                 m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "gpphonenumber2" && field.FormFieldValue == model.SecondApplicant.GpPhoneNumber)
             )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateReferences_ShouldCallVerintServiceGateway()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseReferenceUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FamilyReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+                },
+                FirstPersonalReference = new ReferenceDetails
+                {
+                    Address = new Address()
+                },
+                SecondPersonalReference = new ReferenceDetails
+                {
+                    Address = new Address()
+                }
+            };
+
+            // Act
+            await _service.UpdateReferences(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateReferences_ShouldThrowError()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadGateway
+                });
+
+            var model = new FosteringCaseReferenceUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FamilyReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+                },
+                FirstPersonalReference = new ReferenceDetails
+                {
+                    Address = new Address()
+                },
+                SecondPersonalReference = new ReferenceDetails
+                {
+                    Address = new Address()
+                }
+            };
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => _service.UpdateReferences(model));
+        }
+
+        //[Theory]
+        //[InlineData(null, ETaskStatus.NotCompleted)]
+        //[InlineData("English", ETaskStatus.Completed)]
+        [Fact]
+        public async Task UpdateReferences_ShouldReturnCompletedETaskStatus()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseReferenceUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FamilyReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+                },
+                FirstPersonalReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+
+                },
+                SecondPersonalReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+                }
+            };
+
+            // Act
+            var result = await _service.UpdateReferences(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.Completed, result);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "yourreferencesstatus" && match.FormFieldValue == ETaskStatus.Completed.ToString())
+                )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateReferences_ShouldReturnIncompletedETaskStatus()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var model = new FosteringCaseReferenceUpdateModel()
+            {
+                CaseReference = "0121DO1",
+                FamilyReference = new ReferenceDetails
+                {
+                    FirstName = "",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+                },
+                FirstPersonalReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+
+                },
+                SecondPersonalReference = new ReferenceDetails
+                {
+                    FirstName = "firstname",
+                    LastName = "surname",
+                    EmailAddress = "email",
+                    PhoneNumber = "phone",
+                    RelationshipToYou = "Relation",
+                    NumberOfYearsKnown = "5",
+                    Address = new Address
+                    {
+                        Postcode = "postcode",
+                        PlaceRef = "123",
+                        SelectedAddress = "Address",
+                        AddressLine1 = "",
+                        AddressLine2 = "",
+                        Town = ""
+                    }
+                }
+            };
+
+            // Act
+            var result = await _service.UpdateReferences(model);
+
+            // Assert
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+
+            _verintServiceGatewayMock
+                .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
+                    updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "yourreferencesstatus" && match.FormFieldValue == ETaskStatus.NotCompleted.ToString())
+                )), Times.Once);
         }
     }
 }

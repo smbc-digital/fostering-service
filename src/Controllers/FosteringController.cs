@@ -222,6 +222,22 @@ namespace fostering_service.Controllers
             try
             {
                 var response = await _fosteringService.UpdateGpDetails(model);
+                
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+
+        [Route("references")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateReferences(FosteringCaseReferenceUpdateModel model)
+        {
+            try
+            {
+                var response = await _fosteringService.UpdateReferences(model);
 
                 return Ok(response);
             }
@@ -229,7 +245,6 @@ namespace fostering_service.Controllers
             {
                 return StatusCode(500, ex);
             }
-
         }
     }
 }

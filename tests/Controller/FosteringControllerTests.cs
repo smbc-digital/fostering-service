@@ -443,6 +443,37 @@ namespace fostering_service_tests.Controller
         }
 
         [Fact]
+        public async Task UpdateReferences_ShouldCallFosteringService()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateReferences(It.IsAny<FosteringCaseReferenceUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+
+            // Act
+            await _controller.UpdateReferences(new FosteringCaseReferenceUpdateModel());
+
+            // Assert
+            _mockFosteringService
+                .Verify(_ => _.UpdateReferences(It.IsAny<FosteringCaseReferenceUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateReferences_ShouldReturn200()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateReferences(It.IsAny<FosteringCaseReferenceUpdateModel>()))
+                .ReturnsAsync(ETaskStatus.Completed);
+
+            // Act
+            var result = await _controller.UpdateReferences(new FosteringCaseReferenceUpdateModel());
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+        }
+
+        [Fact]
         public async Task UpdateGpDetails_ShouldReturn500()
         {
             //Arrange
@@ -471,6 +502,22 @@ namespace fostering_service_tests.Controller
             var result = await _controller.UpdateGpDetails(model);
 
             //Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateReferences_ShouldReturn500()
+        {
+            // Arrange
+            _mockFosteringService
+                .Setup(_ => _.UpdateReferences(It.IsAny<FosteringCaseReferenceUpdateModel>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _controller.UpdateReferences(new FosteringCaseReferenceUpdateModel());
+
+            // Assert
             var resultType = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, resultType.StatusCode);
         }

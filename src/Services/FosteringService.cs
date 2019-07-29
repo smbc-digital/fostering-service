@@ -90,7 +90,147 @@ namespace fostering_service.Services
                 ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
                 OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields),
                 PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty,
+
             };
+
+            fosteringCase.FamilyReference = new ReferenceDetails
+            {
+                FirstName = integrationFormFields.FirstOrDefault(_ => _.Name == "prffirstname")?.Value ?? string.Empty,
+                LastName = integrationFormFields.FirstOrDefault(_ => _.Name == "prflastname")?.Value ?? string.Empty,
+                RelationshipToYou = integrationFormFields.FirstOrDefault(_ => _.Name == "prfrelation")?.Value ?? string.Empty,
+                NumberOfYearsKnown = integrationFormFields.FirstOrDefault(_ => _.Name == "prfyears")?.Value ?? string.Empty,
+                EmailAddress = integrationFormFields.FirstOrDefault(_ => _.Name == "prfemail")?.Value ?? string.Empty,
+                PhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "prfcontact")?.Value ?? string.Empty,
+                Address = new Model.Address
+                {
+                    PlaceRef = integrationFormFields.FirstOrDefault(_ => _.Name == "prfplaceref")?.Value ?? string.Empty,
+                    Postcode = integrationFormFields.FirstOrDefault(_ => _.Name == "prfpostcode")?.Value ?? string.Empty,
+                    AddressLine1 = string.Empty,
+                    AddressLine2 = string.Empty,
+                    Town = string.Empty,
+                    SelectedAddress = string.Empty
+                }
+            };
+            fosteringCase.FirstPersonalReference = new ReferenceDetails
+            {
+                FirstName = integrationFormFields.FirstOrDefault(_ => _.Name == "prf11firstname")?.Value ?? string.Empty,
+                LastName = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1lastname")?.Value ?? string.Empty,
+                RelationshipToYou = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1relation")?.Value ?? string.Empty,
+                NumberOfYearsKnown = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1years")?.Value ?? string.Empty,
+                EmailAddress = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1email")?.Value ?? string.Empty,
+                PhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1contact")?.Value ?? string.Empty,
+                Address = new Model.Address
+                {
+                    PlaceRef = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1placeref")?.Value ?? string.Empty,
+                    Postcode = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1postcode")?.Value ?? string.Empty,
+                    AddressLine1 = string.Empty,
+                    AddressLine2 = string.Empty,
+                    Town = string.Empty,
+                    SelectedAddress = string.Empty
+                }
+            };
+            fosteringCase.SecondPersonalReference = new ReferenceDetails
+            {
+                FirstName = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2firstname")?.Value ?? string.Empty,
+                LastName = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2lastname")?.Value ?? string.Empty,
+                RelationshipToYou = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2relation")?.Value ?? string.Empty,
+                NumberOfYearsKnown = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2years")?.Value ?? string.Empty,
+                EmailAddress = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2email")?.Value ?? string.Empty,
+                PhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2contact")?.Value ?? string.Empty,
+                Address = new Model.Address
+                {
+                    PlaceRef = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2placeref")?.Value ?? string.Empty,
+                    Postcode = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2postcode")?.Value ?? string.Empty,
+                    AddressLine1 = string.Empty,
+                    AddressLine2 = string.Empty,
+                    Town = string.Empty,
+                    SelectedAddress = string.Empty
+                }
+            };
+
+            if (!string.IsNullOrEmpty(fosteringCase.FamilyReference.Address.PlaceRef))
+            {
+                fosteringCase.FamilyReference.Address.SelectedAddress = integrationFormFields.FirstOrDefault(_ => _.Name == "prfaddress")?.Value ?? string.Empty;
+            }
+            else
+            {
+                var field = integrationFormFields.FirstOrDefault(_ => _.Name == "prfaddress")?.Value ?? string.Empty;
+                var address = field.Split("|");
+
+                switch (address.Length)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        fosteringCase.FamilyReference.Address.AddressLine1 = address[0];
+                        break;
+                    case 2:
+                        fosteringCase.FamilyReference.Address.AddressLine1 = address[0];
+                        fosteringCase.FamilyReference.Address.Town = address[1];
+                        break;
+                    default:
+                        fosteringCase.FamilyReference.Address.AddressLine1 = address[0];
+                        fosteringCase.FamilyReference.Address.AddressLine2 = address[1];
+                        fosteringCase.FamilyReference.Address.Town = address[2];
+                        break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(fosteringCase.FirstPersonalReference.Address.PlaceRef))
+            {
+                fosteringCase.FirstPersonalReference.Address.SelectedAddress = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1address")?.Value ?? string.Empty;
+            }
+            else
+            {
+                var field = integrationFormFields.FirstOrDefault(_ => _.Name == "prf1address")?.Value ?? string.Empty;
+                var address = field.Split("|");
+
+                switch (address.Length)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        fosteringCase.FirstPersonalReference.Address.AddressLine1 = address[0];
+                        break;
+                    case 2:
+                        fosteringCase.FirstPersonalReference.Address.AddressLine1 = address[0];
+                        fosteringCase.FirstPersonalReference.Address.Town = address[1];
+                        break;
+                    default:
+                        fosteringCase.FirstPersonalReference.Address.AddressLine1 = address[0];
+                        fosteringCase.FirstPersonalReference.Address.AddressLine2 = address[1];
+                        fosteringCase.FirstPersonalReference.Address.Town = address[2];
+                        break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(fosteringCase.SecondPersonalReference.Address.PlaceRef))
+            {
+                fosteringCase.SecondPersonalReference.Address.SelectedAddress = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2address")?.Value ?? string.Empty;
+            }
+            else
+            {
+                var field = integrationFormFields.FirstOrDefault(_ => _.Name == "prf2address")?.Value ?? string.Empty;
+                var address = field.Split("|");
+
+                switch (address.Length)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        fosteringCase.SecondPersonalReference.Address.AddressLine1 = address[0];
+                        break;
+                    case 2:
+                        fosteringCase.SecondPersonalReference.Address.AddressLine1 = address[0];
+                        fosteringCase.SecondPersonalReference.Address.Town = address[1];
+                        break;
+                    default:
+                        fosteringCase.SecondPersonalReference.Address.AddressLine1 = address[0];
+                        fosteringCase.SecondPersonalReference.Address.AddressLine2 = address[1];
+                        fosteringCase.SecondPersonalReference.Address.Town = address[2];
+                        break;
+                }
+            }
 
             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
             if (!string.IsNullOrEmpty(anyOtherPeopleInYourHousehold))
@@ -986,6 +1126,131 @@ namespace fostering_service.Services
             return firstApplicantUnderSixteen && firstApplicantOverSixteen;
         }
 
+        public async Task<ETaskStatus> UpdateReferences(FosteringCaseReferenceUpdateModel model)
+        {
+            var formFields = new FormFieldBuilder();
+            var completed = UpdateReferencesCompleted(model);
+
+            formFields
+                .AddField("prffirstname", model.FamilyReference.FirstName)
+                .AddField("prflastname", model.FamilyReference.LastName)
+                .AddField("prfrelation", model.FamilyReference.RelationshipToYou)
+                .AddField("prfyears", model.FamilyReference.NumberOfYearsKnown)
+                .AddField("prfemail", model.FamilyReference.EmailAddress)
+                .AddField("prfcontact", model.FamilyReference.PhoneNumber)
+                .AddField("prfplaceref", model.FamilyReference.Address.PlaceRef)
+                .AddField("prfpostcode", model.FamilyReference.Address.Postcode);
+
+            if (!string.IsNullOrEmpty(model.FamilyReference.Address.PlaceRef))
+            {
+                formFields.AddField("prfaddress",
+                    model.FamilyReference.Address.AddressLine1 + "|" + model.FamilyReference.Address.AddressLine2 +
+                    "|" + model.FamilyReference.Address.Town);
+            }
+            else
+            {
+                formFields.AddField("prfaddress", model.FamilyReference.Address.SelectedAddress);
+            }
+
+            formFields
+                .AddField("prf11firstname", model.FirstPersonalReference.FirstName)
+                .AddField("prf1lastname", model.FirstPersonalReference.LastName)
+                .AddField("prf1relation", model.FirstPersonalReference.RelationshipToYou)
+                .AddField("prf1years", model.FirstPersonalReference.NumberOfYearsKnown)
+                .AddField("prf1email", model.FirstPersonalReference.EmailAddress)
+                .AddField("prf1contact", model.FirstPersonalReference.PhoneNumber)
+                .AddField("prf1placeref", model.FirstPersonalReference.Address.PlaceRef)
+                .AddField("prf1postcode", model.FirstPersonalReference.Address.Postcode);
+
+            if (!string.IsNullOrEmpty(model.FirstPersonalReference.Address.PlaceRef))
+            {
+                formFields.AddField("prf1address",
+                    model.FirstPersonalReference.Address.AddressLine1 + "|" + model.FirstPersonalReference.Address.AddressLine2 +
+                    "|" + model.FirstPersonalReference.Address.Town);
+            }
+            else
+            {
+                formFields.AddField("prf1address", model.FirstPersonalReference.Address.SelectedAddress);
+            }
+
+            formFields
+                .AddField("prf2firstname", model.SecondPersonalReference.FirstName)
+                .AddField("prf2lastname", model.SecondPersonalReference.LastName)
+                .AddField("prf2relation", model.SecondPersonalReference.RelationshipToYou)
+                .AddField("prf2years", model.SecondPersonalReference.NumberOfYearsKnown)
+                .AddField("prf2email", model.SecondPersonalReference.EmailAddress)
+                .AddField("prf2contact", model.SecondPersonalReference.PhoneNumber)
+                .AddField("prf2placeref", model.SecondPersonalReference.Address.PlaceRef)
+                .AddField("prf2postcode", model.SecondPersonalReference.Address.Postcode);
+
+            if (!string.IsNullOrEmpty(model.SecondPersonalReference.Address.PlaceRef))
+            {
+                formFields.AddField("prf2address",
+                    model.SecondPersonalReference.Address.AddressLine1 + "|" + model.SecondPersonalReference.Address.AddressLine2 +
+                    "|" + model.SecondPersonalReference.Address.Town);
+            }
+            else
+            {
+                formFields.AddField("prf2address", model.SecondPersonalReference.Address.SelectedAddress);
+            }
+
+
+            formFields.AddField(GetFormStatusFieldName(EFosteringCaseForm.References),
+                GetTaskStatus(completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted));
+
+            var updateModel = new IntegrationFormFieldsUpdateModel
+            {
+                IntegrationFormName = _applicationFormName,
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = formFields.Build()
+            };
+
+            var response = await _verintServiceGateway
+                .UpdateCaseIntegrationFormField(updateModel);
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception("Update references failure");
+            }
+
+            return completed ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
+        }
+
+        public bool UpdateReferencesCompleted(FosteringCaseReferenceUpdateModel model)
+        {
+            bool familyRefComplete = CheckReferenceDetailsComplete(model.FamilyReference);
+            bool firstPersonalReferenceComplete = CheckReferenceDetailsComplete(model.FirstPersonalReference);
+            bool secondPersonalReferenceComplete = CheckReferenceDetailsComplete(model.SecondPersonalReference);
+
+            return familyRefComplete && firstPersonalReferenceComplete && secondPersonalReferenceComplete;
+        }
+
+        public bool CheckReferenceDetailsComplete(ReferenceDetails model)
+        {
+            bool detailsComplete = !string.IsNullOrEmpty(model.FirstName) &&
+                                   !string.IsNullOrEmpty(model.LastName) &&
+                                   !string.IsNullOrEmpty(model.EmailAddress) &&
+                                   !string.IsNullOrEmpty(model.NumberOfYearsKnown) &&
+                                   !string.IsNullOrEmpty(model.PhoneNumber) &&
+                                   !string.IsNullOrEmpty(model.RelationshipToYou);
+
+            bool addressComplete = false;
+
+            if (string.IsNullOrEmpty(model.Address.PlaceRef))
+            {
+                addressComplete = !string.IsNullOrEmpty(model.Address.AddressLine1)
+                                  && !string.IsNullOrEmpty(model.Address.Town)
+                                  && !string.IsNullOrEmpty(model.Address.Postcode);
+            }
+            else
+            {
+                addressComplete = !string.IsNullOrEmpty(model.Address.SelectedAddress) &&
+                                  !string.IsNullOrEmpty(model.Address.Postcode);
+            }
+
+            return addressComplete && detailsComplete;
+        }
+
         public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
         {
             var formStatusFieldName = GetFormStatusFieldName(form);
@@ -1061,6 +1326,8 @@ namespace fostering_service.Services
                     return "yourhouseholdstatus";
                 case EFosteringCaseForm.YourPartnership:
                     return "yourpartnershipstatus";
+                case EFosteringCaseForm.References:
+                    return "yourreferencesstatus";
                 default:
                     return null;
             }

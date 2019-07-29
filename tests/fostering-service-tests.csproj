@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.*" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Include="Moq" Version="4.10.1" />
-    <PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.3.1-prerelease72" />
+    <PackageReference Include="StockportGovUK.AspNetCore.Gateways" Version="0.3.1-prerelease75" />
     <PackageReference Include="StockportGovUK.AspNetCore.Logging.Elasticsearch.Aws" Version="0.4.0" />
     <PackageReference Include="System.Net.Http" Version="4.*" />
     <PackageReference Include="System.Text.RegularExpressions" Version="4.*" />
