@@ -90,7 +90,7 @@ namespace fostering_service.Services
                 ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
                 OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields),
                 PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty,
-                EnableAdditionalInfomationSection = string.Equals(response.ResponseContent.DefinitionName, "Fostering_Application", StringComparison.CurrentCultureIgnoreCase)
+                EnableAdditionalInformationSection = string.Equals(response.ResponseContent.DefinitionName, "Fostering_Application", StringComparison.CurrentCultureIgnoreCase)
             };
 
             var anyOtherPeopleInYourHousehold = integrationFormFields.FirstOrDefault(_ => _.Name == "otherpeopleinyourhousehold")?.Value;
