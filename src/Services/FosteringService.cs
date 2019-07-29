@@ -57,7 +57,8 @@ namespace fostering_service.Services
                     YourFosteringHistoryStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourfosteringhistorystatus")?.Value),
                     YourHealthStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhealthstatus")?.Value),
                     YourHouseholdStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhouseholdstatus")?.Value),
-                    YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value)
+                    YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value),
+                    GpDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value)
                 },
                 FirstApplicant = new FosteringApplicant
                 {
@@ -922,7 +923,7 @@ namespace fostering_service.Services
             if (model.FirstApplicant.AnyChildrenOverSixteen == false || model.FirstApplicant.AnyChildrenOverSixteen == true
                 && model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome != null
                 && model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome?.Count != 0
-                && !model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome.Exists(person =>
+                && !model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome.Exists(person =>
                     string.IsNullOrEmpty(person.FirstName) ||
                     string.IsNullOrEmpty(person.LastName) ||
                     string.IsNullOrEmpty(person.Gender) ||
@@ -1051,6 +1052,8 @@ namespace fostering_service.Services
                     return "yourhouseholdstatus";
                 case EFosteringCaseForm.YourPartnership:
                     return "yourpartnershipstatus";
+                case EFosteringCaseForm.GpDetails:
+                    return "gpdetailsstatus";
                 default:
                     return null;
             }
