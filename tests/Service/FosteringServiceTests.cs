@@ -2517,9 +2517,6 @@ namespace fostering_service_tests.Service
             await Assert.ThrowsAsync<Exception>(() => _service.UpdateReferences(model));
         }
 
-        //[Theory]
-        //[InlineData(null, ETaskStatus.NotCompleted)]
-        //[InlineData("English", ETaskStatus.Completed)]
         [Fact]
         public async Task UpdateReferences_ShouldReturnCompletedETaskStatus()
         {
@@ -2684,6 +2681,57 @@ namespace fostering_service_tests.Service
                 .Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(updateModel =>
                     updateModel.IntegrationFormFields.Exists(match => match.FormFieldName == "yourreferencesstatus" && match.FormFieldValue == ETaskStatus.NotCompleted.ToString())
                 )), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldSetEnableAdditionalInformationToTrueWhenDefinitionNameIsSetToFosteringApplication()
+        {
+
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithDefinitionName("Fostering_Application")
+                .Build();
+
+            //Arrange
+            _verintServiceGatewayMock.Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK, 
+                    ResponseContent = entity
+                });
+
+
+            //Act
+            var result = await _service.GetCase("123");
+
+            //Assert
+            Assert.True(result.EnableAdditionalInformationSection);
+        }
+
+        [Fact]
+        public async Task GetCase_ShouldSetEnableAdditionalInformationToFalseWhenDefinitionNameIsNotFosteringApplication()
+        {
+
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("firstname", "First name")
+                .WithIntegrationFormField("surname", "Surname")
+                .WithDefinitionName("Not_Appliation")
+                .Build();
+
+            //Arrange
+            _verintServiceGatewayMock.Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            //Act
+            var result = await _service.GetCase("123");
+
+            //Assert
+            Assert.False(result.EnableAdditionalInformationSection);
         }
     }
 }

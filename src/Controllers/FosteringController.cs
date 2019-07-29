@@ -31,14 +31,13 @@ namespace fostering_service.Controllers
         {
             try
             {
-                _logger.LogWarning("**DEBUG:FosteringController GetCase starting getCase");
                 var result = await _fosteringService.GetCase(caseId);
 
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("**DEBUG:FosteringController GetCase an error has occured while calling fostering sevice getCase");
+                _logger.LogWarning($"FosteringController GetCase an exception has occured while calling fostering sevice getCase, ex: {ex}");
                 return StatusCode(500, ex);
             }
         }
@@ -50,15 +49,13 @@ namespace fostering_service.Controllers
         {
             try
             {
-                _logger.LogWarning("**DEBUG:FosteringController UpdateAboutYourself, starting request to update about yourself");
                 var response = await _fosteringService.UpdateAboutYourself(model);
 
-                _logger.LogInformation($"**DEBUG:FosteringController UpdateAboutYourself, response  status {response}");
                 return Ok(response);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning($"**DEBUG:FosteringController UpdateAboutYourself, an error has occured while attempting to call fostering service, ex: {ex}");
+                _logger.LogWarning($"FosteringController UpdateAboutYourself, an error has occured while attempting to call fostering service, ex: {ex}");
                 return StatusCode(500, ex);
             }
         }
