@@ -37,9 +37,9 @@ namespace fostering_service_tests.Mappers
             var result = AddressMapper.MapToFosteringAddress(integrationFormFields, "address", "placeref", "postcode");
 
             // Assert
-            Assert.Equal("Address line 1", result.AddressLine1);
-            Assert.Equal("Address line 2", result.AddressLine2);
-            Assert.Equal("Town", result.Town);
+            Assert.Equal(string.Empty, result.AddressLine1);
+            Assert.Equal(string.Empty, result.AddressLine2);
+            Assert.Equal(string.Empty, result.Town);
             Assert.Equal("SK1 3XE", result.Postcode);
             Assert.Equal("1234", result.PlaceRef);
         }
@@ -63,7 +63,7 @@ namespace fostering_service_tests.Mappers
                 new CustomField
                 {
                     Name = "placeref",
-                    Value = "1234"
+                    Value = ""
                 }
             };
 
@@ -75,7 +75,7 @@ namespace fostering_service_tests.Mappers
             Assert.Equal(string.Empty, result.AddressLine2);
             Assert.Equal(string.Empty, result.Town);
             Assert.Equal("SK1 3XE", result.Postcode);
-            Assert.Equal("1234", result.PlaceRef);
+            Assert.Equal(string.Empty, result.PlaceRef);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace fostering_service_tests.Mappers
                 new CustomField
                 {
                     Name = "placeref",
-                    Value = "1234"
+                    Value = ""
                 }
             };
 
@@ -109,7 +109,7 @@ namespace fostering_service_tests.Mappers
             Assert.Equal("Address line 2", result.AddressLine2);
             Assert.Equal(string.Empty, result.Town);
             Assert.Equal("SK1 3XE", result.Postcode);
-            Assert.Equal("1234", result.PlaceRef);
+            Assert.Equal(string.Empty, result.PlaceRef);
         }
 
         [Fact]

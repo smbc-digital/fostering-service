@@ -16,9 +16,12 @@ namespace fostering_service.Mappers
                 Town = string.Empty
             };
 
+            address.PlaceRef = fields.FirstOrDefault(_ => _.Name == placeRefFieldName)?.Value ?? string.Empty;
+            address.Postcode = fields.FirstOrDefault(_ => _.Name == postcodeFieldName)?.Value ?? string.Empty;
+
             var addressFieldValue = fields.FirstOrDefault(_ => _.Name == addressFieldName)?.Value;
 
-            if (!string.IsNullOrEmpty(addressFieldValue))
+            if (string.IsNullOrEmpty(address.PlaceRef) && !string.IsNullOrEmpty(addressFieldValue))
             {
                 var splittedAddress = addressFieldValue.Split("|");
 
@@ -41,8 +44,6 @@ namespace fostering_service.Mappers
                 }
             }
 
-            address.PlaceRef = fields.FirstOrDefault(_ => _.Name == placeRefFieldName)?.Value ?? string.Empty;
-            address.Postcode = fields.FirstOrDefault(_ => _.Name == postcodeFieldName)?.Value ?? string.Empty;
             return address;
         }
 
