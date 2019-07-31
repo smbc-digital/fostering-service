@@ -91,5 +91,21 @@ namespace fostering_service.Mappers
 
             return fields;
         }
+
+        public static Address Validate(this Address address)
+        {
+            if (!string.IsNullOrEmpty(address.AddressLine1) && !string.IsNullOrEmpty(address.Town) &&
+                !string.IsNullOrEmpty(address.Postcode))
+            {
+                return address;
+            }
+
+            if (!string.IsNullOrEmpty(address.PlaceRef) && !string.IsNullOrEmpty(address.Postcode))
+            {
+                return address;
+            }
+
+            return null;
+        }
     }
 }

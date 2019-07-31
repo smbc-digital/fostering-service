@@ -75,10 +75,10 @@ namespace fostering_service.Services
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty,
                     ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
                     ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, integrationFormFields, 4),
-                    NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp")?.Value ?? string.Empty,
-                    NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice")?.Value ?? string.Empty,
-                    GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value ?? string.Empty,
-                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice")
+                    NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp")?.Value,
+                    NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice")?.Value,
+                    GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value,
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice").Validate()
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -234,10 +234,10 @@ namespace fostering_service.Services
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle2")?.Value ?? string.Empty,
                     ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
                     ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.SecondApplicantOverSixteenConfigurationModel, integrationFormFields, 4),
-                    NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp2")?.Value ?? string.Empty,
-                    NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice2")?.Value ?? string.Empty,
-                    GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value ?? string.Empty,
-                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2")
+                    NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp2")?.Value,
+                    NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice2")?.Value,
+                    GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value,
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2").Validate()
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;

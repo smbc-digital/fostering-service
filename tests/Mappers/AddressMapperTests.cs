@@ -167,5 +167,53 @@ namespace fostering_service_tests.Mappers
             Assert.True(result.Exists(_ => _.FormFieldName == "placeRef" && _.FormFieldValue == "123"));
             Assert.True(result.Exists(_ => _.FormFieldName == "postcode" && _.FormFieldValue == "SK13EX"));
         }
+
+        [Fact]
+        public void Validate_ShouldReturnManuallyPickedAddress()
+        {
+            // Arrange
+            var address = new Address
+            {
+                AddressLine1 = "Line 1",
+                Town = "Town",
+                Postcode = "SK13XE"
+            };
+
+            // Act
+            var validatedAddress = address.Validate();
+
+            // Assert
+            Assert.NotNull(validatedAddress);
+        }
+
+        [Fact]
+        public void Validate_ShouldReturnAutomaticallyPickedAddress()
+        {
+            // Arrange
+            var address = new Address
+            {
+                Postcode = "SK13EX",
+                PlaceRef = "123"
+            };
+
+            // Act
+            var validatedAddress = address.Validate();
+
+            // Assert
+            Assert.NotNull(validatedAddress);
+        }
+
+        [Fact]
+        public void Validate_ShouldReturnNull()
+        {
+            // Arrange
+            var address = new Address();
+
+            // Act
+            var validatedAddress = address.Validate();
+
+            // Assert
+            Assert.Null(validatedAddress);
+        }
     }
 }
