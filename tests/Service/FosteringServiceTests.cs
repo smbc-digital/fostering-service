@@ -2524,7 +2524,9 @@ namespace fostering_service_tests.Service
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("firstname", "First name")
                 .WithIntegrationFormField("surname", "Surname")
-                .WithDefinitionName("Fostering_Application")
+                .WithEnquirySubject("Fostering")
+                .WithEnquiryReason("Fostering Application")
+                .WithEnquiryType("3. Application")
                 .Build();
 
             //Arrange
@@ -2550,7 +2552,6 @@ namespace fostering_service_tests.Service
             var entity = new CaseBuilder()
                 .WithIntegrationFormField("firstname", "First name")
                 .WithIntegrationFormField("surname", "Surname")
-                .WithDefinitionName("Not_Appliation")
                 .Build();
 
             //Arrange
