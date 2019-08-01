@@ -180,7 +180,7 @@ namespace fostering_service_tests.Service
             Assert.Equal("contact", result.FamilyReference.PhoneNumber);
             Assert.Equal("123", result.FamilyReference.Address.PlaceRef);
             Assert.Equal("sk13xe", result.FamilyReference.Address.Postcode);
-            Assert.Null(result.FamilyReference.Address.SelectedAddress);
+            Assert.Equal("address", result.FamilyReference.Address.SelectedAddress);
             Assert.Equal("", result.FamilyReference.Address.AddressLine1);
             Assert.Equal("", result.FamilyReference.Address.AddressLine2);
             Assert.Equal("", result.FamilyReference.Address.Town);
