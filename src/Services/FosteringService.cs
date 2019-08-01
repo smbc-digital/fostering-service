@@ -613,6 +613,7 @@ namespace fostering_service.Services
                 .AddField("nameofgp", model.FirstApplicant.NameOfGp)
                 .AddField("nameofpractice", model.FirstApplicant.NameOfGpPractice)
                 .AddField("gpphonenumber", model.FirstApplicant.GpPhoneNumber)
+                .AddField(GetFormStatusFieldName(EFosteringCaseForm.GpDetails), GetTaskStatus(ETaskStatus.Completed))
                 .Build();
             firstApplicantFormFields.AddRange(AddressMapper.MapToVerintAddress(model.FirstApplicant.GpAddress, "addressofpractice", "placerefofpractice", "postcodeofpractice"));
 
