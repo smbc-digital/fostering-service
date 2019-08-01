@@ -24,7 +24,7 @@ namespace fostering_service_tests.Mappers
                 new CustomField
                 {
                     Name = "address",
-                    Value = "Address line 1|Address line 2|Town"
+                    Value = "Address line 1, Line 2, Town"
                 },
                 new CustomField
                 {
@@ -42,6 +42,7 @@ namespace fostering_service_tests.Mappers
             Assert.Equal(string.Empty, result.Town);
             Assert.Equal("SK1 3XE", result.Postcode);
             Assert.Equal("1234", result.PlaceRef);
+            Assert.Equal("Address line 1, Line 2, Town", result.SelectedAddress);
         }
 
         [Fact]
@@ -111,7 +112,7 @@ namespace fostering_service_tests.Mappers
             Assert.Equal("SK1 3XE", result.Postcode);
             Assert.Equal(string.Empty, result.PlaceRef);
         }
-
+        
         [Fact]
         public void MapToFosteringAddress_ShouldReturnEmptyAddress()
         {

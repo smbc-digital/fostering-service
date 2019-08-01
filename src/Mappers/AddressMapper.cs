@@ -44,6 +44,11 @@ namespace fostering_service.Mappers
                 }
             }
 
+            if (!string.IsNullOrEmpty(address.PlaceRef) && !string.IsNullOrEmpty(addressFieldValue))
+            {
+                address.SelectedAddress = addressFieldValue;
+            }
+
             return address;
         }
 
