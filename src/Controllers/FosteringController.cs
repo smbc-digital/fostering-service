@@ -130,7 +130,6 @@ namespace fostering_service.Controllers
 
         [Route("update-form-status")]
         [HttpPatch]
-        [BlockFormUpdate(CaseReferencePropertyName = "CaseId")]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
         {
             try
