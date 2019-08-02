@@ -31,37 +31,31 @@ namespace fostering_service_tests.Mappers
                     Name = "prfplaceref",
                     Value = "1234"
                 },
-
                 new CustomField
                 {
-                Name = "prffirstname",
-                Value = "name"
+                    Name = "prffirstname",
+                    Value = "name"
                 },
-
                 new CustomField
                 {
                     Name = "prflastname",
                     Value = "lastname"
                 },
-
                 new CustomField
                 {
                     Name = "prfrelation",
                     Value = "relation"
                 },
-
                 new CustomField
                 {
                     Name = "prfyears",
                     Value = "years"
                 },
-
                 new CustomField
                 {
                     Name = "prfemail",
                     Value = "email"
                 },
-
                 new CustomField
                 {
                     Name = "prfcontact",
@@ -108,12 +102,12 @@ namespace fostering_service_tests.Mappers
             Assert.Equal(string.Empty, result.Address.Town);
             Assert.Equal(string.Empty, result.Address.Postcode);
             Assert.Equal(string.Empty, result.Address.PlaceRef);
-            Assert.Equal(string.Empty, result.FirstName);
-            Assert.Equal(string.Empty, result.LastName);
-            Assert.Equal(string.Empty, result.RelationshipToYou);
-            Assert.Equal(string.Empty, result.NumberOfYearsKnown);
-            Assert.Equal(string.Empty, result.EmailAddress);
-            Assert.Equal(string.Empty, result.PhoneNumber);
+            Assert.Equal(null, result.FirstName);
+            Assert.Equal(null, result.LastName);
+            Assert.Equal(null, result.RelationshipToYou);
+            Assert.Equal(null, result.NumberOfYearsKnown);
+            Assert.Equal(null, result.EmailAddress);
+            Assert.Equal(null, result.PhoneNumber);
         }
     }
 }
