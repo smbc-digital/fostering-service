@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using fostering_service.Mappers;
+using fostering_service_tests.Builders;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using Xunit;
 
@@ -13,58 +14,20 @@ namespace fostering_service_tests.Mappers
         public void MapToReferenceDetails_ShouldReturnCompleteReferenceDetails()
         {
             //Arrange
-            var integrationFormFields = new List<CustomField>
-
-            {
-                new CustomField
-                {
-                    Name = "prfpostcode",
-                    Value = "SK1 3XE"
-                },
-                new CustomField
-                {
-                    Name = "prfaddress",
-                    Value = "Address line 1|Address line 2|Town"
-                },
-                new CustomField
-                {
-                    Name = "prfplaceref",
-                    Value = "1234"
-                },
-                new CustomField
-                {
-                    Name = "prffirstname",
-                    Value = "name"
-                },
-                new CustomField
-                {
-                    Name = "prflastname",
-                    Value = "lastname"
-                },
-                new CustomField
-                {
-                    Name = "prfrelation",
-                    Value = "relation"
-                },
-                new CustomField
-                {
-                    Name = "prfyears",
-                    Value = "years"
-                },
-                new CustomField
-                {
-                    Name = "prfemail",
-                    Value = "email"
-                },
-                new CustomField
-                {
-                    Name = "prfcontact",
-                    Value = "contact"
-                },
-            };
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("prfpostcode", "SK1 3XE")
+                .WithIntegrationFormField("prfaddress", "Address line 1|Address line 2|Town")
+                .WithIntegrationFormField("prfplaceref", "1234")
+                .WithIntegrationFormField("prffirstname", "name")
+                .WithIntegrationFormField("prflastname", "lastname")
+                .WithIntegrationFormField("prfrelation", "relation")
+                .WithIntegrationFormField("prfyears", "years")
+                .WithIntegrationFormField("prfemail", "email")
+                .WithIntegrationFormField("prfcontact", "contact")
+                .Build();
 
             //Act
-            var result = ReferenceDetailsMapper.MapToReferenceDetails(integrationFormFields,
+            var result = ReferenceDetailsMapper.MapToReferenceDetails(entity.IntegrationFormFields,
                 "prffirstname", "prflastname", "prfrelation", "prfyears",
                 "prfemail", "prfcontact", "prfaddress",
                 "prfplaceref", "prfpostcode");

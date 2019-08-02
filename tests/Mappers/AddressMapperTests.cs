@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using fostering_service.Mappers;
+using fostering_service_tests.Builders;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using Xunit;
 using Address = StockportGovUK.NetStandard.Models.Models.Fostering.Address;
@@ -14,27 +15,14 @@ namespace fostering_service_tests.Mappers
         public void MapToFosteringAddress_ShouldReturnCompleteAddress()
         {
             // Arrange
-            var integrationFormFields = new List<CustomField>
-            {
-                new CustomField
-                {
-                    Name = "postcode",
-                    Value = "SK1 3XE"
-                },
-                new CustomField
-                {
-                    Name = "address",
-                    Value = "Address line 1, Line 2, Town"
-                },
-                new CustomField
-                {
-                    Name = "placeref",
-                    Value = "1234"
-                }
-            };
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("postcode", "SK1 3XE")
+                .WithIntegrationFormField("address", "Address line 1, Line 2, Town")
+                .WithIntegrationFormField("placeref", "1234")
+                .Build();
 
             // Act
-            var result = AddressMapper.MapToFosteringAddress(integrationFormFields, "address", "placeref", "postcode");
+            var result = AddressMapper.MapToFosteringAddress(entity.IntegrationFormFields, "address", "placeref", "postcode");
 
             // Assert
             Assert.Equal(string.Empty, result.AddressLine1);
@@ -49,27 +37,14 @@ namespace fostering_service_tests.Mappers
         public void MapToFosteringAddress_ShouldReturnAddressWithLine1()
         {
             //Arrange
-            var integrationFormFields = new List<CustomField>
-            {
-                new CustomField
-                {
-                    Name = "postcode",
-                    Value = "SK1 3XE"
-                },
-                new CustomField
-                {
-                    Name = "address",
-                    Value = "Address line 1||"
-                },
-                new CustomField
-                {
-                    Name = "placeref",
-                    Value = ""
-                }
-            };
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("postcode", "SK1 3XE")
+                .WithIntegrationFormField("address", "Address line 1||")
+                .WithIntegrationFormField("placeref", "")
+                .Build();
 
             //Act
-            var result = AddressMapper.MapToFosteringAddress(integrationFormFields, "address", "placeref", "postcode");
+            var result = AddressMapper.MapToFosteringAddress(entity.IntegrationFormFields, "address", "placeref", "postcode");
 
             //Assert
             Assert.Equal("Address line 1", result.AddressLine1);
