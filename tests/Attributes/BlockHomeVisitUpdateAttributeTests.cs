@@ -14,19 +14,19 @@ using Xunit;
 
 namespace fostering_service.Attributes
 {
-    public class BlockFormUpdateAttributeTests
+    public class BlockHomeVisitUpdateTests
     {
-        private readonly BlockFormUpdateAttribute _attribute = new BlockFormUpdateAttribute();
+        private readonly BlockHomeVisitUpdate _attribute = new BlockHomeVisitUpdate();
         private readonly Mock<IFosteringService> _mockFosteringService = new Mock<IFosteringService>();
-        private readonly Mock<ILogger<BlockFormUpdateAttribute>> _mockLogger = new Mock<ILogger<BlockFormUpdateAttribute>>();
+        private readonly Mock<ILogger<BlockHomeVisitUpdate>> _mockLogger = new Mock<ILogger<BlockHomeVisitUpdate>>();
         private readonly Mock<IServiceProvider> _mockRequestServices = new Mock<IServiceProvider>();
         private readonly ActionExecutingContext _actionExecutingContext;
 
-        public BlockFormUpdateAttributeTests()
+        public BlockHomeVisitUpdateTests()
         {
             var actionArguments = new Dictionary<string, object>
             {
-                { "model", new TestingModel() }
+                { "model", new HomeVisitTestingModel() }
             };
 
             _mockRequestServices
@@ -34,7 +34,7 @@ namespace fostering_service.Attributes
                 .Returns(_mockFosteringService.Object);
 
             _mockRequestServices
-                .Setup(_ => _.GetService(typeof(ILogger<BlockFormUpdateAttribute>)))
+                .Setup(_ => _.GetService(typeof(ILogger<BlockHomeVisitUpdate>)))
                 .Returns(_mockLogger.Object);
 
 
@@ -82,7 +82,7 @@ namespace fostering_service.Attributes
 
             // Act & Assert
             var ex = Assert.Throws<Exception>(() => _attribute.OnActionExecuting(_actionExecutingContext));
-            Assert.Contains("BlockFormUpdateAttribute: Error getting case with reference", ex.Message);
+            Assert.Contains("BlockHomeVisitUpdate: Error getting case with reference", ex.Message);
         }
 
         [Fact]
@@ -137,12 +137,12 @@ namespace fostering_service.Attributes
 
             // Assert 
             Assert.Null(_actionExecutingContext.Result);
-            _mockRequestServices.Verify(_ => _.GetService(typeof(ILogger<BlockFormUpdateAttribute>)), Times.Once);
+            _mockRequestServices.Verify(_ => _.GetService(typeof(ILogger<BlockHomeVisitUpdate>)), Times.Once);
         }
 
     }
 
-    internal class TestingModel
+    internal class HomeVisitTestingModel
     {
         public string CaseReference { get; set; } = "12345678";
     }

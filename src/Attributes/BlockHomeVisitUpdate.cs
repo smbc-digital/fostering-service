@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Linq;
 using fostering_service.Services;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 
 namespace fostering_service.Attributes
 {
-    public class BlockFormUpdateAttribute : ActionFilterAttribute
+    public class BlockHomeVisitUpdate : ActionFilterAttribute
     {
         public string CaseReferencePropertyName { get; set; } = "CaseReference";
 
@@ -26,7 +25,7 @@ namespace fostering_service.Attributes
             }
             catch (Exception error)
             {
-                throw new Exception($"BlockFormUpdateAttribute: Error getting case with reference { caseReference }", error.InnerException);
+                throw new Exception($"BlockHomeVisitUpdate: Error getting case with reference { caseReference }", error.InnerException);
             }
 
             try
@@ -38,17 +37,9 @@ namespace fostering_service.Attributes
             }
             catch (Exception error)
             {
-                var logger = (ILogger<BlockFormUpdateAttribute>)context.HttpContext.RequestServices.GetService(typeof(ILogger<BlockFormUpdateAttribute>));
-                logger.LogWarning($"BlockFormUpdateAttribute: Error comparing home visit date time to current time, case reference {caseReference}, home visit time {response.HomeVisitDateTime.GetValueOrDefault():d}", error);
+                var logger = (ILogger<BlockHomeVisitUpdate>)context.HttpContext.RequestServices.GetService(typeof(ILogger<BlockHomeVisitUpdate>));
+                logger.LogWarning($"BlockHomeVisitUpdate: Error comparing home visit date time to current time, case reference {caseReference}, home visit time {response.HomeVisitDateTime.GetValueOrDefault():d}", error);
             }
-        }
-    }
-
-    public class Http423Result : ActionResult
-    {
-        public override void ExecuteResult(ActionContext context)
-        {
-            context.HttpContext.Response.StatusCode = 423;
         }
     }
 }
