@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using fostering_service.Services;
+using fostering_service.Services.Case;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -17,7 +17,7 @@ namespace fostering_service.Attributes
     public class BlockFormUpdateAttributeTests
     {
         private readonly BlockFormUpdateAttribute _attribute = new BlockFormUpdateAttribute();
-        private readonly Mock<IFosteringService> _mockFosteringService = new Mock<IFosteringService>();
+        private readonly Mock<ICaseService> _mockCaseService = new Mock<ICaseService>();
         private readonly Mock<ILogger<BlockFormUpdateAttribute>> _mockLogger = new Mock<ILogger<BlockFormUpdateAttribute>>();
         private readonly Mock<IServiceProvider> _mockRequestServices = new Mock<IServiceProvider>();
         private readonly ActionExecutingContext _actionExecutingContext;
@@ -30,8 +30,8 @@ namespace fostering_service.Attributes
             };
 
             _mockRequestServices
-                .Setup(_ => _.GetService(typeof(IFosteringService)))
-                .Returns(_mockFosteringService.Object);
+                .Setup(_ => _.GetService(typeof(ICaseService)))
+                .Returns(_mockCaseService.Object);
 
             _mockRequestServices
                 .Setup(_ => _.GetService(typeof(ILogger<BlockFormUpdateAttribute>)))
@@ -58,7 +58,7 @@ namespace fostering_service.Attributes
         public void OnActionExecuting_ShouldCallFosteringService()
         {
             // Arrange
-            _mockFosteringService
+            _mockCaseService
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .ReturnsAsync(new FosteringCase
                 {
@@ -69,14 +69,14 @@ namespace fostering_service.Attributes
             _attribute.OnActionExecuting(_actionExecutingContext);
 
             // Assert
-            _mockFosteringService.Verify(_ => _.GetCase(It.IsAny<string>()), Times.Once);
+            _mockCaseService.Verify(_ => _.GetCase(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
         public void OnActionExecuting_ShouldThrowException()
         {
             // Arrange
-            _mockFosteringService
+            _mockCaseService
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .Throws(new Exception());
 
@@ -89,7 +89,7 @@ namespace fostering_service.Attributes
         public void OnActionExecuting_ShouldReturn423StatusCode()
         {
             // Arrange
-            _mockFosteringService
+            _mockCaseService
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .ReturnsAsync(new FosteringCase
                 {
@@ -107,7 +107,7 @@ namespace fostering_service.Attributes
         public void OnActionExecuting_ShouldReturnNull()
         {
             // Arrange
-            _mockFosteringService
+            _mockCaseService
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .ReturnsAsync(new FosteringCase
                 {
@@ -125,7 +125,7 @@ namespace fostering_service.Attributes
         public void OnActionExecuting_ShouldCallLogger()
         {
             // Arrange
-            _mockFosteringService
+            _mockCaseService
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .ReturnsAsync(new FosteringCase
                 {

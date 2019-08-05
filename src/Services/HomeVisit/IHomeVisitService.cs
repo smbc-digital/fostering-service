@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using fostering_service.Builder;
-using fostering_service.Models;
+using fostering_service.Controllers.Case.Models;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 
-namespace fostering_service.Services
+namespace fostering_service.Services.HomeVisit  
 {
-    public interface IFosteringService
+    public interface IHomeVisitService
     {
-        Task<FosteringCase> GetCase(string caseId);
 
         Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form);
 
@@ -33,10 +32,6 @@ namespace fostering_service.Services
         Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model);
 
         Task<ETaskStatus> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model);
-
-        Task<ETaskStatus> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model);
-        
-        Task<ETaskStatus> UpdateReferences(FosteringCaseReferenceUpdateModel model);
 
         List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8);
 

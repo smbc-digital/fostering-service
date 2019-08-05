@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using fostering_service.Services;
+using fostering_service.Services.Case;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -17,12 +17,12 @@ namespace fostering_service.Attributes
             var model = context.ActionArguments.SingleOrDefault(_ => _.Key == "model").Value;
             var caseReference = (string)model.GetType().GetProperty(CaseReferencePropertyName).GetValue(model, null);
 
-            var fosteringService = (IFosteringService)context.HttpContext.RequestServices.GetService(typeof(IFosteringService));
+            var caseService = (ICaseService)context.HttpContext.RequestServices.GetService(typeof(ICaseService));
 
             FosteringCase response;
             try
             {
-                response = fosteringService.GetCase(caseReference).Result;
+                response = caseService.GetCase(caseReference).Result;
             }
             catch (Exception error)
             {

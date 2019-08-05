@@ -2,44 +2,27 @@ using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using fostering_service.Attributes;
-using fostering_service.Services;
+using fostering_service.Services.HomeVisit;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
 
-namespace fostering_service.Controllers
+namespace fostering_service.Controllers.HomeVisit
 {
     [Produces("application/json")]
     [Route("api/v1/[Controller]")]
     [ApiController]
     [TokenAuthentication]
-    public class FosteringController : ControllerBase
+    public class HomeVisitController : ControllerBase
     {
-        private readonly IFosteringService _fosteringService;
-        private readonly ILogger<FosteringController> _logger;
+        private readonly IHomeVisitService _homeVisitService;
+        private readonly ILogger<HomeVisitController> _logger;
 
-        public FosteringController(IFosteringService fosteringService, ILogger<FosteringController> logger)
+        public HomeVisitController(IHomeVisitService homeVisitService, ILogger<HomeVisitController> logger)
         {
-            _fosteringService = fosteringService;
+            _homeVisitService = homeVisitService;
             _logger = logger;
-        }
-
-        [Route("case")]
-        [HttpGet]
-        public async Task<IActionResult> GetCase([FromQuery]string caseId)
-        {
-            try
-            {
-                var result = await _fosteringService.GetCase(caseId);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning($"FosteringController GetCase an exception has occured while calling fostering sevice getCase, ex: {ex}");
-                return StatusCode(500, ex);
-            }
         }
 
         [Route("about-yourself")]
@@ -49,7 +32,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateAboutYourself(model);
+                var response = await _homeVisitService.UpdateAboutYourself(model);
 
                 return Ok(response);
             }
@@ -67,7 +50,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateYourEmploymentDetails(model);
+                var response = await _homeVisitService.UpdateYourEmploymentDetails(model);
 
                 return Ok(response);
             }
@@ -84,7 +67,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateLanguagesSpokenInYourHome(model);
+                var response = await _homeVisitService.UpdateLanguagesSpokenInYourHome(model);
 
                 return Ok(response);
             }
@@ -101,7 +84,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateHealthStatus(model);
+                var response = await _homeVisitService.UpdateHealthStatus(model);
 
                 return Ok(response);
             }
@@ -118,7 +101,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateHousehold(model);
+                var response = await _homeVisitService.UpdateHousehold(model);
 
                 return Ok(response);
             }
@@ -134,7 +117,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                await _fosteringService.UpdateStatus(model.CaseId, model.Status, model.Form);
+                await _homeVisitService.UpdateStatus(model.CaseId, model.Status, model.Form);
 
                 return Ok();
             }
@@ -150,7 +133,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdatePartnershipStatus(model);
+                var response = await _homeVisitService.UpdatePartnershipStatus(model);
 
                 return Ok(response);
             }
@@ -167,7 +150,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateYourFosteringHistory(model);
+                var response = await _homeVisitService.UpdateYourFosteringHistory(model);
 
                 return Ok(response);
             }
@@ -184,7 +167,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateInterestInFostering(model);
+                var response = await _homeVisitService.UpdateInterestInFostering(model);
 
                 return Ok(response);
             }
@@ -201,7 +184,7 @@ namespace fostering_service.Controllers
         {
             try
             {
-                var response = await _fosteringService.UpdateChildrenLivingAwayFromHome(model);
+                var response = await _homeVisitService.UpdateChildrenLivingAwayFromHome(model);
 
                 return Ok(response);
             }
@@ -209,38 +192,6 @@ namespace fostering_service.Controllers
             {
                 return StatusCode(500, ex);
             }
-        }
-
-        [Route("gp-details")]
-        [HttpPatch]
-        public async Task<IActionResult> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model)
-        {
-            try
-            {
-                var response = await _fosteringService.UpdateGpDetails(model);
-                
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex);
-            }
-        }
-
-        [Route("references")]
-        [HttpPatch]
-        public async Task<IActionResult> UpdateReferences(FosteringCaseReferenceUpdateModel model)
-        {
-            try
-            {
-                var response = await _fosteringService.UpdateReferences(model);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex);
-            }
-        }
+        }     
     }
 }

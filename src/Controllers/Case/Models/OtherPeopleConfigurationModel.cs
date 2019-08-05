@@ -1,4 +1,4 @@
-namespace fostering_service.Models
+namespace fostering_service.Controllers.Case.Models
 {
     public static class ConfigurationModels
     {

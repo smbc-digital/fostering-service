@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using fostering_service.Services;
+using fostering_service.Services.Application;
+using fostering_service.Services.Case;
+using fostering_service.Services.HomeVisit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +36,11 @@ namespace fostering_service
 
             services.AddSingleton<IVerintServiceGateway, VerintServiceGateway>();
 
-            services.AddTransient<IFosteringService, FosteringService>();
+            services.AddTransient<IHomeVisitService, HomeVisitService>();
+
+            services.AddTransient<ICaseService, CaseService>();
+
+            services.AddTransient<IApplicationService, ApplicationService>();
 
             services.AddSwaggerGen(c =>
             {
