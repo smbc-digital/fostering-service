@@ -25,7 +25,7 @@ namespace fostering_service.Controllers.HomeVisit
             _logger = logger;
         }
 
-        [Route("update-form-status")]
+        [Route("status")]
         [HttpPatch]
         public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
         {
