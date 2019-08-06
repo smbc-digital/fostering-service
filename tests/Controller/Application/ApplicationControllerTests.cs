@@ -5,10 +5,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.Application;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using ETaskStatus = StockportGovUK.NetStandard.Models.Enums.ETaskStatus;
+using OkObjectResult = Microsoft.AspNetCore.Mvc.OkObjectResult;
 
 namespace fostering_service_tests.Controller.Application
 {
@@ -161,6 +163,43 @@ namespace fostering_service_tests.Controller.Application
 
             // Act
             var result = await _application.UpdateReferences(new FosteringCaseReferenceUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_ShouldCallApplicationService()
+        {
+            // Act
+            await _application.UpdateStatus(new FosteringCaseStatusUpdateModel());
+
+            // Assert
+            _mockApplicationService.Verify(_ => _.UpdateStatus(It.IsAny<string>(), It.IsAny<ETaskStatus>(), It.IsAny<EFosteringApplicationForm>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_ShouldReturn200()
+        {
+            // Act
+            var result = await _application.UpdateStatus(new FosteringCaseStatusUpdateModel());
+
+            // Assert
+            Assert.IsType<OkResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_ShouldReturn500()
+        {
+            // Arrange
+            _mockApplicationService
+                .Setup(_ => _.UpdateStatus(It.IsAny<string>(), It.IsAny<ETaskStatus>(),
+                    It.IsAny<EFosteringApplicationForm>()))
+                .ThrowsAsync(new Exception());
+
+            // Act
+            var result = await _application.UpdateStatus(new FosteringCaseStatusUpdateModel());
 
             // Assert
             var resultType = Assert.IsType<ObjectResult>(result);

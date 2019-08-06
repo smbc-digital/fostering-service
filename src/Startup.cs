@@ -58,6 +58,8 @@ namespace fostering_service
                 {
                     {"Bearer", new string[] { }},
                 });
+                
+                c.CustomSchemaIds(x => x.FullName);
             });
 
             services.AddHttpClient();

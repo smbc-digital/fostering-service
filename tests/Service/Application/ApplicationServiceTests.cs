@@ -4,11 +4,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.Application;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using StockportGovUK.NetStandard.Models.Enums;
 using Xunit;
 
 namespace fostering_service_tests.Service.Application
@@ -19,7 +20,7 @@ namespace fostering_service_tests.Service.Application
         private readonly Mock<ILogger<ApplicationService>> _mockLogger = new Mock<ILogger<ApplicationService>>();
         private readonly ApplicationService _applicationService;
 
-    public ApplicationServiceTests()
+        public ApplicationServiceTests()
     {
     _applicationService = new ApplicationService(_verintServiceGatewayMock.Object, _mockLogger.Object);
 
@@ -286,6 +287,38 @@ namespace fostering_service_tests.Service.Application
             // Act
             await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateReferences(model));
         }
-    }
 
+        [Fact]
+        public async Task UpdateStatus_ShouldCallVerintServiceGateway()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            // Act
+            await _applicationService.UpdateStatus("1234", ETaskStatus.Completed, EFosteringApplicationForm.GpDetails);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_ShouldThrowException()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.Forbidden
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateStatus("1234", ETaskStatus.Completed, EFosteringApplicationForm.GpDetails));
+        }
+    }
 }

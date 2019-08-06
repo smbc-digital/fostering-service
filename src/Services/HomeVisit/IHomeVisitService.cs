@@ -5,7 +5,7 @@ using fostering_service.Controllers.Case.Models;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 
 namespace fostering_service.Services.HomeVisit  
@@ -13,7 +13,7 @@ namespace fostering_service.Services.HomeVisit
     public interface IHomeVisitService
     {
 
-        Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form);
+        Task UpdateStatus(string caseId, ETaskStatus status, EFosteringHomeVisitForm form);
 
         Task<ETaskStatus> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model);
 

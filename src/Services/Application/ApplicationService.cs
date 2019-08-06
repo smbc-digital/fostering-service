@@ -9,7 +9,7 @@ using fostering_service.Mappers;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.Application;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 
@@ -27,13 +27,33 @@ namespace fostering_service.Services.Application
             _logger = logger;
         }
 
+        public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringApplicationForm form)
+        {
+            var fields = new FormFieldBuilder()
+                .AddField(form.GetFormStatusFieldName(), status.GetTaskStatus())
+                .Build();
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = caseId,
+                IntegrationFormName = _applicationFormName,
+                IntegrationFormFields = fields
+            });
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception(
+                    $"Application Service. UpdateStatus: Failed to update status. Verint service response: {response}");
+            }
+        }
+
         public async Task<ETaskStatus> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model)
         {
             var firstApplicantFormFields = new FormFieldBuilder()
                 .AddField("nameofgp", model.FirstApplicant.NameOfGp)
                 .AddField("nameofpractice", model.FirstApplicant.NameOfGpPractice)
                 .AddField("gpphonenumber", model.FirstApplicant.GpPhoneNumber)
-                .AddField(EFosteringCaseForm.GpDetails.GetFormStatusFieldName(), ETaskStatus.Completed.GetTaskStatus())
+                .AddField(EFosteringApplicationForm.GpDetails.GetFormStatusFieldName(), ETaskStatus.Completed.GetTaskStatus())
                 .Build();
             firstApplicantFormFields.AddRange(AddressMapper.MapToVerintAddress(model.FirstApplicant.GpAddress, "addressofpractice", "placerefofpractice", "postcodeofpractice"));
 

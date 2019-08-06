@@ -4,7 +4,7 @@ using fostering_service.Services.Application;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.Application;
 
 namespace fostering_service.Controllers.Application
 {
@@ -22,6 +22,22 @@ namespace fostering_service.Controllers.Application
         {
             _applicationService = applicationService;
             _logger = logger;
+        }
+
+        [Route("status")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateStatus(FosteringCaseStatusUpdateModel model)
+        {
+            try
+            {
+                await _applicationService.UpdateStatus(model.CaseId, model.Status, model.Form);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
 
         [Route("gp-details")]

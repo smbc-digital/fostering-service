@@ -9,7 +9,7 @@ using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 using fostering_service.Controllers.Case.Models;
@@ -63,7 +63,7 @@ namespace fostering_service.Services.HomeVisit
                     .AddField("religionorfaithgroup2", model.SecondApplicant.Religion);
             }
 
-            formFields.AddField(EFosteringCaseForm.TellUsAboutYourself.GetFormStatusFieldName(),
+            formFields.AddField(EFosteringHomeVisitForm.TellUsAboutYourself.GetFormStatusFieldName(),
                 completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus());
 
             var updateModel = new IntegrationFormFieldsUpdateModel
@@ -135,7 +135,7 @@ namespace fostering_service.Services.HomeVisit
                 completed = completed && UpdateAboutEmploymentIsCompleted(model.SecondApplicant);
             }
 
-            formFields.AddField(EFosteringCaseForm.YourEmploymentDetails.GetFormStatusFieldName(),
+            formFields.AddField(EFosteringHomeVisitForm.YourEmploymentDetails.GetFormStatusFieldName(),
                 completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus());
 
             var updateModel = new IntegrationFormFieldsUpdateModel
@@ -166,7 +166,7 @@ namespace fostering_service.Services.HomeVisit
                 .AddField("primarylanguage", model.PrimaryLanguage)
                 .AddField("otherlanguages", model.OtherLanguages);
 
-            formFields.AddField(EFosteringCaseForm.LanguageSpokenInYourHome.GetFormStatusFieldName(),
+            formFields.AddField(EFosteringHomeVisitForm.LanguageSpokenInYourHome.GetFormStatusFieldName(),
                 completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus());
 
             var updateModel = new IntegrationFormFieldsUpdateModel
@@ -210,7 +210,7 @@ namespace fostering_service.Services.HomeVisit
                         ? string.Empty
                         : model.DateOfMarriage.GetValueOrDefault().ToString("dd/MM/yyyy"))
                 .AddField("marriedorinacivilpartnership", marriedOrInACivilPartnership)
-                .AddField(EFosteringCaseForm.YourPartnership.GetFormStatusFieldName(), completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus())
+                .AddField(EFosteringHomeVisitForm.YourPartnership.GetFormStatusFieldName(), completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus())
                 .Build();
 
 
@@ -298,7 +298,7 @@ namespace fostering_service.Services.HomeVisit
                 }
             }
 
-            formFields.AddField(EFosteringCaseForm.YourHealth.GetFormStatusFieldName(), completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus());
+            formFields.AddField(EFosteringHomeVisitForm.YourHealth.GetFormStatusFieldName(), completed ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus());
 
             var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
             {
@@ -482,7 +482,7 @@ namespace fostering_service.Services.HomeVisit
             var completed = UpdateHouseholdIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
             var formFields = CreateOtherPersonBuilder(ConfigurationModels.HouseholdConfigurationModel, model.AnyOtherPeopleInYourHousehold.GetValueOrDefault() ? model.OtherPeopleInYourHousehold : new List<OtherPerson>())
-                .AddField(EFosteringCaseForm.YourHousehold.GetFormStatusFieldName(), completed.GetTaskStatus())
+                .AddField(EFosteringHomeVisitForm.YourHousehold.GetFormStatusFieldName(), completed.GetTaskStatus())
                 .AddField("listofpetsandanimals", model.DoYouHaveAnyPets.GetValueOrDefault() ? model.PetsInformation : string.Empty)
                 .AddField("doyouhaveanypets", model.DoYouHaveAnyPets == null ? string.Empty : model.DoYouHaveAnyPets == true ? "Yes" : "No")
                 .AddField("otherpeopleinyourhousehold", model.AnyOtherPeopleInYourHousehold == null ? string.Empty : model.AnyOtherPeopleInYourHousehold == true ? "Yes" : "No");
@@ -580,7 +580,7 @@ namespace fostering_service.Services.HomeVisit
             var completed = UpdateChildrenLivingAwayFromHomeIsComplete(model) ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
 
             var firstApplicantUnderSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, model.FirstApplicant.AnyChildrenUnderSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenUnderSixteenLivingAwayFromHome : new List<OtherPerson>(), 4)
-                .AddField(EFosteringCaseForm.ChildrenLivingAwayFromYourHome.GetFormStatusFieldName(), completed.GetTaskStatus())
+                .AddField(EFosteringHomeVisitForm.ChildrenLivingAwayFromYourHome.GetFormStatusFieldName(), completed.GetTaskStatus())
                 .AddField("haschildrenundersixteen1", model.FirstApplicant.AnyChildrenUnderSixteen == null ? string.Empty : model.FirstApplicant.AnyChildrenUnderSixteen == true ? "yes" : "no");
 
             var firstApplicantOverSixteen = CreateOtherPersonBuilder(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, model.FirstApplicant.AnyChildrenOverSixteen.GetValueOrDefault() ? model.FirstApplicant.ChildrenOverSixteenLivingAwayFromHome : new List<OtherPerson>(), 4)
@@ -694,7 +694,7 @@ namespace fostering_service.Services.HomeVisit
             return firstApplicantUnderSixteen && firstApplicantOverSixteen;
         }
 
-        public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringCaseForm form)
+        public async Task UpdateStatus(string caseId, ETaskStatus status, EFosteringHomeVisitForm form)
         {
             var formStatusFieldName = form.GetFormStatusFieldName();
 

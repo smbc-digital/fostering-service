@@ -9,7 +9,7 @@ using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
 using Xunit;
@@ -42,7 +42,7 @@ namespace fostering_service_tests.Service
                 });
 
             // Act
-            await _homeVisitService.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenLivingAwayFromYourHome);
+            await _homeVisitService.UpdateStatus("", ETaskStatus.None, EFosteringHomeVisitForm.ChildrenLivingAwayFromYourHome);
 
             // Assert
             _verintServiceGatewayMock
@@ -61,7 +61,7 @@ namespace fostering_service_tests.Service
                 });
 
             // Act
-            await Assert.ThrowsAsync<Exception>(() => _homeVisitService.UpdateStatus("", ETaskStatus.None, EFosteringCaseForm.ChildrenLivingAwayFromYourHome));
+            await Assert.ThrowsAsync<Exception>(() => _homeVisitService.UpdateStatus("", ETaskStatus.None, EFosteringHomeVisitForm.ChildrenLivingAwayFromYourHome));
         }
 
         [Fact]

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
 using Xunit;
 
 namespace fostering_service_tests.Controller.HomeVisit
@@ -38,7 +38,7 @@ namespace fostering_service_tests.Controller.HomeVisit
         {
             // Arrange
             _mockHomeVisitService
-                .Setup(_ => _.UpdateStatus(It.IsAny<string>(), It.IsAny<ETaskStatus>(), It.IsAny<EFosteringCaseForm>()))
+                .Setup(_ => _.UpdateStatus(It.IsAny<string>(), It.IsAny<ETaskStatus>(), It.IsAny<EFosteringHomeVisitForm>()))
                 .ThrowsAsync(new Exception());
 
             // Act

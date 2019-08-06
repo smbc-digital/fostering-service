@@ -6,7 +6,7 @@ using fostering_service.Services.HomeVisit;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
 using StockportGovUK.NetStandard.Models.Models;
-using StockportGovUK.NetStandard.Models.Models.Fostering.Update;
+using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
 
 namespace fostering_service.Controllers.HomeVisit
 {
@@ -23,6 +23,22 @@ namespace fostering_service.Controllers.HomeVisit
         {
             _homeVisitService = homeVisitService;
             _logger = logger;
+        }
+
+        [Route("update-form-status")]
+        [HttpPatch]
+        public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
+        {
+            try
+            {
+                await _homeVisitService.UpdateStatus(model.CaseId, model.Status, model.Form);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
 
         [Route("about-yourself")]
@@ -104,22 +120,6 @@ namespace fostering_service.Controllers.HomeVisit
                 var response = await _homeVisitService.UpdateHousehold(model);
 
                 return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex);
-            }
-        }
-
-        [Route("update-form-status")]
-        [HttpPatch]
-        public async Task<IActionResult> UpdateFormStatus(FosteringCaseStatusUpdateModel model)
-        {
-            try
-            {
-                await _homeVisitService.UpdateStatus(model.CaseId, model.Status, model.Form);
-
-                return Ok();
             }
             catch (Exception ex)
             {
