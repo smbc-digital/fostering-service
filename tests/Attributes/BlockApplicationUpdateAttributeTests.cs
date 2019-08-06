@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using fostering_service.Services;
 using fostering_service.Services.Case;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,19 +15,19 @@ using Xunit;
 
 namespace fostering_service.Attributes
 {
-    public class BlockFormUpdateAttributeTests
+    public class BlockApplicationUpdateTests
     {
-        private readonly BlockFormUpdateAttribute _attribute = new BlockFormUpdateAttribute();
+        private readonly BlockApplicationUpdate _attribute = new BlockApplicationUpdate();
         private readonly Mock<ICaseService> _mockCaseService = new Mock<ICaseService>();
-        private readonly Mock<ILogger<BlockFormUpdateAttribute>> _mockLogger = new Mock<ILogger<BlockFormUpdateAttribute>>();
+        private readonly Mock<ILogger<BlockApplicationUpdate>> _mockLogger = new Mock<ILogger<BlockApplicationUpdate>>();
         private readonly Mock<IServiceProvider> _mockRequestServices = new Mock<IServiceProvider>();
         private readonly ActionExecutingContext _actionExecutingContext;
 
-        public BlockFormUpdateAttributeTests()
+        public BlockApplicationUpdateTests()
         {
             var actionArguments = new Dictionary<string, object>
             {
-                { "model", new TestingModel() }
+                { "model", new ApplicationTestingModel() }
             };
 
             _mockRequestServices
@@ -34,7 +35,7 @@ namespace fostering_service.Attributes
                 .Returns(_mockCaseService.Object);
 
             _mockRequestServices
-                .Setup(_ => _.GetService(typeof(ILogger<BlockFormUpdateAttribute>)))
+                .Setup(_ => _.GetService(typeof(ILogger<BlockApplicationUpdate>)))
                 .Returns(_mockLogger.Object);
 
 
@@ -82,7 +83,7 @@ namespace fostering_service.Attributes
 
             // Act & Assert
             var ex = Assert.Throws<Exception>(() => _attribute.OnActionExecuting(_actionExecutingContext));
-            Assert.Contains("BlockFormUpdateAttribute: Error getting case with reference", ex.Message);
+            Assert.Contains("BlockApplicationUpdate: Error getting case with reference", ex.Message);
         }
 
         [Fact]
@@ -93,7 +94,7 @@ namespace fostering_service.Attributes
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .ReturnsAsync(new FosteringCase
                 {
-                    HomeVisitDateTime = DateTime.Now
+                    EnableAdditionalInformationSection = false
                 });
 
             // Act
@@ -111,25 +112,7 @@ namespace fostering_service.Attributes
                 .Setup(_ => _.GetCase(It.IsAny<string>()))
                 .ReturnsAsync(new FosteringCase
                 {
-                    HomeVisitDateTime = DateTime.Now.AddDays(1)
-                });
-
-            // Act 
-            _attribute.OnActionExecuting(_actionExecutingContext);
-            
-            // Assert 
-            Assert.Null(_actionExecutingContext.Result);
-        }
-
-        [Fact]
-        public void OnActionExecuting_ShouldCallLogger()
-        {
-            // Arrange
-            _mockCaseService
-                .Setup(_ => _.GetCase(It.IsAny<string>()))
-                .ReturnsAsync(new FosteringCase
-                {
-                    HomeVisitDateTime = DateTime.MinValue
+                    EnableAdditionalInformationSection = true
                 });
 
             // Act 
@@ -137,12 +120,10 @@ namespace fostering_service.Attributes
 
             // Assert 
             Assert.Null(_actionExecutingContext.Result);
-            _mockRequestServices.Verify(_ => _.GetService(typeof(ILogger<BlockFormUpdateAttribute>)), Times.Once);
         }
-
     }
 
-    internal class TestingModel
+    internal class ApplicationTestingModel
     {
         public string CaseReference { get; set; } = "12345678";
     }

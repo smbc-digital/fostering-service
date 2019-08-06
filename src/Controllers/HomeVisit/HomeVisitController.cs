@@ -43,7 +43,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("about-yourself")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateAboutYourself(FosteringCaseAboutYourselfUpdateModel model)
         {
             try
@@ -61,7 +61,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("your-employment-details")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateYourEmploymentDetails(FosteringCaseYourEmploymentDetailsUpdateModel model)
         {
             try
@@ -78,7 +78,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("languages-spoken-in-your-home")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateLanguagesSpokenInYourHome(FosteringCaseLanguagesSpokenInYourHomeUpdateModel model)
         {
             try
@@ -95,7 +95,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("health-status")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateHealthStatus(FosteringCaseHealthUpdateModel model)
         {
             try
@@ -112,7 +112,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("update-household")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateHousehold(FosteringCaseHouseholdUpdateModel model)
         {
             try
@@ -145,7 +145,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("your-fostering-history")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateYourFosteringHistory(FosteringCaseYourFosteringHistoryUpdateModel model)
         {
             try
@@ -162,7 +162,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("interest-in-fostering")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateInterestInFostering(FosteringCaseInterestInFosteringUpdateModel model)
         {
             try
@@ -179,7 +179,7 @@ namespace fostering_service.Controllers.HomeVisit
 
         [Route("children-living-away-from-home")]
         [HttpPatch]
-        [BlockFormUpdate]
+        [BlockHomeVisitUpdate]
         public async Task<IActionResult> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model)
         {
             try
