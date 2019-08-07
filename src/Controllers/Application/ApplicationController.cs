@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using fostering_service.Attributes;
 using fostering_service.Services.Application;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,7 @@ namespace fostering_service.Controllers.Application
 
         [Route("status")]
         [HttpPatch]
+        [BlockApplicationUpdate(CaseReferencePropertyName = "CaseId")]
         public async Task<IActionResult> UpdateStatus(FosteringCaseStatusUpdateModel model)
         {
             try
@@ -42,6 +44,7 @@ namespace fostering_service.Controllers.Application
 
         [Route("gp-details")]
         [HttpPatch]
+        [BlockApplicationUpdate]
         public async Task<IActionResult> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model)
         {
             try
@@ -58,6 +61,7 @@ namespace fostering_service.Controllers.Application
 
         [Route("references")]
         [HttpPatch]
+        [BlockApplicationUpdate]
         public async Task<IActionResult> UpdateReferences(FosteringCaseReferenceUpdateModel model)
         {
             try
