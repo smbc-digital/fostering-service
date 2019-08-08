@@ -104,7 +104,9 @@ namespace fostering_service.Services.Application
                 .AddField("prf2relation", model.SecondPersonalReference.RelationshipToYou)
                 .AddField("prf2years", model.SecondPersonalReference.NumberOfYearsKnown)
                 .AddField("prf2email", model.SecondPersonalReference.EmailAddress)
-                .AddField("prf2contact", model.SecondPersonalReference.PhoneNumber).Build();
+                .AddField("prf2contact", model.SecondPersonalReference.PhoneNumber)
+                .AddField(EFosteringApplicationForm.References.GetFormStatusFieldName(), ETaskStatus.Completed.GetTaskStatus())
+                .Build();
 
             formFields.AddRange(AddressMapper.MapToVerintAddress(model.FamilyReference.Address, "prfaddress",
                 "prfplaceref", "prfpostcode"));

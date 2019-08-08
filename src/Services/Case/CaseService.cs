@@ -52,7 +52,7 @@ namespace fostering_service.Services.Case
                     YourHealthStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhealthstatus")?.Value),
                     YourHouseholdStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhouseholdstatus")?.Value),
                     YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value),
-                    References = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "references")?.Value),
+                    ReferencesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourreferencesstatus")?.Value),
                     GpDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value)
                 },
                 FirstApplicant = new FosteringApplicant
