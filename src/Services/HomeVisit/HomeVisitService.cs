@@ -91,7 +91,7 @@ namespace fostering_service.Services.HomeVisit
             var formFields = new FormFieldBuilder();
             var completed = UpdateAboutEmploymentIsCompleted(model.FirstApplicant);
 
-            if (model.FirstApplicant.AreYouEmployed.Value)
+            if (model.FirstApplicant.AreYouEmployed != null)
             {
                 formFields
                     .AddField("employed", model.FirstApplicant.AreYouEmployed.Value ? "Yes" : "No")
@@ -103,7 +103,6 @@ namespace fostering_service.Services.HomeVisit
             else
             {
                 formFields
-               .AddField("employed", "No")
                     .AddField("jobtitle", string.Empty)
                     .AddField("currentemployer", string.Empty)
                     .AddField("hoursofwork",
@@ -113,10 +112,10 @@ namespace fostering_service.Services.HomeVisit
             if (model.SecondApplicant != null)
             {
 
-                if (model.SecondApplicant.AreYouEmployed != null && model.SecondApplicant.AreYouEmployed.Value == true)
+                if (model.SecondApplicant.AreYouEmployed != null)
                 {
                     formFields
-                        .AddField("employed2", "Yes")
+                        .AddField("employed2", model.SecondApplicant.AreYouEmployed.Value ? "Yes" : "No")
                         .AddField("jobtitle2", model.SecondApplicant.JobTitle)
                         .AddField("currentemployer2", model.SecondApplicant.CurrentEmployer)
                         .AddField("hoursofwork2",
@@ -125,7 +124,6 @@ namespace fostering_service.Services.HomeVisit
                 else
                 {
                     formFields
-                        .AddField("employed2", "No")
                         .AddField("jobtitle2", string.Empty)
                         .AddField("currentemployer2", string.Empty)
                         .AddField("hoursofwork2",
