@@ -6,7 +6,6 @@ using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Models;
 using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
-using StockportGovUK.NetStandard.Models.Models.Verint;
 
 namespace fostering_service.Services.HomeVisit  
 {
@@ -32,8 +31,6 @@ namespace fostering_service.Services.HomeVisit
         Task<ETaskStatus> UpdateHousehold(FosteringCaseHouseholdUpdateModel model);
 
         Task<ETaskStatus> UpdateChildrenLivingAwayFromHome(FosteringCaseChildrenLivingAwayFromHomeUpdateModel model);
-
-        List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8);
 
         FormFieldBuilder CreateOtherPersonBuilder(OtherPeopleConfigurationModel config, List<OtherPerson> otherPeople, int capacity = 8);
     }
