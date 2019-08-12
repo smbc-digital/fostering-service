@@ -4,11 +4,14 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Builder;
+using fostering_service.Controllers.Case.Models;
 using fostering_service.Extensions;
 using fostering_service.Mappers;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Models.Fostering.Application;
 using StockportGovUK.NetStandard.Models.Models.Verint;
 using StockportGovUK.NetStandard.Models.Models.Verint.Update;
@@ -137,15 +140,55 @@ namespace fostering_service.Services.Application
 
         public async Task<ETaskStatus> UpdateCouncillorsDetails(FosteringCaseCouncillorsUpdateModel model)
         {
+            var builder = new FormFieldBuilder();
 
-            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel());
+            CreateCouncillorsDetailsIntegratedFormFields(builder, 
+                model.FirstApplicant.HasContactWithCouncillor ? model.FirstApplicant.CouncillorRelationshipDetails : new List<CouncillorRelationshipDetailsUpdateModel>());
+
+            CreateCouncillorsDetailsIntegratedFormFields(builder, 
+                model.SecondApplicant.HasContactWithCouncillor ? model.SecondApplicant.CouncillorRelationshipDetails : new List<CouncillorRelationshipDetailsUpdateModel>(), 
+                true);
+
+            builder
+                .AddField("HasARelationshipApplicant1", model.FirstApplicant.HasContactWithCouncillor.ToString())
+                .AddField("HasARelationshipApplicant2", model.SecondApplicant.HasContactWithCouncillor.ToString());
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = builder.Build(),
+                IntegrationFormName = _applicationFormName
+            });
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 throw new Exception($"Application Service. UpdateCouncillorsDetails: Failed to update. Verint service response: {response}");
             }
 
-            return ETaskStatus.None;
+            return ETaskStatus.Completed;
+        }
+
+        private void CreateCouncillorsDetailsIntegratedFormFields(FormFieldBuilder builder, List<CouncillorRelationshipDetailsUpdateModel> model, bool secondApplicant = false)
+        {
+            var applicantPrefix = secondApplicant ? "2" : "1";
+
+            for (var i = 0; i < model.Count; i++)
+            {
+                var nameSuffix = i + 1;
+
+                builder
+                    .AddField($"councilloremployeename{applicantPrefix}{nameSuffix}", model[i].CouncillorName ?? string.Empty)
+                    .AddField($"councillorrelationship{applicantPrefix}{nameSuffix}", model[i].Relationship ?? string.Empty);
+            }
+
+            for (var i = model.Count; i < 4; i++)
+            {
+                var nameSuffix = i + 1;
+
+                builder
+                    .AddField($"councilloremployeename{applicantPrefix}{nameSuffix}", string.Empty)
+                    .AddField($"councillorrelationship{applicantPrefix}{nameSuffix}", string.Empty);
+            }
         }
     }
 }
