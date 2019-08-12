@@ -381,5 +381,37 @@ namespace fostering_service.Services.Case
                 person.Address?.Postcode != null).
                 ToList();
         }
+
+        public List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields, bool secondApplicant = false)
+        {
+            var councillorDetailsList = new List<CouncillorRelationshipDetails>();
+
+            for (var i = 0; i < 4; i++)
+            {
+                councillorDetailsList.Add(new CouncillorRelationshipDetails());
+            }
+
+            formFields.ForEach(field =>
+            {
+                if (string.IsNullOrEmpty(field.Name))
+                    return;
+
+                int.TryParse(field.Name[field.Name.Length - 1].ToString(), out var index);
+
+                index--;
+
+                if (index < 0)
+                    return;
+
+                if (field.Name.Contains(secondApplicant ? "" : "councilloremployeename1"))
+                {
+                    councillorDetailsList[index].CouncillorName = field.Value;
+                }
+            });
+
+            return councillorDetailsList
+                .Where(councillorDetails => councillorDetails.CouncillorName != null && councillorDetails.Relationship != null)
+                .ToList();
+        }
     }
 }

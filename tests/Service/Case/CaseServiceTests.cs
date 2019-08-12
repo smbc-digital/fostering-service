@@ -666,6 +666,27 @@ namespace fostering_service_tests.Service
             Assert.Equal(result[0].Address.AddressLine2, expectedLine2);
             Assert.Equal(result[0].Address.Town, expectedTown);
         }
+
+        [Fact]
+        public void CreateCouncillorRelationshipDetailsList_ShouldReturnDetails()
+        {
+            // Act
+            var result = _caseService.CreateCouncillorRelationshipDetailsList(new List<CustomField>());
+
+            // Assert
+            Assert.Equal(4, result.Count);
+        }
+
+        [Fact]
+        public void CreateCouncillorRelationshipDetailsList_ShouldReturnEmptyList()
+        {
+
+            // Act
+            var result = _caseService.CreateCouncillorRelationshipDetailsList(new List<CustomField>());
+
+            // Assert
+            Assert.Empty(result);
+        }
     }
 }
 
