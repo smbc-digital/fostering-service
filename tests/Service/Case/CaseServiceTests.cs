@@ -680,7 +680,6 @@ namespace fostering_service_tests.Service
         [Fact]
         public void CreateCouncillorRelationshipDetailsList_ShouldReturnEmptyList()
         {
-
             // Act
             var result = _caseService.CreateCouncillorRelationshipDetailsList(new List<CustomField>());
 

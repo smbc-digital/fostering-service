@@ -320,5 +320,30 @@ namespace fostering_service_tests.Service.Application
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateStatus("1234", ETaskStatus.Completed, EFosteringApplicationForm.GpDetails));
         }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldCallVerintServiceGateway()
+        {
+            // Act
+            await _applicationService.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel());
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldThrowError()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest
+                });
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel()));
+        }
     }
 }

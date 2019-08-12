@@ -9,6 +9,7 @@ using StockportGovUK.NetStandard.Models.Models.Fostering.Application;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 using ETaskStatus = StockportGovUK.NetStandard.Models.Enums.ETaskStatus;
 using OkObjectResult = Microsoft.AspNetCore.Mvc.OkObjectResult;
 
@@ -200,6 +201,48 @@ namespace fostering_service_tests.Controller.Application
 
             // Act
             var result = await _application.UpdateStatus(new FosteringCaseStatusUpdateModel());
+
+            // Assert
+            var resultType = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(500, resultType.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldCallApplicationService()
+        {
+            // Arrange
+            var model = new FosteringCaseCouncillorsUpdateModel
+            {
+                CaseReference = "12345678"
+            };
+
+            // Act
+            await _application.UpdateCouncillorsDetails(model);
+
+            // Assert
+            _mockApplicationService.Verify(_ => _.UpdateCouncillorsDetails(model), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldReturn200()
+        {
+            // Act
+            var result = await _application.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel());
+
+            // Assert
+            Assert.IsType<OkResult>(result);
+        }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldReturn500()
+        {
+            // Arrange 
+            _mockApplicationService
+                .Setup(_ => _.UpdateCouncillorsDetails(It.IsAny<FosteringCaseCouncillorsUpdateModel>()))
+                .Throws(new Exception());
+
+            // Act
+            var result = await _application.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel());
 
             // Assert
             var resultType = Assert.IsType<ObjectResult>(result);

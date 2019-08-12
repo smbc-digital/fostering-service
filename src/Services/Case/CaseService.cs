@@ -413,5 +413,10 @@ namespace fostering_service.Services.Case
                 .Where(councillorDetails => councillorDetails.CouncillorName != null && councillorDetails.Relationship != null)
                 .ToList();
         }
+
+        public List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

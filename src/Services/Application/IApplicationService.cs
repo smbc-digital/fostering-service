@@ -11,5 +11,7 @@ namespace fostering_service.Services.Application
         Task<ETaskStatus> UpdateGpDetails(FosteringCaseGpDetailsUpdateModel model);
 
         Task<ETaskStatus> UpdateReferences(FosteringCaseReferenceUpdateModel model);
+
+        Task<ETaskStatus> UpdateCouncillorsDetails(FosteringCaseCouncillorsUpdateModel model);
     }
 }

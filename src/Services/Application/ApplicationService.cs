@@ -134,5 +134,18 @@ namespace fostering_service.Services.Application
 
             return ETaskStatus.Completed;
         }
+
+        public async Task<ETaskStatus> UpdateCouncillorsDetails(FosteringCaseCouncillorsUpdateModel model)
+        {
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel());
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception($"Application Service. UpdateCouncillorsDetails: Failed to update. Verint service response: {response}");
+            }
+
+            return ETaskStatus.None;
+        }
     }
 }

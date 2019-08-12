@@ -75,6 +75,23 @@ namespace fostering_service.Controllers.Application
                 return StatusCode(500, ex);
             }
         }
+
+        [Route("councillors-details")]
+        [HttpPatch]
+        [BlockApplicationUpdate]
+        public async Task<IActionResult> UpdateCouncillorsDetails(FosteringCaseCouncillorsUpdateModel model)
+        {
+            try
+            {
+                var response = await _applicationService.UpdateCouncillorsDetails(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
     }
 
 }
