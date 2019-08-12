@@ -134,5 +134,12 @@ namespace fostering_service.Services.Application
 
             return ETaskStatus.Completed;
         }
+
+        public Task<ETaskStatus> UpdateAddressHistory(FosteringCaseAddressHistoryUpdateModel model)
+        {
+            var builder = new FormFieldBuilder();
+
+            throw new NotImplementedException();
+        }
     }
 }
