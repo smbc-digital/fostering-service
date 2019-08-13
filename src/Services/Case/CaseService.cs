@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Mappers;
 using fostering_service.Controllers.Case.Models;
+using fostering_service.Helpers;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
@@ -17,11 +18,13 @@ namespace fostering_service.Services.Case
     public class CaseService : ICaseService
     {
         private readonly IVerintServiceGateway _verintServiceGateway;
+        private readonly ICaseHelper _caseHelper;
         private readonly ILogger<CaseService> _logger;
 
-        public CaseService(IVerintServiceGateway verintServiceGateway, ILogger<CaseService> logger)
+        public CaseService(IVerintServiceGateway verintServiceGateway, ICaseHelper casehelper, ILogger<CaseService> logger)
         {
             _verintServiceGateway = verintServiceGateway;
+            _caseHelper = casehelper;
             _logger = logger;
         }
 
@@ -73,7 +76,7 @@ namespace fostering_service.Services.Case
                     NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice")?.Value,
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value,
                     GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice").Validate(),
-                    AddressHistory = CreateAddressHistoryList()
+                    AddressHistory = _caseHelper.CreateAddressHistoryList(integrationFormFields)
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -233,7 +236,7 @@ namespace fostering_service.Services.Case
                     NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice2")?.Value,
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value,
                     GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2").Validate(),
-                    AddressHistory = CreateAddressHistoryList(true)
+                    AddressHistory = _caseHelper.CreateAddressHistoryList(integrationFormFields, true)
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
@@ -382,35 +385,6 @@ namespace fostering_service.Services.Case
                 person.Address?.Town != null ||
                 person.Address?.Postcode != null).
                 ToList();
-        }
-
-        private List<PreviousAddress> CreateAddressHistoryList(List<CustomField> formFields, bool isSecondApplicant = false)
-        {
-            var applicantPrefix = !isSecondApplicant ? "1" : "2";
-
-            var addressList = new List<PreviousAddress>();
-
-            for (int i = 1; i < 9; i++)
-            {
-                var previousAddress = new PreviousAddress();
-
-                var address = formFields.First(_ => _.Name == $"PA{i}Applicant{applicantPrefix}");
-                var postcode = formFields.First(_ => _.Name == $"PA{i}Applicant{applicantPrefix}");
-                var month = formFields.First(_ => _.Name == $"PA{i}DateFromMonthApplicant{applicantPrefix}");
-                var year = formFields.First(_ => _.Name == $"PA{i}DateFromYearApplicant{applicantPrefix}");
-
-                if (month != null && year != null)
-                {
-                    previousAddress.DateFrom = new DateTime(int.Parse(month.Value), int.Parse(year.Value), 00);
-                }
-
-                addressList.Add(previousAddress);
-            }
-
-            return addressList.Where(address =>
-                    address.DateFrom != null &&
-                    address.Address != null)
-                    .ToList();
         }
     }
 }

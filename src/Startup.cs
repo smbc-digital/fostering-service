@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using fostering_service.Helpers;
 using fostering_service.Services.Application;
 using fostering_service.Services.Case;
 using fostering_service.Services.HomeVisit;
@@ -33,13 +34,12 @@ namespace fostering_service
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddHttpClients<IGateway, Gateway>(Configuration);
-
             services.AddSingleton<IVerintServiceGateway, VerintServiceGateway>();
 
+            services.AddSingleton<ICaseHelper, CaseHelper>();
+
             services.AddTransient<IHomeVisitService, HomeVisitService>();
-
             services.AddTransient<ICaseService, CaseService>();
-
             services.AddTransient<IApplicationService, ApplicationService>();
 
             services.AddSwaggerGen(c =>
