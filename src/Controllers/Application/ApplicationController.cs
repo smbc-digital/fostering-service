@@ -92,6 +92,22 @@ namespace fostering_service.Controllers.Application
                 return StatusCode(500, ex);
             }
         }
-    }
 
+        [Route("address-history")]
+        [HttpPatch]
+        [BlockApplicationUpdate]
+        public async Task<IActionResult> UpdateAddressHistory(FosteringCaseAddressHistoryUpdateModel model)
+        {
+            try
+            {
+                var response = await _applicationService.UpdateAddressHistory(model);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
+        }
+    }
 }

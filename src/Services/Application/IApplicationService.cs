@@ -13,5 +13,7 @@ namespace fostering_service.Services.Application
         Task<ETaskStatus> UpdateReferences(FosteringCaseReferenceUpdateModel model);
 
         Task<ETaskStatus> UpdateCouncillorsDetails(FosteringCaseCouncillorsUpdateModel model);
+
+        Task<ETaskStatus> UpdateAddressHistory(FosteringCaseAddressHistoryUpdateModel model);
     }
 }

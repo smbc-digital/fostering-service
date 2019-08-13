@@ -171,7 +171,8 @@ namespace fostering_service.Services.Application
             return ETaskStatus.Completed;
         }
 
-        private void CreateCouncillorsDetailsIntegratedFormFields(FormFieldBuilder builder, List<CouncillorRelationshipDetailsUpdateModel> model, bool secondApplicant = false)
+        private void CreateCouncillorsDetailsIntegratedFormFields(FormFieldBuilder builder,
+            List<CouncillorRelationshipDetailsUpdateModel> model, bool secondApplicant = false)
         {
             var applicantPrefix = secondApplicant ? "2" : "1";
 
@@ -180,8 +181,10 @@ namespace fostering_service.Services.Application
                 var nameSuffix = i + 1;
 
                 builder
-                    .AddField($"councilloremployeename{applicantPrefix}{nameSuffix}", model[i].CouncillorName ?? string.Empty)
-                    .AddField($"councillorrelationship{applicantPrefix}{nameSuffix}", model[i].Relationship ?? string.Empty);
+                    .AddField($"councilloremployeename{applicantPrefix}{nameSuffix}",
+                        model[i].CouncillorName ?? string.Empty)
+                    .AddField($"councillorrelationship{applicantPrefix}{nameSuffix}",
+                        model[i].Relationship ?? string.Empty);
             }
 
             for (var i = model.Count; i < 4; i++)
@@ -192,6 +195,13 @@ namespace fostering_service.Services.Application
                     .AddField($"councilloremployeename{applicantPrefix}{nameSuffix}", string.Empty)
                     .AddField($"councillorrelationship{applicantPrefix}{nameSuffix}", string.Empty);
             }
+        }
+
+        public Task<ETaskStatus> UpdateAddressHistory(FosteringCaseAddressHistoryUpdateModel model)
+        {
+            var builder = new FormFieldBuilder();
+
+            throw new NotImplementedException();
         }
     }
 }

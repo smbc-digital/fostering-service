@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Controllers.Case.Models;
+using fostering_service.Helpers;
 using fostering_service.Services.Case;
 using fostering_service_tests.Builders;
 using Microsoft.Extensions.Logging;
@@ -21,11 +22,12 @@ namespace fostering_service_tests.Service
     {
         private readonly Mock<IVerintServiceGateway> _verintServiceGatewayMock = new Mock<IVerintServiceGateway>();
         private readonly Mock<ILogger<CaseService>> _mockLogger = new Mock<ILogger<CaseService>>();
+        private readonly Mock<ICaseHelper> _caseHelper = new Mock<ICaseHelper>();
         private readonly CaseService _caseService;
 
         public CaseServiceTests()
         {
-            _caseService = new CaseService(_verintServiceGatewayMock.Object, _mockLogger.Object);
+            _caseService = new CaseService(_verintServiceGatewayMock.Object, _caseHelper.Object, _mockLogger.Object);
 
         }
 

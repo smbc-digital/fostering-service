@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using fostering_service.Mappers;
 using fostering_service.Controllers.Case.Models;
+using fostering_service.Helpers;
 using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
@@ -17,11 +18,13 @@ namespace fostering_service.Services.Case
     public class CaseService : ICaseService
     {
         private readonly IVerintServiceGateway _verintServiceGateway;
+        private readonly ICaseHelper _caseHelper;
         private readonly ILogger<CaseService> _logger;
 
-        public CaseService(IVerintServiceGateway verintServiceGateway, ILogger<CaseService> logger)
+        public CaseService(IVerintServiceGateway verintServiceGateway, ICaseHelper casehelper, ILogger<CaseService> logger)
         {
             _verintServiceGateway = verintServiceGateway;
+            _caseHelper = casehelper;
             _logger = logger;
         }
 
@@ -76,7 +79,8 @@ namespace fostering_service.Services.Case
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value,
                     GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice").Validate(),
                     HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
-                    CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields)
+                    CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields),
+                    AddressHistory = _caseHelper.CreateAddressHistoryList(integrationFormFields)
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -237,7 +241,8 @@ namespace fostering_service.Services.Case
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value,
                     GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2").Validate(),
                     HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
-                    CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields, true)
+                    CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields, true),
+                    AddressHistory = _caseHelper.CreateAddressHistoryList(integrationFormFields, true)
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
