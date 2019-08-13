@@ -39,6 +39,8 @@ namespace fostering_service.Extensions
                     return "yourreferencesstatus";
                 case EFosteringApplicationForm.GpDetails:
                     return "gpdetailsstatus";
+                case EFosteringApplicationForm.CouncillorsOrEmployees:
+                    return "councillorsoremployeesstatus";
                 default:
                     return null;
             }

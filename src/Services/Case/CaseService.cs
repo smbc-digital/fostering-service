@@ -25,6 +25,7 @@ namespace fostering_service.Services.Case
             _logger = logger;
         }
 
+        // TODO: replace all nullable boolean parsing to use ParseVerintBoolean method
         public async Task<FosteringCase> GetCase(string caseId)
         {
             var response = await _verintServiceGateway.GetCase(caseId);
@@ -53,7 +54,8 @@ namespace fostering_service.Services.Case
                     YourHouseholdStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhouseholdstatus")?.Value),
                     YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value),
                     ReferencesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourreferencesstatus")?.Value),
-                    GpDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value)
+                    GpDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value),
+                    CouncillorsOrEmployeesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "councillorsoremployeesstatus")?.Value)
                 },
                 FirstApplicant = new FosteringApplicant
                 {
@@ -72,7 +74,9 @@ namespace fostering_service.Services.Case
                     NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp")?.Value,
                     NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice")?.Value,
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value,
-                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice").Validate()
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice").Validate(),
+                    HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
+                    CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields)
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
                 PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
@@ -231,7 +235,9 @@ namespace fostering_service.Services.Case
                     NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp2")?.Value,
                     NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice2")?.Value,
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value,
-                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2").Validate()
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2").Validate(),
+                    HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
+                    CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields, true)
                 };
 
                 var hasAnotherNameApplicant2 = integrationFormFields.FirstOrDefault(_ => _.Name == "hasanothername2")?.Value;
@@ -285,21 +291,6 @@ namespace fostering_service.Services.Case
             }
 
             return fosteringCase;
-        }
-
-        private ETaskStatus GetTaskStatus(string status)
-        {
-            switch (status)
-            {
-                case "CantStart":
-                    return ETaskStatus.CantStart;
-                case "Completed":
-                    return ETaskStatus.Completed;
-                case "NotCompleted":
-                    return ETaskStatus.NotCompleted;
-                default:
-                    return ETaskStatus.None;
-            }
         }
 
         public List<OtherPerson> CreateOtherPersonList(OtherPeopleConfigurationModel config, List<CustomField> formFields, int capacity = 8)
@@ -382,8 +373,9 @@ namespace fostering_service.Services.Case
                 ToList();
         }
 
-        public List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields, bool secondApplicant = false)
+        public List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields, bool isSecondApplicant = false)
         {
+            var applicantSuffix = isSecondApplicant ? "2" : "1";
             var councillorDetailsList = new List<CouncillorRelationshipDetails>();
 
             for (var i = 0; i < 4; i++)
@@ -403,9 +395,14 @@ namespace fostering_service.Services.Case
                 if (index < 0)
                     return;
 
-                if (field.Name.Contains(secondApplicant ? "" : "councilloremployeename1"))
+                if (field.Name.Contains($"councilloremployeename{applicantSuffix}"))
                 {
                     councillorDetailsList[index].CouncillorName = field.Value;
+                }
+
+                if (field.Name.Contains($"councillorrelationship{applicantSuffix}"))
+                {
+                    councillorDetailsList[index].Relationship = field.Value;
                 }
             });
 
@@ -414,9 +411,26 @@ namespace fostering_service.Services.Case
                 .ToList();
         }
 
-        public List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields)
+        private ETaskStatus GetTaskStatus(string status)
         {
-            throw new NotImplementedException();
+            switch (status)
+            {
+                case "CantStart":
+                    return ETaskStatus.CantStart;
+                case "Completed":
+                    return ETaskStatus.Completed;
+                case "NotCompleted":
+                    return ETaskStatus.NotCompleted;
+                default:
+                    return ETaskStatus.None;
+            }
+        }
+
+        private bool? ParseVerintBoolean(string value, string comparator = "true")
+        {
+            return value != null
+                ? string.Equals(value.ToLower(), comparator.ToLower())
+                : (bool?) null;
         }
     }
 }

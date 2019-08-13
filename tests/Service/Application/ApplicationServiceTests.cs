@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using fostering_service.Services.Application;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -344,6 +345,183 @@ namespace fostering_service_tests.Service.Application
 
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel()));
+        }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldCreateIntegrationFormFields_BothApplicants()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+            var model = new FosteringCaseCouncillorsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = true,
+                    CouncillorRelationshipDetails = new List<CouncillorRelationshipDetailsUpdateModel>
+                    {
+                        new CouncillorRelationshipDetailsUpdateModel
+                        {
+                            CouncillorName = "Name",
+                            Relationship = "Relationship"
+                        }
+                    }
+                },
+                SecondApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = true,
+                    CouncillorRelationshipDetails = new List<CouncillorRelationshipDetailsUpdateModel>
+                    {
+                        new CouncillorRelationshipDetailsUpdateModel
+                        {
+                            CouncillorName = "Name",
+                            Relationship = "Relationship"
+                        }
+                    }
+                }
+            };
+
+            // Act
+            await _applicationService.UpdateCouncillorsDetails(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "contactwithcouncillor1" && field.FormFieldValue == "true")
+                )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "contactwithcouncillor2" && field.FormFieldValue == "true")
+                )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "councilloremployeename11" && field.FormFieldValue == "Name")
+                )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "councilloremployeename21" && field.FormFieldValue == "Name")
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "councillorrelationship11" && field.FormFieldValue == "Relationship")
+            )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "councillorrelationship21" && field.FormFieldValue == "Relationship")
+            )), Times.Once);
+
+            for (var i = 2; i < 5; i++)
+            {
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councilloremployeename1{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councilloremployeename2{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship1{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship2{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldCreateEmptyIntegrationFormFields()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+            var model = new FosteringCaseCouncillorsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = false
+                },
+                SecondApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = false
+                }
+            };
+
+            // Act
+            await _applicationService.UpdateCouncillorsDetails(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "contactwithcouncillor1" && field.FormFieldValue == "false")
+                )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "contactwithcouncillor2" && field.FormFieldValue == "false")
+                )), Times.Once);
+
+            for (var i = 1; i < 5; i++)
+            {
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councilloremployeename1{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councilloremployeename2{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship1{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship2{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+            }
+        }
+        
+        [Fact]
+        public async Task UpdateCouncillorsDetails_ShouldCreateIntegrationFormFields()
+        {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+            var model = new FosteringCaseCouncillorsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = false
+                }
+            };
+
+            // Act
+            await _applicationService.UpdateCouncillorsDetails(model);
+
+            // Assert
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "contactwithcouncillor1" && field.FormFieldValue == "false")
+                )), Times.Once);
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                m => m.IntegrationFormFields.Exists(field => field.FormFieldName == "contactwithcouncillor2" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+
+            for (var i = 1; i < 5; i++)
+            {
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councilloremployeename1{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councilloremployeename2{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship1{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+                _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.Is<IntegrationFormFieldsUpdateModel>(
+                    m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship2{i}" && field.FormFieldValue == string.Empty)
+                )), Times.Once);
+            }
         }
     }
 }

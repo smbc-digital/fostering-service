@@ -9,6 +9,6 @@ namespace fostering_service.Services.Case
     {
         Task<FosteringCase> GetCase(string caseId);
 
-        List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields);
+        List<CouncillorRelationshipDetails> CreateCouncillorRelationshipDetailsList(List<CustomField> formFields, bool isSecondApplicant);
     }
 }

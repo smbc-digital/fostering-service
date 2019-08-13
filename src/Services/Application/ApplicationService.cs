@@ -142,16 +142,19 @@ namespace fostering_service.Services.Application
         {
             var builder = new FormFieldBuilder();
 
-            CreateCouncillorsDetailsIntegratedFormFields(builder, 
+            CreateCouncillorsDetailsIntegratedFormFields(builder,
                 model.FirstApplicant.HasContactWithCouncillor ? model.FirstApplicant.CouncillorRelationshipDetails : new List<CouncillorRelationshipDetailsUpdateModel>());
 
-            CreateCouncillorsDetailsIntegratedFormFields(builder, 
-                model.SecondApplicant.HasContactWithCouncillor ? model.SecondApplicant.CouncillorRelationshipDetails : new List<CouncillorRelationshipDetailsUpdateModel>(), 
+            CreateCouncillorsDetailsIntegratedFormFields(builder,
+                model.SecondApplicant?.HasContactWithCouncillor != null && model.SecondApplicant.HasContactWithCouncillor
+                    ? model.SecondApplicant.CouncillorRelationshipDetails
+                    : new List<CouncillorRelationshipDetailsUpdateModel>(),
                 true);
 
             builder
-                .AddField("HasARelationshipApplicant1", model.FirstApplicant.HasContactWithCouncillor.ToString())
-                .AddField("HasARelationshipApplicant2", model.SecondApplicant.HasContactWithCouncillor.ToString());
+                .AddField("contactwithcouncillor1", model.FirstApplicant.HasContactWithCouncillor.ToString().ToLower())
+                .AddField("contactwithcouncillor2", model.SecondApplicant?.HasContactWithCouncillor.ToString().ToLower() ?? string.Empty)
+                .AddField(EFosteringApplicationForm.CouncillorsOrEmployees.GetFormStatusFieldName(), ETaskStatus.Completed.GetTaskStatus());
 
             var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
             {

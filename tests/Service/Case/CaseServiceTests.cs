@@ -667,14 +667,38 @@ namespace fostering_service_tests.Service
             Assert.Equal(result[0].Address.Town, expectedTown);
         }
 
-        [Fact]
-        public void CreateCouncillorRelationshipDetailsList_ShouldReturnDetails()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateCouncillorRelationshipDetailsList_ShouldReturnDetails(bool isSecondApplicant)
         {
+            // Arrange
+            var formFields = new List<CustomField>();
+            var applicantSuffix = isSecondApplicant ? "2" : "1";
+
+            for (var i = 1; i <= 4; i++)
+            {
+                formFields.Add(new CustomField
+                {
+                    Name = $"councilloremployeename{applicantSuffix}{i}",
+                    Value = $"Name{applicantSuffix}{i}"
+                });
+                formFields.Add(new CustomField
+                {
+                    Name = $"councillorrelationship{applicantSuffix}{i}",
+                    Value = $"Relationship{applicantSuffix}{i}"
+                });
+            }
+
             // Act
-            var result = _caseService.CreateCouncillorRelationshipDetailsList(new List<CustomField>());
+            var result = _caseService.CreateCouncillorRelationshipDetailsList(formFields, isSecondApplicant);
 
             // Assert
             Assert.Equal(4, result.Count);
+            for (var i = 1; i <= 4; i++)
+            {
+                Assert.True(result.Exists(_ => _.CouncillorName == $"Name{applicantSuffix}{i}" && _.Relationship == $"Relationship{applicantSuffix}{i}"));
+            }
         }
 
         [Fact]
