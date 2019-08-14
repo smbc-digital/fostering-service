@@ -325,8 +325,32 @@ namespace fostering_service_tests.Service.Application
         [Fact]
         public async Task UpdateCouncillorsDetails_ShouldCallVerintServiceGateway()
         {
+            // Arrange
+            _verintServiceGatewayMock
+                .Setup(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+            var model = new FosteringCaseCouncillorsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = true,
+                    CouncillorRelationshipDetails = new List<CouncillorRelationshipDetailsUpdateModel>
+                    {
+                        new CouncillorRelationshipDetailsUpdateModel
+                        {
+                            CouncillorName = "Name",
+                            Relationship = "Relationship"
+                        }
+                    }
+                }
+            };
+
             // Act
-            await _applicationService.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel());
+            await _applicationService.UpdateCouncillorsDetails(model);
 
             // Assert
             _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
@@ -342,9 +366,25 @@ namespace fostering_service_tests.Service.Application
                 {
                     StatusCode = HttpStatusCode.BadRequest
                 });
+            var model = new FosteringCaseCouncillorsUpdateModel
+            {
+                CaseReference = "1234",
+                FirstApplicant = new FosteringCaseCouncillorsApplicantUpdateModel
+                {
+                    HasContactWithCouncillor = true,
+                    CouncillorRelationshipDetails = new List<CouncillorRelationshipDetailsUpdateModel>
+                    {
+                        new CouncillorRelationshipDetailsUpdateModel
+                        {
+                            CouncillorName = "Name",
+                            Relationship = "Relationship"
+                        }
+                    }
+                }
+            };
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel()));
+            await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateCouncillorsDetails(model));
         }
 
         [Fact]

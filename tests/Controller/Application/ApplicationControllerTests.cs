@@ -230,7 +230,7 @@ namespace fostering_service_tests.Controller.Application
             var result = await _application.UpdateCouncillorsDetails(new FosteringCaseCouncillorsUpdateModel());
 
             // Assert
-            Assert.IsType<OkResult>(result);
+            Assert.IsType<OkObjectResult>(result);
         }
 
         [Fact]
