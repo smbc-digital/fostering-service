@@ -240,7 +240,7 @@ namespace fostering_service.Services.Case
                     NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice2")?.Value,
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber2")?.Value,
                     GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice2", "placerefofpractice2", "postcodeofpractice2").Validate(),
-                    HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
+                    HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor2")?.Value),
                     CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields, true),
                     AddressHistory = _caseHelper.CreateAddressHistoryList(integrationFormFields, true)
                 };
@@ -433,7 +433,7 @@ namespace fostering_service.Services.Case
 
         private bool? ParseVerintBoolean(string value, string comparator = "true")
         {
-            return value != null
+            return !string.IsNullOrEmpty(value)
                 ? string.Equals(value.ToLower(), comparator.ToLower())
                 : (bool?) null;
         }
