@@ -13,6 +13,24 @@ namespace fostering_service.Helpers
             var applicantPrefix = !isSecondApplicant ? "1" : "2";
 
             var addressList = new List<PreviousAddress>();
+            var currentAddressInfo = new PreviousAddress();
+
+            var currentDateFromMonth = formFields.FirstOrDefault(_ => _.Name == $"currentdatefrommonthapplicant{applicantPrefix}")?.Value;
+            var currentDateFromYear = formFields.FirstOrDefault(_ => _.Name == $"currentdatefromyearapplicant{applicantPrefix}")?.Value;
+
+
+            if (currentDateFromMonth == null || currentDateFromYear == null)
+            {
+                currentAddressInfo = new PreviousAddress { Address = new InternationalAddress() };
+            }
+            else
+            {
+                currentAddressInfo = new PreviousAddress
+                {
+                    DateFrom = new DateTime(int.Parse(currentDateFromYear), int.Parse(currentDateFromMonth), 01),
+                    Address = new InternationalAddress()
+                };
+            }
 
             for (int i = 1; i < 9; i++)
             {
@@ -68,10 +86,18 @@ namespace fostering_service.Helpers
                 }
             }
 
-            return addressList.Where(address =>
+            var sortedAddressList = addressList
+                .Where(address =>
                     address.DateFrom != null &&
                     address.Address != null)
                 .ToList();
+
+            var addressResult = new List<PreviousAddress>();
+
+            addressResult.Add(currentAddressInfo);
+            addressResult.AddRange(sortedAddressList);
+
+            return addressResult;
         }
     }
 }
