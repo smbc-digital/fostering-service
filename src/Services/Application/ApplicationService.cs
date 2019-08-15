@@ -171,6 +171,30 @@ namespace fostering_service.Services.Application
             return ETaskStatus.Completed;
         }
 
+        public async Task<ETaskStatus> UpdateAddressHistory(FosteringCaseAddressHistoryUpdateModel model)
+        {
+            var builder = new FormFieldBuilder();
+
+            CreateAddressHistoryIntegratedFormFields(builder, model.FirstApplicant.AddressHistory);
+            CreateAddressHistoryIntegratedFormFields(builder, model.SecondApplicant.AddressHistory, true);
+
+            builder.AddField(EFosteringApplicationForm.CouncillorsOrEmployees.GetFormStatusFieldName(), ETaskStatus.NotCompleted.GetTaskStatus());
+
+            var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
+            {
+                CaseReference = model.CaseReference,
+                IntegrationFormFields = builder.Build(),
+                IntegrationFormName = _applicationFormName
+            });
+
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                throw new Exception($"Application Service. UpdateAddressHistory: Failed to update. Verint service response: {response}");
+            }
+
+            return ETaskStatus.NotCompleted;
+        }
+
         private void CreateCouncillorsDetailsIntegratedFormFields(FormFieldBuilder builder,
             List<CouncillorRelationshipDetailsUpdateModel> model, bool secondApplicant = false)
         {
@@ -196,13 +220,7 @@ namespace fostering_service.Services.Application
                     .AddField($"councillorrelationship{applicantPrefix}{nameSuffix}", string.Empty);
             }
         }
-
-        public Task<ETaskStatus> UpdateAddressHistory(FosteringCaseAddressHistoryUpdateModel model)
-        {
-            var builder = new FormFieldBuilder();
-
-            throw new NotImplementedException();
-        }
+        
 
         private void CreateAddressHistoryIntegratedFormFields(FormFieldBuilder builder,
             List<PreviousAddress> model, bool secondApplicant = false)
@@ -210,16 +228,58 @@ namespace fostering_service.Services.Application
             var applicantSuffix = secondApplicant ? "2" : "1";
 
             builder
-                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model[0].DateFrom.Value.Month.ToString())
-                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model[0].DateFrom.Value.Year.ToString());
+                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model[0].DateFrom?.Month.ToString() ?? string.Empty)
+                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model[0].DateFrom?.Year.ToString() ?? string.Empty);
 
-            for (var i = 1; i <= 8; i++)
+            if (model.Count > 1)
+            {
+                for (var i = 1; i < model.Count; i++)
+                {
+                    builder
+                        .AddField($"pa{i}applicant{applicantSuffix}",
+                            model[i].Address.AddressLine1 + "|" + model[i].Address.AddressLine2 + "|" +
+                            model[i].Address.Town + "|" + model[i].Address.County + "|" + model[i].Address.Country)
+                        .AddField($"pa{i}postcodeapplicant{applicantSuffix}",
+                            model[i].Address.Postcode ?? string.Empty)
+                        .AddField($"pa{i}datefrommonthapplicant{applicantSuffix}", model[i].DateFrom?.Month.ToString() ?? string.Empty)
+                        .AddField($"pa{i}datefromyearapplicant{applicantSuffix}", model[i].DateFrom?.Year.ToString() ?? string.Empty);
+
+                    if (i == 8)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (model.Count < 8)
+            {
+                for (int i = model.Count; i < 9; i++)
+                {
+                    builder
+                        .AddField($"pa{i}applicant{applicantSuffix}", string.Empty)
+                        .AddField($"pa{i}postcodeapplicant{applicantSuffix}", string.Empty)
+                        .AddField($"pa{i}datefrommonthapplicant{applicantSuffix}", string.Empty)
+                        .AddField($"pa{i}datefromyearapplicant{applicantSuffix}", string.Empty);
+                }
+            }
+
+            if (model.Count > 8)
+            {
+                var additionalAddress = string.Empty;
+                for (var i = 9; i < model.Count; i++)
+                {
+                    additionalAddress += model[i].Address.AddressLine1 + "|" + model[i].Address.AddressLine2 + "|" +
+                                         model[i].Address.Town + "|" + model[i].Address.County + "|" +
+                                         model[i].Address.Country + "|" + model[i].Address.Postcode + "|" + 
+                                         model[i].DateFrom?.Month + "|" + model[i].DateFrom?.Month + "%";
+                }
+                builder
+                    .AddField($"addressadditionalinformation{applicantSuffix}", additionalAddress);
+            }
+            else
             {
                 builder
-                    .AddField($"pa{i}applicant{applicantSuffix}",
-                        model[i].Address.AddressLine1 + "|" + model[i].Address.AddressLine2 + "|" +
-                        model[i].Address.Town + "|" + model[i].Address.County + "|" + model[i].Address.Country)
-                    .AddField($"pa{i}postcodeapplicant{applicantSuffix}", model[i].Address.Postcode ?? string.Empty);
+                    .AddField($"addressadditionalinformation{applicantSuffix}", "");
             }
         }
     }
