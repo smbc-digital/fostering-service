@@ -203,5 +203,24 @@ namespace fostering_service.Services.Application
 
             throw new NotImplementedException();
         }
+
+        private void CreateAddressHistoryIntegratedFormFields(FormFieldBuilder builder,
+            List<PreviousAddress> model, bool secondApplicant = false)
+        {
+            var applicantSuffix = secondApplicant ? "2" : "1";
+
+            builder
+                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model[0].DateFrom.Value.Month.ToString())
+                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model[0].DateFrom.Value.Year.ToString());
+
+            for (var i = 1; i <= 8; i++)
+            {
+                builder
+                    .AddField($"pa{i}applicant{applicantSuffix}",
+                        model[i].Address.AddressLine1 + "|" + model[i].Address.AddressLine2 + "|" +
+                        model[i].Address.Town + "|" + model[i].Address.County + "|" + model[i].Address.Country)
+                    .AddField($"pa{i}postcodeapplicant{applicantSuffix}", model[i].Address.Postcode ?? string.Empty);
+            }
+        }
     }
 }
