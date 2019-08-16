@@ -1,4 +1,5 @@
-﻿using StockportGovUK.NetStandard.Models.Enums;
+﻿using System;
+using StockportGovUK.NetStandard.Models.Enums;
 
 namespace fostering_service.Extensions
 {
@@ -27,7 +28,7 @@ namespace fostering_service.Extensions
                 case EFosteringHomeVisitForm.YourPartnership:
                     return "yourpartnershipstatus";
                 default:
-                    return null;
+                   throw new Exception("EFosteringFormExtensions: GetFormStatusFieldName - home visit form status field name missing");
             }
         }
 
@@ -41,8 +42,10 @@ namespace fostering_service.Extensions
                     return "gpdetailsstatus";
                 case EFosteringApplicationForm.CouncillorsOrEmployees:
                     return "councillorsoremployeesstatus";
+                case EFosteringApplicationForm.AddressHistory:
+                    return "addresshistorystatus";
                 default:
-                    return null;
+                    throw new Exception("EFosteringFormExtensions: GetFormStatusFieldName - application form status field name missing");
             }
         }
     }

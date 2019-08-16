@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -176,9 +177,12 @@ namespace fostering_service.Services.Application
             var builder = new FormFieldBuilder();
 
             CreateAddressHistoryIntegratedFormFields(builder, model.FirstApplicant.AddressHistory);
-            CreateAddressHistoryIntegratedFormFields(builder, model.SecondApplicant.AddressHistory, true);
+            CreateAddressHistoryIntegratedFormFields(builder, model.SecondApplicant != null ? model.SecondApplicant?.AddressHistory : new List<PreviousAddress>(), true);
 
-            builder.AddField(EFosteringApplicationForm.CouncillorsOrEmployees.GetFormStatusFieldName(), ETaskStatus.NotCompleted.GetTaskStatus());
+            var addressHistoryTaskStatus = AddressHistoryTaskStatus(model.FirstApplicant.AddressHistory) 
+                                           && (model.SecondApplicant == null || AddressHistoryTaskStatus(model.SecondApplicant.AddressHistory));
+
+            builder.AddField(EFosteringApplicationForm.AddressHistory.GetFormStatusFieldName(), addressHistoryTaskStatus ? ETaskStatus.Completed.GetTaskStatus() : ETaskStatus.NotCompleted.GetTaskStatus());
 
             var response = await _verintServiceGateway.UpdateCaseIntegrationFormField(new IntegrationFormFieldsUpdateModel
             {
@@ -192,7 +196,7 @@ namespace fostering_service.Services.Application
                 throw new Exception($"Application Service. UpdateAddressHistory: Failed to update. Verint service response: {response}");
             }
 
-            return ETaskStatus.NotCompleted;
+            return addressHistoryTaskStatus ? ETaskStatus.Completed : ETaskStatus.NotCompleted;
         }
 
         private void CreateCouncillorsDetailsIntegratedFormFields(FormFieldBuilder builder,
@@ -221,15 +225,14 @@ namespace fostering_service.Services.Application
             }
         }
         
-
         private void CreateAddressHistoryIntegratedFormFields(FormFieldBuilder builder,
             List<PreviousAddress> model, bool secondApplicant = false)
         {
             var applicantSuffix = secondApplicant ? "2" : "1";
 
             builder
-                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model[0].DateFrom?.Month.ToString() ?? string.Empty)
-                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model[0].DateFrom?.Year.ToString() ?? string.Empty);
+                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model.Count > 1 ? model[0].DateFrom?.Month.ToString() : string.Empty)
+                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model.Count > 1 ? model[0].DateFrom?.Year.ToString() : string.Empty);
 
             if (model.Count > 1)
             {
@@ -271,7 +274,9 @@ namespace fostering_service.Services.Application
                     additionalAddress += model[i].Address.AddressLine1 + "|" + model[i].Address.AddressLine2 + "|" +
                                          model[i].Address.Town + "|" + model[i].Address.County + "|" +
                                          model[i].Address.Country + "|" + model[i].Address.Postcode + "|" + 
-                                         model[i].DateFrom?.Month + "|" + model[i].DateFrom?.Month + "%";
+                                         model[i].DateFrom?.Month + "|" + model[i].DateFrom?.Year;
+
+                    additionalAddress += (i == model.Count - 1) ? string.Empty : "%";
                 }
                 builder
                     .AddField($"addressadditionalinformation{applicantSuffix}", additionalAddress);
@@ -281,6 +286,17 @@ namespace fostering_service.Services.Application
                 builder
                     .AddField($"addressadditionalinformation{applicantSuffix}", "");
             }
+        }
+
+        private bool AddressHistoryTaskStatus(List<PreviousAddress> address)
+        {
+            var isAddressWithinLastTenYears = address.Any(_ => _.DateFrom.HasValue && _.DateFrom.Value < DateTime.Now.AddYears(-10));
+
+            return isAddressWithinLastTenYears && address.Count > 1 && !address
+                       .Skip(1)
+                       .Any(previousAddress => previousAddress.DateFrom == null || string.IsNullOrEmpty(previousAddress.Address.AddressLine1)
+                                                                                         || string.IsNullOrEmpty(previousAddress.Address.Town) 
+                                                                                         || string.IsNullOrEmpty(previousAddress.Address.Country));
         }
     }
 }
