@@ -231,8 +231,8 @@ namespace fostering_service.Services.Application
             var applicantSuffix = secondApplicant ? "2" : "1";
 
             builder
-                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model.Count > 1 ? model[0].DateFrom?.Month.ToString() : string.Empty)
-                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model.Count > 1 ? model[0].DateFrom?.Year.ToString() : string.Empty);
+                .AddField($"currentdatefrommonthapplicant{applicantSuffix}", model[0].DateFrom?.Month.ToString() ?? string.Empty)
+                .AddField($"currentdatefromyearapplicant{applicantSuffix}", model[0].DateFrom?.Year.ToString() ?? string.Empty);
 
             if (model.Count > 1)
             {
@@ -292,11 +292,14 @@ namespace fostering_service.Services.Application
         {
             var isAddressWithinLastTenYears = address.Any(_ => _.DateFrom.HasValue && _.DateFrom.Value < DateTime.Now.AddYears(-10));
 
-            return isAddressWithinLastTenYears && address.Count > 1 && !address
-                       .Skip(1)
-                       .Any(previousAddress => previousAddress.DateFrom == null || string.IsNullOrEmpty(previousAddress.Address.AddressLine1)
-                                                                                         || string.IsNullOrEmpty(previousAddress.Address.Town) 
-                                                                                         || string.IsNullOrEmpty(previousAddress.Address.Country));
+            return (address.Count > 1)
+                ? isAddressWithinLastTenYears && address.Count > 1 && !address
+                      .Skip(1)
+                      .Any(previousAddress =>
+                          previousAddress.DateFrom == null || string.IsNullOrEmpty(previousAddress.Address.AddressLine1)
+                                                           || string.IsNullOrEmpty(previousAddress.Address.Town)
+                                                           || string.IsNullOrEmpty(previousAddress.Address.Country))
+                : isAddressWithinLastTenYears;
         }
     }
 }
