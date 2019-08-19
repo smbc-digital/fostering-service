@@ -58,7 +58,8 @@ namespace fostering_service.Services.Case
                     YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value),
                     ReferencesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourreferencesstatus")?.Value),
                     GpDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value),
-                    CouncillorsOrEmployeesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "councillorsoremployeesstatus")?.Value)
+                    CouncillorsOrEmployeesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "councillorsoremployeesstatus")?.Value),
+                    AddressHistoryStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "addresshistorystatus")?.Value)
                 },
                 FirstApplicant = new FosteringApplicant
                 {
