@@ -36,15 +36,15 @@ namespace fostering_service_tests.Helpers
             var result = _helper.CreateAddressHistoryList(builder.IntegrationFormFields);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal(addressLine1, result.FirstOrDefault().Address.AddressLine1);
-            Assert.Equal(addressLine2, result.FirstOrDefault().Address.AddressLine2);
-            Assert.Equal(addressLineTown, result.FirstOrDefault().Address.Town);
-            Assert.Equal(addressLineCounty, result.FirstOrDefault().Address.County);
-            Assert.Equal(addressLineCountry, result.FirstOrDefault().Address.Country);
-            Assert.Equal(addressLinePostcode, result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(addressLinePostcode, result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(date, result.FirstOrDefault().DateFrom);
+            Assert.Equal(2, result.Count);
+            Assert.Equal(addressLine1, result[1].Address.AddressLine1);
+            Assert.Equal(addressLine2, result[1].Address.AddressLine2);
+            Assert.Equal(addressLineTown, result[1].Address.Town);
+            Assert.Equal(addressLineCounty, result[1].Address.County);
+            Assert.Equal(addressLineCountry, result[1].Address.Country);
+            Assert.Equal(addressLinePostcode, result[1].Address.Postcode);
+            Assert.Equal(addressLinePostcode, result[1].Address.Postcode);
+            Assert.Equal(date, result[1].DateFrom);
         }
 
         [Fact]
@@ -87,24 +87,24 @@ namespace fostering_service_tests.Helpers
             var result = _helper.CreateAddressHistoryList(builder.IntegrationFormFields);
 
             // Assert
-            Assert.Equal(2, result.Count);
-            Assert.Equal(address1Line1, result.FirstOrDefault().Address.AddressLine1);
-            Assert.Equal(address1Line2, result.FirstOrDefault().Address.AddressLine2);
-            Assert.Equal(address1LineTown, result.FirstOrDefault().Address.Town);
-            Assert.Equal(address1LineCounty, result.FirstOrDefault().Address.County);
-            Assert.Equal(address1LineCountry, result.FirstOrDefault().Address.Country);
-            Assert.Equal(address1LinePostcode, result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(address1LinePostcode, result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(date1, result.FirstOrDefault().DateFrom);
+            Assert.Equal(3, result.Count);
+            Assert.Equal(address1Line1, result[1].Address.AddressLine1);
+            Assert.Equal(address1Line2, result[1].Address.AddressLine2);
+            Assert.Equal(address1LineTown, result[1].Address.Town);
+            Assert.Equal(address1LineCounty, result[1].Address.County);
+            Assert.Equal(address1LineCountry, result[1].Address.Country);
+            Assert.Equal(address1LinePostcode, result[1].Address.Postcode);
+            Assert.Equal(address1LinePostcode, result[1].Address.Postcode);
+            Assert.Equal(date1, result[1].DateFrom);
 
-            Assert.Equal(address2Line1, result[1].Address.AddressLine1);
-            Assert.Equal(address2Line2, result[1].Address.AddressLine2);
-            Assert.Equal(address2LineTown, result[1].Address.Town);
-            Assert.Equal(address2LineCounty, result[1].Address.County);
-            Assert.Equal(address2LineCountry, result[1].Address.Country);
-            Assert.Equal(address2LinePostcode, result[1].Address.Postcode);
-            Assert.Equal(address2LinePostcode, result[1].Address.Postcode);
-            Assert.Equal(date2, result[1].DateFrom);
+            Assert.Equal(address2Line1, result[2].Address.AddressLine1);
+            Assert.Equal(address2Line2, result[2].Address.AddressLine2);
+            Assert.Equal(address2LineTown, result[2].Address.Town);
+            Assert.Equal(address2LineCounty, result[2].Address.County);
+            Assert.Equal(address2LineCountry, result[2].Address.Country);
+            Assert.Equal(address2LinePostcode, result[2].Address.Postcode);
+            Assert.Equal(address2LinePostcode, result[2].Address.Postcode);
+            Assert.Equal(date2, result[2].DateFrom);
         }
 
         [Fact]
@@ -133,15 +133,15 @@ namespace fostering_service_tests.Helpers
             var result = _helper.CreateAddressHistoryList(builder.IntegrationFormFields, true);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal(addressLine1, result.FirstOrDefault().Address.AddressLine1);
-            Assert.Equal(addressLine2, result.FirstOrDefault().Address.AddressLine2);
-            Assert.Equal(addressLineTown, result.FirstOrDefault().Address.Town);
-            Assert.Equal(addressLineCounty, result.FirstOrDefault().Address.County);
-            Assert.Equal(addressLineCountry, result.FirstOrDefault().Address.Country);
-            Assert.Equal(addressLinePostcode, result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(addressLinePostcode, result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(date, result.FirstOrDefault().DateFrom);
+            Assert.Equal(2, result.Count);
+            Assert.Equal(addressLine1, result[1].Address.AddressLine1);
+            Assert.Equal(addressLine2, result[1].Address.AddressLine2);
+            Assert.Equal(addressLineTown, result[1].Address.Town);
+            Assert.Equal(addressLineCounty, result[1].Address.County);
+            Assert.Equal(addressLineCountry, result[1].Address.Country);
+            Assert.Equal(addressLinePostcode, result[1].Address.Postcode);
+            Assert.Equal(addressLinePostcode, result[1].Address.Postcode);
+            Assert.Equal(date, result[1].DateFrom);
         }
 
         [Fact]
@@ -160,14 +160,14 @@ namespace fostering_service_tests.Helpers
             var result = _helper.CreateAddressHistoryList(builder.IntegrationFormFields);
 
             // Assert
-            Assert.Single(result);
-            Assert.Equal("Line1", result.FirstOrDefault().Address.AddressLine1);
-            Assert.Equal("Line2", result.FirstOrDefault().Address.AddressLine2);
-            Assert.Equal("Town", result.FirstOrDefault().Address.Town);
-            Assert.Equal("County", result.FirstOrDefault().Address.County);
-            Assert.Equal("Country", result.FirstOrDefault().Address.Country);
-            Assert.Equal("Postcode", result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(date, result.FirstOrDefault().DateFrom);
+            Assert.Equal(2, result.Count);
+            Assert.Equal("Line1", result[1].Address.AddressLine1);
+            Assert.Equal("Line2", result[1].Address.AddressLine2);
+            Assert.Equal("Town", result[1].Address.Town);
+            Assert.Equal("County", result[1].Address.County);
+            Assert.Equal("Country", result[1].Address.Country);
+            Assert.Equal("Postcode", result[1].Address.Postcode);
+            Assert.Equal(date, result[1].DateFrom);
         }
 
         [Fact]
@@ -187,21 +187,42 @@ namespace fostering_service_tests.Helpers
             var result = _helper.CreateAddressHistoryList(builder.IntegrationFormFields);
 
             // Assert
-            Assert.Equal(2, result.Count);
-            Assert.Equal("Line1", result.FirstOrDefault().Address.AddressLine1);
-            Assert.Equal("Line2", result.FirstOrDefault().Address.AddressLine2);
-            Assert.Equal("Town", result.FirstOrDefault().Address.Town);
-            Assert.Equal("County", result.FirstOrDefault().Address.County);
-            Assert.Equal("Country", result.FirstOrDefault().Address.Country);
-            Assert.Equal("Postcode", result.FirstOrDefault().Address.Postcode);
-            Assert.Equal(date1, result.FirstOrDefault().DateFrom);
-            Assert.Equal("2Line1", result[1].Address.AddressLine1);
-            Assert.Equal("2Line2", result[1].Address.AddressLine2);
-            Assert.Equal("2Town", result[1].Address.Town);
-            Assert.Equal("2County", result[1].Address.County);
-            Assert.Equal("2Country", result[1].Address.Country);
-            Assert.Equal("2Postcode", result[1].Address.Postcode);
-            Assert.Equal(date2, result[1].DateFrom);
+            Assert.Equal(3, result.Count);
+            Assert.Equal("Line1", result[1].Address.AddressLine1);
+            Assert.Equal("Line2", result[1].Address.AddressLine2);
+            Assert.Equal("Town", result[1].Address.Town);
+            Assert.Equal("County", result[1].Address.County);
+            Assert.Equal("Country", result[1].Address.Country);
+            Assert.Equal("Postcode", result[1].Address.Postcode);
+            Assert.Equal(date1, result[1].DateFrom);
+            Assert.Equal("2Line1", result[2].Address.AddressLine1);
+            Assert.Equal("2Line2", result[2].Address.AddressLine2);
+            Assert.Equal("2Town", result[2].Address.Town);
+            Assert.Equal("2County", result[2].Address.County);
+            Assert.Equal("2Country", result[2].Address.Country);
+            Assert.Equal("2Postcode", result[2].Address.Postcode);
+            Assert.Equal(date2, result[2].DateFrom);
+        }
+
+        [Fact]
+        public void CreateAddressHistoryList_ShouldCurrentAddress_AsFirstItem()
+        {
+            // Arrange
+            var additional = "Line1|Line2|Town|County|Country|Postcode|3|2016%2Line1|2Line2|2Town|2County|2Country|2Postcode|6|2010";
+
+            var date1 = new DateTime(int.Parse("2018"), int.Parse("8"), 01);
+
+            var builder = new CaseBuilder()
+                .WithIntegrationFormField("currentdatefrommonthapplicant1", "08")
+                .WithIntegrationFormField("currentdatefromyearapplicant1", "2018")
+                .Build();
+
+            // Act
+            var result = _helper.CreateAddressHistoryList(builder.IntegrationFormFields);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(date1, result[0].DateFrom);
         }
     }
 }
