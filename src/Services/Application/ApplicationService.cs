@@ -177,7 +177,11 @@ namespace fostering_service.Services.Application
             var builder = new FormFieldBuilder();
 
             CreateAddressHistoryIntegratedFormFields(builder, model.FirstApplicant.AddressHistory);
-            CreateAddressHistoryIntegratedFormFields(builder, model.SecondApplicant != null ? model.SecondApplicant?.AddressHistory : new List<PreviousAddress>(), true);
+
+            if (model.SecondApplicant != null)
+            {
+                CreateAddressHistoryIntegratedFormFields(builder, model.SecondApplicant != null ? model.SecondApplicant?.AddressHistory : new List<PreviousAddress>(), true);
+            }
 
             var addressHistoryTaskStatus = AddressHistoryTaskStatus(model.FirstApplicant.AddressHistory) 
                                            && (model.SecondApplicant == null || AddressHistoryTaskStatus(model.SecondApplicant.AddressHistory));

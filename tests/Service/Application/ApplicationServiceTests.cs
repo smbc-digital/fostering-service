@@ -11,7 +11,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Models.Verint;
 using Xunit;
+using Address = StockportGovUK.NetStandard.Models.Models.Fostering.Address;
 
 namespace fostering_service_tests.Service.Application
 {
@@ -586,16 +588,722 @@ namespace fostering_service_tests.Service.Application
                     }
                 }
             };
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.InternalServerError
+                });
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() =>
-                _applicationService.UpdateAddressHistory(model));
+            await Assert.ThrowsAsync<Exception>(() => _applicationService.UpdateAddressHistory(model));
         }
 
         [Fact]
-        public async Task UpdateAddressHistory_ShouldReturnTaskStatus()
+        public async Task UpdateAddressHistory_ShouldCall_VerintServiceGateway()
         {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressline1",
+                                Town = "Town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now
+                        },
+                    }
+                }
+            };
 
+            _verintServiceGatewayMock.Setup(_ =>  _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                    .ReturnsAsync(new HttpResponseMessage
+                    {
+                        StatusCode = HttpStatusCode.OK
+                    });
+
+            // Act & Assert
+            await _applicationService.UpdateAddressHistory(model);
+
+            _verintServiceGatewayMock.Verify(_ => _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturn_NotCompletedTaskStatus_WhenFirstAddress_IsNot10YearsFromToday()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress(),
+                            DateFrom = DateTime.Now.AddYears(-9)
+                        },
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var result = await _applicationService.UpdateAddressHistory(model);
+
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturn_CompletedTaskStatus_WhenFirstAddress_Is10YearsFromToday()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var result = await _applicationService.UpdateAddressHistory(model);
+
+            Assert.Equal(ETaskStatus.Completed, result);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturn_CompletedTaskStatus_WhenMutlipleAddress_AreValid()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var result = await _applicationService.UpdateAddressHistory(model);
+
+            Assert.Equal(ETaskStatus.Completed, result);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturn_NotCompletedTaskStatus_WhenMutlipleAddress_HaveAnInvalidAddressField()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = string.Empty,
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var result = await _applicationService.UpdateAddressHistory(model);
+
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturn_CompletedTaskStatus_WhenMutlipleAddress_OnBothApplications_AreValid()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                },
+                SecondApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var result = await _applicationService.UpdateAddressHistory(model);
+
+            Assert.Equal(ETaskStatus.Completed, result);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturn_NotCompletedTaskStatus_WhenMutlipleAddress_OnBothApplications_HaveAnInvalidAddressField()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = string.Empty,
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine2",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                },
+                SecondApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = string.Empty,
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                });
+
+            var result = await _applicationService.UpdateAddressHistory(model);
+
+            Assert.Equal(ETaskStatus.NotCompleted, result);
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldAddAllCorrectIntegrationFormFieldsForSingleApplicant()
+        {
+            var callback = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                }).Callback<IntegrationFormFieldsUpdateModel>((iff) => callback = iff);
+
+            await _applicationService.UpdateAddressHistory(model);
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "addresshistorystatus" && _.FormFieldValue == "Completed"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "currentdatefrommonthapplicant1"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "currentdatefromyearapplicant1"));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1applicant1"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1postcodeapplicant1"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1datefrommonthapplicant1"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1datefromyearapplicant1"));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8applicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8postcodeapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8datefrommonthapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8datefromyearapplicant1" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "addressadditionalinformation1" && _.FormFieldValue == string.Empty));
+
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "currentdatefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "currentdatefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2postcodeapplicant2" ));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7datefromyearapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8applicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8postcodeapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8datefrommonthapplicant2"));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8datefromyearapplicant2" ));
+            Assert.False(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "addressadditionalinformation2"));
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldAddAllCorrectIntegrationFormFieldsForDualApplicant()
+        {
+            var callback = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                },
+                SecondApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                }).Callback<IntegrationFormFieldsUpdateModel>((iff) => callback = iff);
+
+            await _applicationService.UpdateAddressHistory(model);
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "addresshistorystatus" && _.FormFieldValue == "Completed"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "currentdatefrommonthapplicant2"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "currentdatefromyearapplicant2"));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1applicant2"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1postcodeapplicant2"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1datefrommonthapplicant2"));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa1datefromyearapplicant2"));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa2datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa3datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa4datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa5datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa6datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa7datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8applicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8postcodeapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8datefrommonthapplicant2" && _.FormFieldValue == string.Empty));
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "pa8datefromyearapplicant2" && _.FormFieldValue == string.Empty));
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "addressadditionalinformation2" && _.FormFieldValue == string.Empty));
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldAddAdditonalAddress_ToAdditionalInfomationField()
+        {
+            var callback = new IntegrationFormFieldsUpdateModel();
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine1",
+                                Town = "town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-11)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        },
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressLine12",
+                                Town = "town2",
+                                Country = "UK2",
+                            },
+                            DateFrom = DateTime.Now.AddYears(-3)
+                        }
+                    }
+                }
+            };
+
+            _verintServiceGatewayMock.Setup(_ =>
+                    _.UpdateCaseIntegrationFormField(It.IsAny<IntegrationFormFieldsUpdateModel>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK
+                }).Callback<IntegrationFormFieldsUpdateModel>((iff) => callback = iff);
+
+            await _applicationService.UpdateAddressHistory(model);
+
+
+            Assert.True(callback.IntegrationFormFields.Exists(_ => _.FormFieldName == "addressadditionalinformation1" && _.FormFieldValue != string.Empty));
         }
     }
 }
