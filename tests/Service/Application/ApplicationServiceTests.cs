@@ -22,10 +22,9 @@ namespace fostering_service_tests.Service.Application
         private readonly ApplicationService _applicationService;
 
         public ApplicationServiceTests()
-    {
-    _applicationService = new ApplicationService(_verintServiceGatewayMock.Object, _mockLogger.Object);
-
-    }
+        {
+            _applicationService = new ApplicationService(_verintServiceGatewayMock.Object, _mockLogger.Object);
+        }
 
         [Fact]
         public async Task UpdateGpDetails_ShouldCallVerintServiceGateway()
@@ -516,7 +515,7 @@ namespace fostering_service_tests.Service.Application
                 )), Times.Once);
             }
         }
-        
+
         [Fact]
         public async Task UpdateCouncillorsDetails_ShouldCreateIntegrationFormFields()
         {
@@ -562,6 +561,41 @@ namespace fostering_service_tests.Service.Application
                     m => m.IntegrationFormFields.Exists(field => field.FormFieldName == $"councillorrelationship2{i}" && field.FormFieldValue == string.Empty)
                 )), Times.Once);
             }
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldThrowException_WhenResponseIsNotOkFrom_VerintService()
+        {
+            // Arrange
+            var model = new FosteringCaseAddressHistoryUpdateModel
+            {
+                FirstApplicant = new FosteringCaseAddressHistoryApplicantUpdateModel
+                {
+                    AddressHistory = new List<PreviousAddress>
+                    {
+                        new PreviousAddress
+                        {
+                            Address = new InternationalAddress
+                            {
+                                AddressLine1 = "addressline1",
+                                Town = "Town",
+                                Country = "UK",
+                            },
+                            DateFrom = DateTime.Now
+                        },
+                    }
+                }
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() =>
+                _applicationService.UpdateAddressHistory(model));
+        }
+
+        [Fact]
+        public async Task UpdateAddressHistory_ShouldReturnTaskStatus()
+        {
+
         }
     }
 }
