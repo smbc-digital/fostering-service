@@ -174,7 +174,7 @@ namespace fostering_service_tests.Helpers
         public void CreateAddressHistoryList_ShouldMapMultipleAdditionalInformationWhenFieldsAreNotNull()
         {
             // Arrange
-            var additional = "Line1|Line2|Town|County|Country|Postcode|3|2016%2Line1|2Line2|2Town|2County|2Country|2Postcode|6|2010";
+            var additional = "Line1|Line2|Town|County|Country|Postcode|3|2016—2Line1|2Line2|2Town|2County|2Country|2Postcode|6|2010";
 
             var date1 = new DateTime(int.Parse("2016"), int.Parse("3"), 01);
             var date2 = new DateTime(int.Parse("2010"), int.Parse("6"), 01);

@@ -280,7 +280,7 @@ namespace fostering_service.Services.Application
                                          model[i].Address.Country + "|" + model[i].Address.Postcode + "|" + 
                                          model[i].DateFrom?.Month + "|" + model[i].DateFrom?.Year;
 
-                    additionalAddress += (i == model.Count - 1) ? string.Empty : "%";
+                    additionalAddress += (i == model.Count - 1) ? string.Empty : "—";
                 }
                 builder
                     .AddField($"addressadditionalinformation{applicantSuffix}", additionalAddress);

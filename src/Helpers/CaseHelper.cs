@@ -64,7 +64,7 @@ namespace fostering_service.Helpers
             if (formFields.FirstOrDefault(_ => _.Name == $"addressadditionalinformation{applicantPrefix}") != null)
             {
                 var additionalAddressList =
-                    formFields.FirstOrDefault(_ => _.Name == $"addressadditionalinformation{applicantPrefix}").Value.Split("%");
+                    formFields.FirstOrDefault(_ => _.Name == $"addressadditionalinformation{applicantPrefix}").Value.Split("—");
 
                 for (int i = 0; i < additionalAddressList.Length; i++)
                 {
