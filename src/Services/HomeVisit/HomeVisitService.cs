@@ -321,7 +321,7 @@ namespace fostering_service.Services.HomeVisit
                 : ETaskStatus.NotCompleted;
 
             var formFields = new FormFieldBuilder()
-                .AddField("fiichildrenwithdisability", model.TypesOfFostering.Exists(_ => _.Equals("childrenWithDisability")) ? "ChildrenWithDisability" : string.Empty)
+                .AddField("fiichildrenwithdisability", model.TypesOfFostering.Exists(_ => _.Equals("childrenWithDisability")) ? "ChildrenWithDisabilities" : string.Empty)
                 .AddField("fiirespite", model.TypesOfFostering.Exists(_ => _.Equals("respite")) ? "Respite" : string.Empty)
                 .AddField("fiishortterm", model.TypesOfFostering.Exists(_ => _.Equals("shortTerm")) ? "ShortTerm" : string.Empty)
                 .AddField("fiilongterm", model.TypesOfFostering.Exists(_ => _.Equals("longTerm")) ? "LongTerm" : string.Empty)
