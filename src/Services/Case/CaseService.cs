@@ -47,50 +47,87 @@ namespace fostering_service.Services.Case
             {
                 Statuses = new FosteringCaseStatuses
                 {
-                    TellUsAboutYourselfStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourselfstatus")?.Value),
-                    ChildrenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "childrenlivingawayfromyourhomestatus")?.Value),
-                    LanguageSpokenInYourHomeStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "languagespokeninyourhomestatus")?.Value),
-                    TellUsAboutYourInterestInFosteringStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "tellusaboutyourinterestinfosteringstatus")?.Value),
-                    YourEmploymentDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "youremploymentdetailsstatus")?.Value),
-                    YourFosteringHistoryStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourfosteringhistorystatus")?.Value),
-                    YourHealthStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhealthstatus")?.Value),
-                    YourHouseholdStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhouseholdstatus")?.Value),
-                    YourPartnershipStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value),
-                    ReferencesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourreferencesstatus")?.Value),
-                    GpDetailsStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value),
-                    CouncillorsOrEmployeesStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "councillorsoremployeesstatus")?.Value),
-                    AddressHistoryStatus = GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "addresshistorystatus")?.Value)
+                    TellUsAboutYourselfStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "tellusaboutyourselfstatus")?.Value),
+                    ChildrenLivingAwayFromYourHomeStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "childrenlivingawayfromyourhomestatus")?.Value),
+                    LanguageSpokenInYourHomeStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "languagespokeninyourhomestatus")?.Value),
+                    TellUsAboutYourInterestInFosteringStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "tellusaboutyourinterestinfosteringstatus")?.Value),
+                    YourEmploymentDetailsStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "youremploymentdetailsstatus")?.Value),
+                    YourFosteringHistoryStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "yourfosteringhistorystatus")?.Value),
+                    YourHealthStatus =
+                        GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "yourhealthstatus")?.Value),
+                    YourHouseholdStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "yourhouseholdstatus")?.Value),
+                    YourPartnershipStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "yourpartnershipstatus")?.Value),
+                    ReferencesStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "yourreferencesstatus")?.Value),
+                    GpDetailsStatus =
+                        GetTaskStatus(integrationFormFields.FirstOrDefault(_ => _.Name == "gpdetailsstatus")?.Value),
+                    CouncillorsOrEmployeesStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "councillorsoremployeesstatus")?.Value),
+                    AddressHistoryStatus = GetTaskStatus(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "addresshistorystatus")?.Value)
                 },
                 FirstApplicant = new FosteringApplicant
                 {
                     FirstName = integrationFormFields.First(_ => _.Name == "firstname").Value,
                     LastName = integrationFormFields.First(_ => _.Name == "surname").Value,
-                    AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname")?.Value ?? string.Empty,
-                    Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality")?.Value ?? string.Empty,
+                    AnotherName = integrationFormFields.FirstOrDefault(_ => _.Name == "previousname")?.Value ??
+                                  string.Empty,
+                    Nationality = integrationFormFields.FirstOrDefault(_ => _.Name == "nationality")?.Value ??
+                                  string.Empty,
                     Ethnicity = integrationFormFields.FirstOrDefault(_ => _.Name == "ethnicity")?.Value ?? string.Empty,
                     Gender = integrationFormFields.FirstOrDefault(_ => _.Name == "gender")?.Value ?? string.Empty,
-                    Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup")?.Value ?? string.Empty,
-                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ?? string.Empty,
-                    CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ?? string.Empty,
+                    Religion = integrationFormFields.FirstOrDefault(_ => _.Name == "religionorfaithgroup")?.Value ??
+                               string.Empty,
+                    PlaceOfBirth = integrationFormFields.FirstOrDefault(_ => _.Name == "placeofbirth")?.Value ??
+                                   string.Empty,
+                    CurrentEmployer = integrationFormFields.FirstOrDefault(_ => _.Name == "currentemployer")?.Value ??
+                                      string.Empty,
                     JobTitle = integrationFormFields.FirstOrDefault(_ => _.Name == "jobtitle")?.Value ?? string.Empty,
-                    ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
-                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, integrationFormFields, 4),
+                    ChildrenUnderSixteenLivingAwayFromHome = CreateOtherPersonList(
+                        ConfigurationModels.FirstApplicantUnderSixteenConfigurationModel, integrationFormFields, 4),
+                    ChildrenOverSixteenLivingAwayFromHome = CreateOtherPersonList(
+                        ConfigurationModels.FirstApplicantOverSixteenConfigurationModel, integrationFormFields, 4),
                     NameOfGp = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofgp")?.Value,
                     NameOfGpPractice = integrationFormFields.FirstOrDefault(_ => _.Name == "nameofpractice")?.Value,
                     GpPhoneNumber = integrationFormFields.FirstOrDefault(_ => _.Name == "gpphonenumber")?.Value,
-                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice", "placerefofpractice", "postcodeofpractice").Validate(),
-                    HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields.FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
+                    GpAddress = AddressMapper.MapToFosteringAddress(integrationFormFields, "addressofpractice",
+                        "placerefofpractice", "postcodeofpractice").Validate(),
+                    HasContactWithCouncillor = ParseVerintBoolean(integrationFormFields
+                        .FirstOrDefault(_ => _.Name == "contactwithcouncillor1")?.Value),
                     CouncillorRelationshipDetails = CreateCouncillorRelationshipDetailsList(integrationFormFields),
                     AddressHistory = _caseHelper.CreateAddressHistoryList(integrationFormFields)
                 },
                 WithPartner = integrationFormFields.FirstOrDefault(_ => _.Name == "withpartner")?.Value ?? "yes",
-                PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ?? string.Empty,
-                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ?? string.Empty,
+                PrimaryLanguage = integrationFormFields.FirstOrDefault(_ => _.Name == "primarylanguage")?.Value ??
+                                  string.Empty,
+                OtherLanguages = integrationFormFields.FirstOrDefault(_ => _.Name == "otherlanguages")?.Value ??
+                                 string.Empty,
                 TypesOfFostering = new List<string>(),
-                ReasonsForFostering = integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ?? string.Empty,
-                OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel, integrationFormFields),
-                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ?? string.Empty,
-                EnableAdditionalInformationSection = string.Equals(response.ResponseContent.EnquirySubject, "Fostering", StringComparison.CurrentCultureIgnoreCase) && string.Equals(response.ResponseContent.EnquiryReason, "Fostering Application", StringComparison.CurrentCultureIgnoreCase) && string.Equals(response.ResponseContent.EnquiryType, "3. Application", StringComparison.CurrentCultureIgnoreCase)
+                ReasonsForFostering =
+                    integrationFormFields.FirstOrDefault(_ => _.Name == "reasonsforfosteringapplicant1")?.Value ??
+                    string.Empty,
+                OtherPeopleInYourHousehold = CreateOtherPersonList(ConfigurationModels.HouseholdConfigurationModel,
+                    integrationFormFields),
+                PetsInformation = integrationFormFields.FirstOrDefault(_ => _.Name == "listofpetsandanimals")?.Value ??
+                                  string.Empty,
+                EnableAdditionalInformationSection =
+                    string.Equals(response.ResponseContent.EnquirySubject, "Fostering",
+                        StringComparison.CurrentCultureIgnoreCase) &&
+                    string.Equals(response.ResponseContent.EnquiryReason, "Fostering Application",
+                        StringComparison.CurrentCultureIgnoreCase) && string.Equals(
+                        response.ResponseContent.EnquiryType, "3. Application",
+                        StringComparison
+                            .CurrentCultureIgnoreCase),
+                IsApplicationCompleted = String.Equals(
+                    response.ResponseContent.EnquiryType, "4. Application Completed",StringComparison.CurrentCultureIgnoreCase)
             };
 
             fosteringCase.FamilyReference = ReferenceDetailsMapper.MapToReferenceDetails(integrationFormFields,
