@@ -127,7 +127,7 @@ namespace fostering_service.Services.Case
                         StringComparison
                             .CurrentCultureIgnoreCase),
                 IsApplicationCompleted = String.Equals(
-                    response.ResponseContent.EnquiryType, "4. Application Completed",StringComparison.CurrentCultureIgnoreCase)
+                    response.ResponseContent.EnquiryType, "4. Application Complete",StringComparison.CurrentCultureIgnoreCase)
             };
 
             fosteringCase.FamilyReference = ReferenceDetailsMapper.MapToReferenceDetails(integrationFormFields,

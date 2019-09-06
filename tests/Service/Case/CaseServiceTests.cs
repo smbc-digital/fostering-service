@@ -714,7 +714,7 @@ namespace fostering_service_tests.Service
         }
 
         [Theory]
-        [InlineData("4. Application Completed", true)]
+        [InlineData("4. Application Complete", true)]
         [InlineData("3. stage ", false)]
         public async Task GetCase_ShoulSetIsApplicationCompleted(string enquiryType, bool isApplicationCompleted)
         {
