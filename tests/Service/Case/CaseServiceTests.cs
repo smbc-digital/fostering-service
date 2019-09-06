@@ -712,6 +712,35 @@ namespace fostering_service_tests.Service
             // Assert
             Assert.Empty(result);
         }
+
+        [Theory]
+        [InlineData("4. Application Completed", true)]
+        [InlineData("3. stage ", false)]
+        public async Task GetCase_ShoulSetIsApplicationCompleted(string enquiryType, bool isApplicationCompleted)
+        {
+            var entity = new CaseBuilder()
+                .WithIntegrationFormField("religionorfaithgroup", "Religion")
+                .WithIntegrationFormField("gender", "Gender")
+                .WithIntegrationFormField("ethnicity", "Ethnicity")
+                .WithIntegrationFormField("nationality", "Nationality")
+                .WithIntegrationFormField("previousname", "Previous name")
+                .WithIntegrationFormField("surname", "Last Name")
+                .WithIntegrationFormField("firstname", "First Name")
+                .WithEnquiryType(enquiryType)
+                .Build();
+
+            _verintServiceGatewayMock
+                .Setup(_ => _.GetCase(It.IsAny<string>()))
+                .ReturnsAsync(new HttpResponse<Case>
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    ResponseContent = entity
+                });
+
+            // Act
+            var result = await _caseService.GetCase("1234");
+            Assert.Equal(isApplicationCompleted,result.IsApplicationCompleted);
+        }
     }
 }
 
