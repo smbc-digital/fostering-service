@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using StockportGovUK.NetStandard.Models.Models.Verint;
-using Address = StockportGovUK.NetStandard.Models.Models.Fostering.Address;
+using StockportGovUK.NetStandard.Models.Verint;
+using Address = StockportGovUK.NetStandard.Models.Fostering.Address;
 
 namespace fostering_service.Mappers
 {

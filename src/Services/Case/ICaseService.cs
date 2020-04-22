@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Verint;
 
 namespace fostering_service.Services.Case
 {

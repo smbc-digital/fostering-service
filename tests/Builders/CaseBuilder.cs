@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Verint;
 
 namespace fostering_service_tests.Builders
 {
@@ -25,7 +25,7 @@ namespace fostering_service_tests.Builders
 
         public CaseBuilder WithIntegrationFormField(string name, string value)
         {
-            _integrationFormFields.Add(new CustomField{ Name = name, Value = value});
+            _integrationFormFields.Add(new CustomField(name, value));
             return this;
         }
 

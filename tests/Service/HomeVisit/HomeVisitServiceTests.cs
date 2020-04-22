@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Moq;
-using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Models;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
-using StockportGovUK.NetStandard.Models.Models.Verint;
-using StockportGovUK.NetStandard.Models.Models.Verint.Update;
-using Xunit;
-using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
 using fostering_service.Services.HomeVisit;
 using fostering_service.Controllers.Case.Models;
+using Microsoft.Extensions.Logging;
+using Moq;
+using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Models;
+using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Fostering.HomeVisit;
+using StockportGovUK.NetStandard.Models.Verint.Update;
+using Xunit;
+using Model = StockportGovUK.NetStandard.Models.Fostering;
 
 namespace fostering_service_tests.Service
 {

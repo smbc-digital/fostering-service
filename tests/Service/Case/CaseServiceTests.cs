@@ -8,11 +8,11 @@ using fostering_service.Services.Case;
 using fostering_service_tests.Builders;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.AspNetCore.Gateways.Response;
-using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Gateways.Response;
+using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Verint;
 using Xunit;
 
 
@@ -539,36 +539,12 @@ namespace fostering_service_tests.Service
 
             var model = new List<CustomField>
             {
-                new CustomField
-                {
-                    Name = $"{config.DateOfBirth}1",
-                    Value =  "01/02/1996"
-                },
-                new CustomField
-                {
-                    Name = $"{config.FirstName}1",
-                    Value =  "firstname1"
-                },
-                new CustomField
-                {
-                    Name = $"{config.DateOfBirth}2",
-                    Value =  "01/02/1996"
-                },
-                new CustomField
-                {
-                    Name = $"{config.FirstName}2",
-                    Value =  "firstname2"
-                },
-                new CustomField
-                {
-                    Name = $"{config.DateOfBirth}3",
-                    Value =  "01/02/1996"
-                },
-                new CustomField
-                {
-                    Name = $"{config.FirstName}3",
-                    Value =  "firstname3"
-                }
+                new CustomField($"{config.DateOfBirth}1", "01/02/1996"),
+                new CustomField($"{config.FirstName}1", "firstname1"),
+                new CustomField($"{config.DateOfBirth}2", "01/02/1996"),
+                new CustomField($"{config.FirstName}2", "firstname2"),
+                new CustomField($"{config.DateOfBirth}3", "01/02/1996"),
+                new CustomField($"{config.FirstName}3", "firstname3")
             };
 
             // Act
@@ -599,26 +575,10 @@ namespace fostering_service_tests.Service
 
             var model = new List<CustomField>
             {
-                new CustomField
-                {
-                    Name = $"{config.Gender}1",
-                    Value =  "test"
-                },
-                new CustomField
-                {
-                    Name = $"{config.LastName}1",
-                    Value =  "last name test"
-                },
-                new CustomField
-                {
-                    Name = $"{config.Gender}8",
-                    Value =  "test 2"
-                },
-                new CustomField
-                {
-                    Name = $"{config.LastName}8",
-                    Value =  "last name test 2"
-                }
+                new CustomField($"{config.Gender}1", "test"),
+                new CustomField($"{config.LastName}1", "last name test"),
+                new CustomField($"{config.Gender}8", "test 2"),
+                new CustomField($"{config.LastName}8", "last name test 2")
             };
 
             // Act
@@ -653,11 +613,7 @@ namespace fostering_service_tests.Service
 
             var model = new List<CustomField>
             {
-                new CustomField
-                {
-                    Name = $"{config.Address}1",
-                    Value =  address
-                }
+                new CustomField($"{config.Address}1", address)
             };
 
             // Act
@@ -680,16 +636,8 @@ namespace fostering_service_tests.Service
 
             for (var i = 1; i <= 4; i++)
             {
-                formFields.Add(new CustomField
-                {
-                    Name = $"councilloremployeename{applicantSuffix}{i}",
-                    Value = $"Name{applicantSuffix}{i}"
-                });
-                formFields.Add(new CustomField
-                {
-                    Name = $"councillorrelationship{applicantSuffix}{i}",
-                    Value = $"Relationship{applicantSuffix}{i}"
-                });
+                formFields.Add(new CustomField($"councilloremployeename{applicantSuffix}{i}", $"Name{applicantSuffix}{i}"));
+                formFields.Add(new CustomField($"councillorrelationship{applicantSuffix}{i}", $"Relationship{applicantSuffix}{i}"));
             }
 
             // Act

@@ -5,9 +5,9 @@ using fostering_service.Services.HomeVisit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using StockportGovUK.NetStandard.Models;
 using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Models;
-using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
+using StockportGovUK.NetStandard.Models.Fostering.HomeVisit;
 using Xunit;
 
 namespace fostering_service_tests.Controller.HomeVisit

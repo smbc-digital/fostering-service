@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using fostering_service.Mappers;
 using fostering_service_tests.Builders;
-using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Verint;
 using Xunit;
 
 namespace fostering_service_tests.Mappers
@@ -65,12 +65,12 @@ namespace fostering_service_tests.Mappers
             Assert.Equal(string.Empty, result.Address.Town);
             Assert.Equal(string.Empty, result.Address.Postcode);
             Assert.Equal(string.Empty, result.Address.PlaceRef);
-            Assert.Equal(null, result.FirstName);
-            Assert.Equal(null, result.LastName);
-            Assert.Equal(null, result.RelationshipToYou);
-            Assert.Equal(null, result.NumberOfYearsKnown);
-            Assert.Equal(null, result.EmailAddress);
-            Assert.Equal(null, result.PhoneNumber);
+            Assert.Null(result.FirstName);
+            Assert.Null(result.LastName);
+            Assert.Null(result.RelationshipToYou);
+            Assert.Null(result.NumberOfYearsKnown);
+            Assert.Null(result.EmailAddress);
+            Assert.Null(result.PhoneNumber);
         }
     }
 }

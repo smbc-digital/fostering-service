@@ -4,7 +4,7 @@ using fostering_service.Services.Case;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Fostering;
 using Xunit;
 using System;
 

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Fostering;
 using Xunit;
 
 namespace fostering_service.Attributes

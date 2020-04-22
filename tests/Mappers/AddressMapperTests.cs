@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using fostering_service.Mappers;
 using fostering_service_tests.Builders;
-using StockportGovUK.NetStandard.Models.Models.Verint;
+using StockportGovUK.NetStandard.Models.Verint;
 using Xunit;
-using Address = StockportGovUK.NetStandard.Models.Models.Fostering.Address;
+using Address = StockportGovUK.NetStandard.Models.Fostering.Address;
 
 namespace fostering_service_tests.Mappers
 {
@@ -60,21 +60,9 @@ namespace fostering_service_tests.Mappers
             // Arrange
             var integrationFormFields = new List<CustomField>
             {
-                new CustomField
-                {
-                    Name = "postcode",
-                    Value = "SK1 3XE"
-                },
-                new CustomField
-                {
-                    Name = "address",
-                    Value = "Address line 1|Address line 2|"
-                },
-                new CustomField
-                {
-                    Name = "placeref",
-                    Value = ""
-                }
+                new CustomField("postcode", "SK1 3XE"),
+                new CustomField("address", "Address line 1|Address line 2|"),
+                new CustomField("placeref", "")
             };
 
             // Act

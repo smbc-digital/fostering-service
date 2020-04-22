@@ -7,11 +7,11 @@ using fostering_service.Mappers;
 using fostering_service.Controllers.Case.Models;
 using fostering_service.Helpers;
 using Microsoft.Extensions.Logging;
-using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
 using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Verint;
-using Model = StockportGovUK.NetStandard.Models.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Verint;
+using Model = StockportGovUK.NetStandard.Models.Fostering;
 
 namespace fostering_service.Services.Case
 {

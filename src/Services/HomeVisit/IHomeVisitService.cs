@@ -2,10 +2,10 @@
 using System.Threading.Tasks;
 using fostering_service.Builder;
 using fostering_service.Controllers.Case.Models;
+using StockportGovUK.NetStandard.Models;
 using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Models;
-using StockportGovUK.NetStandard.Models.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Models.Fostering.HomeVisit;
+using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Models.Fostering.HomeVisit;
 
 namespace fostering_service.Services.HomeVisit  
 {

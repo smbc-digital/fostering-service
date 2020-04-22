@@ -1,21 +1,20 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using fostering_service.Helpers;
 using fostering_service.Services.Application;
 using fostering_service.Services.Case;
 using fostering_service.Services.HomeVisit;
+using fostering_service.Utils.ServiceCollectionExtensions;
+using fostering_service.Utils.StorageProvider;
+using fostering_service.Utils.HealthChecks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
-using Swashbuckle.AspNetCore.Swagger;
-using StockportGovUK.AspNetCore.Gateways;
-using StockportGovUK.AspNetCore.Gateways.VerintServiceGateway;
-using StockportGovUK.AspNetCore.Polly;
+using StockportGovUK.NetStandard.Gateways;
 
 namespace fostering_service
 {
@@ -31,45 +30,23 @@ namespace fostering_service
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-            services.AddHttpClients<IGateway, Gateway>(Configuration);
-            services.AddSingleton<IVerintServiceGateway, VerintServiceGateway>();
+            services.AddControllers();
+            services.AddStorageProvider(Configuration);
+            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
+            services.AddAvailability();
+            services.AddSwagger();
+            services.AddHealthChecks()
+                    .AddCheck<TestHealthCheck>("TestHealthCheck");
 
             services.AddSingleton<ICaseHelper, CaseHelper>();
-
             services.AddTransient<IHomeVisitService, HomeVisitService>();
             services.AddTransient<ICaseService, CaseService>();
             services.AddTransient<IApplicationService, ApplicationService>();
-
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Info { Title = "fostering_service API", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
-                {
-                    Description = "Authorization using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-                    Name = "Authorization",
-                    In = "header",
-                    Type = "apiKey"
-                });
-
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
-                {
-                    {"Bearer", new string[] { }},
-                });
-                
-                c.CustomSchemaIds(x => x.FullName);
-            });
-
-            services.AddHttpClient();
-
-            services.AddAvailability();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.IsEnvironment("local"))
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -77,19 +54,21 @@ namespace fostering_service
             {
                 app.UseHsts();
             }
-            
-            app.UseMiddleware<Availability>();
-            app.UseMiddleware<ExceptionHandling>();
+
             app.UseHttpsRedirection();
+            app.UseRouting();
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            app.UseMiddleware<Availability>();
+            app.UseMiddleware<ApiExceptionHandling>();
+            
+            app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
+
             app.UseSwagger();
-
-            var swaggerPrefix = env.IsDevelopment() ? string.Empty : "/fosteringservice";
-
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint($"{swaggerPrefix}/swagger/v1/swagger.json", "fostering_service API");
+                c.SwaggerEndpoint($"{(env.IsEnvironment("local") ? string.Empty : "/fosteringservice")}/swagger/v1/swagger.json", "Fostering service API");
             });
-            app.UseMvc();
         }
     }
 }
