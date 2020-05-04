@@ -1,8 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using fostering_service.Helpers;
-using fostering_service.Services.Application;
-using fostering_service.Services.Case;
-using fostering_service.Services.HomeVisit;
 using fostering_service.Utils.ServiceCollectionExtensions;
 using fostering_service.Utils.StorageProvider;
 using fostering_service.Utils.HealthChecks;
@@ -36,12 +32,9 @@ namespace fostering_service
             services.AddAvailability();
             services.AddSwagger();
             services.AddHealthChecks()
-                    .AddCheck<TestHealthCheck>("TestHealthCheck");
+                    .AddCheck<TestHealthCheck>("TestHealthCheck");            
 
-            services.AddSingleton<ICaseHelper, CaseHelper>();
-            services.AddTransient<IHomeVisitService, HomeVisitService>();
-            services.AddTransient<ICaseService, CaseService>();
-            services.AddTransient<IApplicationService, ApplicationService>();
+            services.RegisterServices();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -1,4 +1,8 @@
 ﻿using System.Collections.Generic;
+using fostering_service.Helpers;
+using fostering_service.Services.Application;
+using fostering_service.Services.Case;
+using fostering_service.Services.HomeVisit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
@@ -6,6 +10,14 @@ namespace fostering_service.Utils.ServiceCollectionExtensions
 {
     public static class ServiceCollectionExtensions
     {
+        public static void RegisterServices(this IServiceCollection services)
+        {
+             services.AddSingleton<ICaseHelper, CaseHelper>();
+            services.AddTransient<IHomeVisitService, HomeVisitService>();
+            services.AddTransient<ICaseService, CaseService>();
+            services.AddTransient<IApplicationService, ApplicationService>();
+        }
+
         public static void AddSwagger(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
