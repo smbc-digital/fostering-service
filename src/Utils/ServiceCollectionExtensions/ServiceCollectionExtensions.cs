@@ -10,9 +10,13 @@ namespace fostering_service.Utils.ServiceCollectionExtensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static void RegisterServices(this IServiceCollection services)
+        public static void RegisterHelpers(this IServiceCollection services)
         {
             services.AddSingleton<ICaseHelper, CaseHelper>();
+        }
+
+        public static void RegisterServices(this IServiceCollection services)
+        {
             services.AddTransient<IHomeVisitService, HomeVisitService>();
             services.AddTransient<ICaseService, CaseService>();
             services.AddTransient<IApplicationService, ApplicationService>();

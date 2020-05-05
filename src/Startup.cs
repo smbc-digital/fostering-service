@@ -32,8 +32,9 @@ namespace fostering_service
             services.AddSwagger();
             services.AddAvailability();
             services.AddHealthChecks()
-                    .AddCheck<TestHealthCheck>("TestHealthCheck");            
+                    .AddCheck<TestHealthCheck>("TestHealthCheck");
 
+            services.RegisterHelpers();
             services.RegisterServices();
         }
 
