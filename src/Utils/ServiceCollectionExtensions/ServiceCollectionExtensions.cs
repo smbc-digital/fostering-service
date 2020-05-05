@@ -12,7 +12,7 @@ namespace fostering_service.Utils.ServiceCollectionExtensions
     {
         public static void RegisterServices(this IServiceCollection services)
         {
-             services.AddSingleton<ICaseHelper, CaseHelper>();
+            services.AddSingleton<ICaseHelper, CaseHelper>();
             services.AddTransient<IHomeVisitService, HomeVisitService>();
             services.AddTransient<ICaseService, CaseService>();
             services.AddTransient<IApplicationService, ApplicationService>();
@@ -41,6 +41,7 @@ namespace fostering_service.Utils.ServiceCollectionExtensions
                         new List<string>()
                     }
                 });
+                c.CustomSchemaIds(x => x.FullName);
             });
         }
     }

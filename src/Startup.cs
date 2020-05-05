@@ -28,9 +28,9 @@ namespace fostering_service
         {
             services.AddControllers();
             services.AddStorageProvider(Configuration);
-            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);
-            services.AddAvailability();
+            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);           
             services.AddSwagger();
+            services.AddAvailability();
             services.AddHealthChecks()
                     .AddCheck<TestHealthCheck>("TestHealthCheck");            
 
