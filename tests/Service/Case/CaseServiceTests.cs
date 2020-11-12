@@ -9,7 +9,7 @@ using fostering_service_tests.Builders;
 using Microsoft.Extensions.Logging;
 using Moq;
 using StockportGovUK.NetStandard.Gateways.Response;
-using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Gateways.VerintService;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Verint;

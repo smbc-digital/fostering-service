@@ -7,7 +7,7 @@ using fostering_service.Builder;
 using fostering_service.Extensions;
 using fostering_service.Mappers;
 using Microsoft.Extensions.Logging;
-using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Gateways.VerintService;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Fostering.Application;

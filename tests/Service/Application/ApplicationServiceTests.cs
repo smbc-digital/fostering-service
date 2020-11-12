@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using fostering_service.Services.Application;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Gateways.VerintService;
 using StockportGovUK.NetStandard.Models.Fostering;
 using StockportGovUK.NetStandard.Models.Fostering.Application;
 using StockportGovUK.NetStandard.Models.Verint.Update;

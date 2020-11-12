@@ -7,7 +7,7 @@ using fostering_service.Services.HomeVisit;
 using fostering_service.Controllers.Case.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.NetStandard.Gateways.VerintServiceGateway;
+using StockportGovUK.NetStandard.Gateways.VerintService;
 using StockportGovUK.NetStandard.Models;
 using StockportGovUK.NetStandard.Models.Enums;
 using StockportGovUK.NetStandard.Models.Fostering;

@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.AspNetCore.Availability;
 using StockportGovUK.AspNetCore.Availability.Middleware;
+using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.NetStandard.Gateways;
+using StockportGovUK.NetStandard.Gateways.Extensions;
+using StockportGovUK.NetStandard.Gateways.VerintService;
 
 namespace fostering_service
 {
@@ -29,7 +31,7 @@ namespace fostering_service
             services.AddControllers()
                     .AddNewtonsoftJson();
             services.AddStorageProvider(Configuration);
-            services.AddResilientHttpClients<IGateway, Gateway>(Configuration);           
+            services.AddHttpClient<IVerintServiceGateway, VerintServiceGateway>(Configuration);          
             services.AddSwagger();
             services.AddAvailability();
             services.AddHealthChecks()
