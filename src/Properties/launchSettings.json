@@ -17,11 +17,11 @@
         "ASPNETCORE_ENVIRONMENT": "local"
       }
     },
-    "address_finder_service": {
+    "fostering_service": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "https://localhost:60000",
+      "applicationUrl": "https://localhost:60000; http://localhost:60001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "local"
       }

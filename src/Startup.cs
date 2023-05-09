@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StockportGovUK.AspNetCore.Availability;
-using StockportGovUK.AspNetCore.Availability.Middleware;
 using StockportGovUK.AspNetCore.Middleware;
 using StockportGovUK.NetStandard.Gateways;
 using StockportGovUK.NetStandard.Gateways.Extensions;
@@ -33,7 +31,6 @@ namespace fostering_service
             services.AddStorageProvider(Configuration);
             services.AddHttpClient<IVerintServiceGateway, VerintServiceGateway>(Configuration);          
             services.AddSwagger();
-            services.AddAvailability();
             services.AddHealthChecks()
                     .AddCheck<TestHealthCheck>("TestHealthCheck");
 
@@ -56,7 +53,6 @@ namespace fostering_service
             app.UseRouting();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
 
-            app.UseMiddleware<Availability>();
             app.UseMiddleware<ApiExceptionHandling>();
             
             app.UseHealthChecks("/healthcheck", HealthCheckConfig.Options);
