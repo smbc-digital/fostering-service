@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using fostering_service.Mappers;
+﻿using fostering_service.Mappers;
 using fostering_service_tests.Builders;
-using StockportGovUK.NetStandard.Models.Verint;
+using StockportGovUK.NetStandard.Gateways.Models.Verint;
 using Xunit;
 
 namespace fostering_service_tests.Mappers

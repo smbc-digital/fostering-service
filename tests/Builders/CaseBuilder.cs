@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using StockportGovUK.NetStandard.Models.Verint;
+﻿using StockportGovUK.NetStandard.Gateways.Models.Verint;
 
 namespace fostering_service_tests.Builders
 {

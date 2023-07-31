@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fostering-service", "src\fostering-service.csproj", "{CD672EDB-C2B0-4E9F-9DB3-906EFCF431BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fostering_service", "src\fostering-service.csproj", "{CD672EDB-C2B0-4E9F-9DB3-906EFCF431BF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fostering-service-tests", "tests\fostering-service-tests.csproj", "{E06058D9-E0C3-45B0-A8E8-5C133A3B6A96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fostering_service_tests", "tests\fostering-service-tests.csproj", "{E06058D9-E0C3-45B0-A8E8-5C133A3B6A96}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

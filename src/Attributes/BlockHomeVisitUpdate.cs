@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using fostering_service.Services.Case;
+﻿using fostering_service.Services.Case;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Logging;
-using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
 
 namespace fostering_service.Attributes
 {

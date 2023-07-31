@@ -1,12 +1,9 @@
-using System;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using fostering_service.Attributes;
 using fostering_service.Services.HomeVisit;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
-using StockportGovUK.NetStandard.Models.Fostering.HomeVisit;
-using StockportGovUK.NetStandard.Models;
+using StockportGovUK.NetStandard.Gateways.Models;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering.HomeVisit;
 
 namespace fostering_service.Controllers.HomeVisit
 {

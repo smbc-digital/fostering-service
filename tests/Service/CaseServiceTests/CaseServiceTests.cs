@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using fostering_service.Controllers.Case.Models;
 using fostering_service.Helpers;
 using fostering_service.Services.Case;
 using fostering_service_tests.Builders;
 using Microsoft.Extensions.Logging;
 using Moq;
+using StockportGovUK.NetStandard.Gateways.Enums;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Verint;
 using StockportGovUK.NetStandard.Gateways.Response;
 using StockportGovUK.NetStandard.Gateways.VerintService;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Verint;
 using Xunit;
 
-
-namespace fostering_service_tests.Service
+namespace fostering_service_tests.Service.CaseServiceTests
 {
     public class CaseServiceTests
     {

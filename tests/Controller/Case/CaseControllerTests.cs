@@ -1,12 +1,10 @@
-﻿using System.Threading.Tasks;
-using fostering_service.Controllers.Case;
+﻿using fostering_service.Controllers.Case;
 using fostering_service.Services.Case;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
 using Xunit;
-using System;
 
 namespace fostering_service_tests.Controller.Case
 {
