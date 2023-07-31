@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using fostering_service.Services.Case;
+﻿using fostering_service.Services.Case;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -9,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.NetStandard.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
 using Xunit;
 
 namespace fostering_service.Attributes

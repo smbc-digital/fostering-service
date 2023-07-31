@@ -1,22 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using fostering_service.Services.HomeVisit;
+﻿using System.Net;
 using fostering_service.Controllers.Case.Models;
+using fostering_service.Services.HomeVisit;
 using Microsoft.Extensions.Logging;
 using Moq;
+using StockportGovUK.NetStandard.Gateways.Enums;
+using StockportGovUK.NetStandard.Gateways.Models;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering.HomeVisit;
+using StockportGovUK.NetStandard.Gateways.Models.Verint.Update;
 using StockportGovUK.NetStandard.Gateways.VerintService;
-using StockportGovUK.NetStandard.Models;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Fostering.HomeVisit;
-using StockportGovUK.NetStandard.Models.Verint.Update;
 using Xunit;
-using Model = StockportGovUK.NetStandard.Models.Fostering;
+using Model = StockportGovUK.NetStandard.Gateways.Models.Fostering;
 
-namespace fostering_service_tests.Service
+namespace fostering_service_tests.Service.HomeVisit
 {
     public class HomeVisitServiceTests
     {

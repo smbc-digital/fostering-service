@@ -3,13 +3,11 @@ using fostering_service.Services.Application;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Fostering.Application;
-using System;
-using System.Threading.Tasks;
+using StockportGovUK.NetStandard.Gateways.Enums;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering.Application;
 using Xunit;
-using ETaskStatus = StockportGovUK.NetStandard.Models.Enums.ETaskStatus;
+using ETaskStatus = StockportGovUK.NetStandard.Gateways.Enums.ETaskStatus;
 using OkObjectResult = Microsoft.AspNetCore.Mvc.OkObjectResult;
 
 namespace fostering_service_tests.Controller.Application

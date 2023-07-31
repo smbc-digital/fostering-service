@@ -1,6 +1,5 @@
-﻿using System.Threading.Tasks;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Fostering.Application;
+﻿using StockportGovUK.NetStandard.Gateways.Enums;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering.Application;
 
 namespace fostering_service.Services.Application
 {

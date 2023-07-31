@@ -1,5 +1,5 @@
 ﻿using fostering_service.Extensions;
-using StockportGovUK.NetStandard.Models.Enums;
+using StockportGovUK.NetStandard.Gateways.Enums;
 using Xunit;
 
 namespace fostering_service_tests.Extensions

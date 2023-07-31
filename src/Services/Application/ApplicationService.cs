@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using fostering_service.Builder;
 using fostering_service.Extensions;
 using fostering_service.Mappers;
-using Microsoft.Extensions.Logging;
+using StockportGovUK.NetStandard.Gateways.Enums;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering.Application;
+using StockportGovUK.NetStandard.Gateways.Models.Verint;
+using StockportGovUK.NetStandard.Gateways.Models.Verint.Update;
 using StockportGovUK.NetStandard.Gateways.VerintService;
-using StockportGovUK.NetStandard.Models.Enums;
-using StockportGovUK.NetStandard.Models.Fostering;
-using StockportGovUK.NetStandard.Models.Fostering.Application;
-using StockportGovUK.NetStandard.Models.Verint;
-using StockportGovUK.NetStandard.Models.Verint.Update;
 
 namespace fostering_service.Services.Application
 {

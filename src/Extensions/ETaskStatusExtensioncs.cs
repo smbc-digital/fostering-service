@@ -1,4 +1,4 @@
-﻿using StockportGovUK.NetStandard.Models.Enums;
+﻿using StockportGovUK.NetStandard.Gateways.Enums;
 
 namespace fostering_service.Extensions
 {

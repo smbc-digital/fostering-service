@@ -1,11 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using fostering_service.Attributes;
+﻿using fostering_service.Attributes;
 using fostering_service.Services.Application;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using StockportGovUK.AspNetCore.Attributes.TokenAuthentication;
-using StockportGovUK.NetStandard.Models.Fostering.Application;
+using StockportGovUK.NetStandard.Gateways.Models.Fostering.Application;
 
 namespace fostering_service.Controllers.Application
 {
